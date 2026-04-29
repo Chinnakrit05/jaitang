@@ -8,7 +8,7 @@ import {
   createCategoryAction,
   deleteCategoryAction,
   updateCategoryAction,
-} from "@/app/categories/actions";
+} from "@/app/(app)/categories/actions";
 import { cn } from "@/lib/utils";
 
 const PRESET_COLORS = [

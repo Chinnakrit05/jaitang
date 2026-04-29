@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import type { TransactionWithCategory } from "@/lib/types";
 import { formatDateTH, formatTHB } from "@/lib/utils";
-import { deleteTransactionAction } from "@/app/transactions/actions";
+import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import { useRouter } from "next/navigation";
 
 export function TransactionList({ items }: { items: TransactionWithCategory[] }) {

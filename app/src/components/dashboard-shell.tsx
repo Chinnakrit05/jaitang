@@ -1,33 +1,70 @@
 import Link from "next/link";
 import { signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LayoutDashboard, ListOrdered, FolderTree, Settings, LogOut, BookOpen } from "lucide-react";
+import {
+  LayoutDashboard,
+  ListOrdered,
+  FolderTree,
+  LogOut,
+  BookOpen,
+} from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "หน้าหลัก", icon: LayoutDashboard },
   { href: "/transactions", label: "รายการ", icon: ListOrdered },
   { href: "/categories", label: "หมวดหมู่", icon: FolderTree },
   { href: "/ledgers", label: "สมุดบัญชี", icon: BookOpen },
-  { href: "/settings", label: "ตั้งค่า", icon: Settings },
 ];
+
+const ROLE_LABEL: Record<string, string> = {
+  owner: "เจ้าของ",
+  editor: "ร่วมจด",
+  viewer: "ดูอย่างเดียว",
+};
+
+type ActiveLedger = {
+  id: string;
+  name: string;
+  icon: string | null;
+  isPersonal: boolean;
+  role: "owner" | "editor" | "viewer";
+};
 
 export function DashboardShell({
   children,
   userName,
   userImage,
+  activeLedger,
 }: {
   children: React.ReactNode;
   userName?: string | null;
   userImage?: string | null;
+  activeLedger?: ActiveLedger | null;
 }) {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-(--border) sticky top-0 z-20 bg-(--background)/80 backdrop-blur">
-        <Link href="/dashboard" className="flex items-center gap-2">
+      <header className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-(--border) sticky top-0 z-20 bg-(--background)/80 backdrop-blur">
+        <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
           <span className="text-xl">📒</span>
-          <span className="font-semibold">Jaitang</span>
+          <span className="font-semibold hidden sm:inline">Jaitang</span>
         </Link>
-        <div className="flex items-center gap-3">
+
+        {activeLedger && (
+          <Link
+            href="/ledgers"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) transition text-sm min-w-0"
+          >
+            <span className="shrink-0">{activeLedger.icon ?? "📒"}</span>
+            <span className="font-medium truncate max-w-[140px]">
+              {activeLedger.name}
+            </span>
+            <span className="text-xs text-(--muted) shrink-0 hidden sm:inline">
+              {activeLedger.isPersonal ? "ส่วนตัว" : ROLE_LABEL[activeLedger.role]}
+            </span>
+          </Link>
+        )}
+
+        <div className="flex items-center gap-3 ml-auto">
           <ThemeToggle />
           {userImage ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -73,14 +110,14 @@ export function DashboardShell({
           ))}
         </aside>
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-10 py-6 max-w-6xl w-full mx-auto">
+        <main className="flex-1 px-4 sm:px-6 lg:px-10 py-6 max-w-6xl w-full mx-auto pb-20 md:pb-6">
           {children}
         </main>
       </div>
 
-      <nav className="md:hidden border-t border-(--border) bg-(--card)/80 backdrop-blur sticky bottom-0">
+      <nav className="md:hidden border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20">
         <div className="flex justify-around py-2">
-          {NAV.slice(0, 4).map(({ href, label, icon: Icon }) => (
+          {NAV.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
