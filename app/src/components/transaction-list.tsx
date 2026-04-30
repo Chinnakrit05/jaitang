@@ -8,7 +8,14 @@ import { formatDateTH, formatTHB } from "@/lib/utils";
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import { useRouter } from "next/navigation";
 
-export function TransactionList({ items }: { items: TransactionWithCategory[] }) {
+export function TransactionList({
+  items,
+  showAttribution = false,
+}: {
+  items: TransactionWithCategory[];
+  /** Show small avatar + name of who created each transaction. Useful in shared ledgers. */
+  showAttribution?: boolean;
+}) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -89,8 +96,24 @@ export function TransactionList({ items }: { items: TransactionWithCategory[] })
                         {tx.note}
                       </div>
                     )}
-                    <div className="text-xs text-(--muted)">
-                      {formatDateTH(tx.occurred_at)}
+                    <div className="text-xs text-(--muted) flex items-center gap-1.5 flex-wrap">
+                      <span>{formatDateTH(tx.occurred_at)}</span>
+                      {showAttribution && tx.user && (
+                        <>
+                          <span>•</span>
+                          <span className="inline-flex items-center gap-1">
+                            {tx.user.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={tx.user.image}
+                                alt={tx.user.name ?? tx.user.email}
+                                className="h-3.5 w-3.5 rounded-full"
+                              />
+                            ) : null}
+                            <span>{tx.user.name?.split(" ")[0] ?? "?"}</span>
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div

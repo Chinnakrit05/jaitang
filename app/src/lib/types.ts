@@ -25,6 +25,12 @@ export type Transaction = {
 
 export type TransactionWithCategory = Transaction & {
   category: Pick<Category, "id" | "name" | "icon" | "color"> | null;
+  user?: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+  } | null;
 };
 
 export type MonthSummary = {

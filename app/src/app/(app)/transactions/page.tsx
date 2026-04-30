@@ -5,6 +5,7 @@ import { TransactionList } from "@/components/transaction-list";
 import { TransactionFilters } from "@/components/transaction-filters";
 import { resolveRange } from "@/lib/date-range";
 import { formatTHB } from "@/lib/utils";
+import { getServerSupabase } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Download, Plus } from "lucide-react";
 import type { TxKind } from "@/lib/types";
@@ -17,6 +18,14 @@ export default async function TransactionsPage({
   const sp = await searchParams;
   const { ledgerId } = await requireSession();
   const range = resolveRange(sp.range);
+
+  const sb = getServerSupabase();
+  const { data: ledger } = await sb
+    .from("ledgers")
+    .select("is_personal")
+    .eq("id", ledgerId)
+    .single();
+  const isShared = ledger ? !ledger.is_personal : false;
 
   const kindParam = sp.kind === "income" || sp.kind === "expense" ? (sp.kind as TxKind) : undefined;
 
@@ -81,7 +90,7 @@ export default async function TransactionsPage({
         />
       </div>
 
-      <TransactionList items={items} />
+      <TransactionList items={items} showAttribution={isShared} />
     </div>
   );
 }

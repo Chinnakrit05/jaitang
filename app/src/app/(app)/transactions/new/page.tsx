@@ -1,13 +1,14 @@
 import { requireSession } from "@/lib/session";
 import { listCategories } from "@/lib/categories";
-import { TransactionForm } from "@/components/transaction-form";
+import { NewTransactionPage } from "@/components/new-transaction-page";
 import { createTransactionAction } from "../actions";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export default async function NewTransactionPage() {
+export default async function NewTransaction() {
   const { ledgerId } = await requireSession();
   const categories = await listCategories(ledgerId);
+  const ocrEnabled = !!process.env.ANTHROPIC_API_KEY;
 
   return (
     <div className="max-w-xl mx-auto">
@@ -19,10 +20,10 @@ export default async function NewTransactionPage() {
         กลับ
       </Link>
       <h1 className="text-2xl font-bold mb-6">เพิ่มรายการ</h1>
-      <TransactionForm
+      <NewTransactionPage
         categories={categories}
         action={createTransactionAction}
-        submitLabel="บันทึก"
+        ocrEnabled={ocrEnabled}
       />
     </div>
   );

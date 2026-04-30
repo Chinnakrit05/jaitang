@@ -30,9 +30,9 @@
 - [x] Recurring transactions (daily/weekly/monthly + manual apply-due)
 - [x] Export CSV (with current filter respected)
 - [ ] Splitwise mode
-- [ ] Receipt OCR
+- [x] Receipt OCR (Claude Vision; requires ANTHROPIC_API_KEY, gracefully hidden if absent)
 - [ ] Web push notifications
-- [ ] Activity log / "by [user]" attribution
+- [x] Activity log / "by [user]" attribution (shown in shared ledgers)
 
 ## ของที่ต้องเตรียมจากพี่ฟลุ๊ค
 

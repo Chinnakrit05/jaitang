@@ -23,7 +23,7 @@ export async function listTransactions(
   let q = sb
     .from("transactions")
     .select(
-      "id, ledger_id, user_id, category_id, kind, amount, note, occurred_at, created_at, updated_at, category:categories(id, name, icon, color)"
+      "id, ledger_id, user_id, category_id, kind, amount, note, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), user:users(id, name, email, image)"
     )
     .eq("ledger_id", opts.ledgerId)
     .order("occurred_at", { ascending: false })
@@ -42,6 +42,7 @@ export async function listTransactions(
 
   return (data ?? []).map((row) => {
     const cat = (Array.isArray(row.category) ? row.category[0] : row.category) ?? null;
+    const usr = (Array.isArray(row.user) ? row.user[0] : row.user) ?? null;
     return {
       id: row.id,
       ledger_id: row.ledger_id,
@@ -54,6 +55,7 @@ export async function listTransactions(
       created_at: row.created_at,
       updated_at: row.updated_at,
       category: cat,
+      user: usr,
     };
   });
 }
