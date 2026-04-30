@@ -186,6 +186,22 @@ create index if not exists idx_splits_tx on public.transaction_splits(transactio
 create index if not exists idx_splits_user on public.transaction_splits(user_id);
 
 -- ============================================================
+-- Push subscriptions (Web Push API — per device/browser)
+-- ============================================================
+create table if not exists public.push_subscriptions (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  endpoint text not null,
+  p256dh text not null,
+  auth text not null,
+  user_agent text,
+  created_at timestamptz not null default now(),
+  unique(user_id, endpoint)
+);
+
+create index if not exists idx_push_subs_user on public.push_subscriptions(user_id);
+
+-- ============================================================
 -- Helper: is the current user a member of this ledger?
 -- (auth.uid() returns the auth.users id; we map via users.id = auth.uid())
 -- ============================================================

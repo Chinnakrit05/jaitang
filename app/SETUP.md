@@ -94,3 +94,34 @@ npm run dev
 - **Google sign-in error: redirect_uri_mismatch** → ตรวจ Authorized redirect URI ใน Google Console
 - **Supabase 401** → ตรวจว่าใช้ `SUPABASE_SERVICE_ROLE_KEY` ฝั่ง server (ไม่ใช่ anon)
 - **schema.sql fails on `create extension`** → ใช้ admin role ของ Supabase หรือ run แต่ละบล็อกแยก
+
+---
+
+## Optional features
+
+### Receipt OCR (Claude Vision)
+
+ใส่ใน `.env.local`:
+```
+ANTHROPIC_API_KEY="sk-ant-..."
+```
+สมัครที่ https://console.anthropic.com → API Keys
+ถ้าไม่ใส่ — ปุ่ม "สแกนใบเสร็จ" จะหายไปอัตโนมัติ ฟอร์มกรอกเองยังใช้งานได้ปกติ
+
+### Web Push notifications
+
+```bash
+cd app
+npx web-push generate-vapid-keys
+```
+
+แล้วเอา public + private key ไปใส่ `.env.local`:
+```
+NEXT_PUBLIC_VAPID_PUBLIC_KEY="..."
+VAPID_PRIVATE_KEY="..."
+VAPID_SUBJECT="mailto:you@example.com"
+```
+
+ผู้ใช้ไปที่ `/settings` → "เปิดการแจ้งเตือน" — เบราว์เซอร์ขออนุญาต → จะได้แจ้งเตือนเมื่อ:
+- มีรายการใหม่ในสมุดแชร์ที่คุณเป็นสมาชิก
+- (ถ้าเปิดในอนาคต) ใกล้เกินงบ, มีคนปิดบิล

@@ -10,6 +10,10 @@ import {
   updateTransaction,
 } from "@/lib/transactions";
 import { equalSplit, replaceSplits } from "@/lib/splits";
+import { sendToUsers } from "@/lib/push";
+import { listMembers } from "@/lib/members";
+import { getServerSupabase } from "@/lib/supabase/server";
+import { formatTHB } from "@/lib/utils";
 
 const TxSchema = z.object({
   kind: z.enum(["income", "expense"]),
@@ -67,6 +71,7 @@ export async function createTransactionAction(formData: FormData) {
   });
 
   // Splits only make sense for expenses
+  let splitOthers: string[] = [];
   if (parsed.data.kind === "expense") {
     const otherIds = readSplitWith(formData, userId);
     if (otherIds && otherIds.length > 0) {
@@ -77,7 +82,40 @@ export async function createTransactionAction(formData: FormData) {
         .map((id) => ({ userId: id, amount: shares.get(id) ?? 0 }))
         .filter((s) => s.amount > 0);
       await replaceSplits(tx.id, splits);
+      splitOthers = otherIds;
     }
+  }
+
+  // Notify other ledger members in shared ledgers (best-effort, non-blocking on errors)
+  try {
+    const sb = getServerSupabase();
+    const { data: ledger } = await sb
+      .from("ledgers")
+      .select("name, is_personal")
+      .eq("id", ledgerId)
+      .single();
+    if (ledger && !ledger.is_personal) {
+      const members = await listMembers(ledgerId);
+      const recipients = members
+        .map((m) => m.user_id)
+        .filter((id) => id !== userId);
+      if (recipients.length > 0) {
+        const sign = parsed.data.kind === "income" ? "+" : "−";
+        await sendToUsers(recipients, {
+          title: `${ledger.name} — รายการใหม่`,
+          body:
+            splitOthers.length > 0
+              ? `${sign}${formatTHB(parsed.data.amount)} • หาร ${splitOthers.length + 1} คน`
+              : `${sign}${formatTHB(parsed.data.amount)}${
+                  parsed.data.note ? ` • ${parsed.data.note}` : ""
+                }`,
+          url: "/transactions",
+          tag: `tx-${tx.id}`,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("[push] notify on create failed:", err);
   }
 
   refreshAll();

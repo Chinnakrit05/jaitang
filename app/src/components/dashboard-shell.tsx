@@ -10,6 +10,7 @@ import {
   PiggyBank,
   Repeat,
   Scale,
+  Settings,
 } from "lucide-react";
 
 const NAV = [
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/balances", label: "หารบิล", icon: Scale },
   { href: "/categories", label: "หมวดหมู่", icon: FolderTree },
   { href: "/ledgers", label: "สมุดบัญชี", icon: BookOpen },
+  { href: "/settings", label: "ตั้งค่า", icon: Settings },
 ];
 
 const MOBILE_NAV = [

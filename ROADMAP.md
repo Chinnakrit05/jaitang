@@ -31,7 +31,7 @@
 - [x] Export CSV (with current filter respected)
 - [x] Splitwise mode (equal split + net balances + settle-between)
 - [x] Receipt OCR (Claude Vision; requires ANTHROPIC_API_KEY, gracefully hidden if absent)
-- [ ] Web push notifications
+- [x] Web push notifications (VAPID + service worker; notify on new tx in shared ledgers)
 - [x] Activity log / "by [user]" attribution (shown in shared ledgers)
 
 ## ของที่ต้องเตรียมจากพี่ฟลุ๊ค
