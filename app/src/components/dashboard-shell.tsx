@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { MobileNav } from "@/components/mobile-nav";
+import { MobileNav, type NavItem } from "@/components/mobile-nav";
 import {
   LayoutDashboard,
   ListOrdered,
@@ -15,6 +15,7 @@ import {
   Settings,
   Sparkles,
   Upload,
+  type LucideIcon,
 } from "lucide-react";
 
 type ActiveLedger = {
@@ -24,6 +25,8 @@ type ActiveLedger = {
   isPersonal: boolean;
   role: "owner" | "editor" | "viewer";
 };
+
+type DesktopNavItem = NavItem & { iconComponent: LucideIcon };
 
 export async function DashboardShell({
   children,
@@ -38,25 +41,36 @@ export async function DashboardShell({
 }) {
   const t = await getTranslations();
 
-  const NAV = [
-    { href: "/dashboard", label: t("nav.home"), icon: LayoutDashboard },
-    { href: "/quick", label: t("nav.quick"), icon: Sparkles },
-    { href: "/transactions", label: t("nav.transactions"), icon: ListOrdered },
-    { href: "/budgets", label: t("nav.budgets"), icon: PiggyBank },
-    { href: "/recurring", label: t("nav.recurring"), icon: Repeat },
-    { href: "/balances", label: t("nav.balances"), icon: Scale },
-    { href: "/categories", label: t("nav.categories"), icon: FolderTree },
-    { href: "/ledgers", label: t("nav.ledgers"), icon: BookOpen },
-    { href: "/import", label: t("nav.import"), icon: Upload },
-    { href: "/settings", label: t("nav.settings"), icon: Settings },
+  // Each entry has both:
+  // - `iconComponent` — the actual Lucide function used by the desktop sidebar (server-rendered)
+  // - `icon` — a string key passed to the MobileNav client component
+  //   (we can't pass functions through the RSC boundary)
+  const NAV: DesktopNavItem[] = [
+    { href: "/dashboard",   label: t("nav.home"),         icon: "home",         iconComponent: LayoutDashboard },
+    { href: "/quick",       label: t("nav.quick"),        icon: "quick",        iconComponent: Sparkles },
+    { href: "/transactions",label: t("nav.transactions"), icon: "transactions", iconComponent: ListOrdered },
+    { href: "/budgets",     label: t("nav.budgets"),      icon: "budgets",      iconComponent: PiggyBank },
+    { href: "/recurring",   label: t("nav.recurring"),    icon: "recurring",    iconComponent: Repeat },
+    { href: "/balances",    label: t("nav.balances"),     icon: "balances",     iconComponent: Scale },
+    { href: "/categories",  label: t("nav.categories"),   icon: "categories",   iconComponent: FolderTree },
+    { href: "/ledgers",     label: t("nav.ledgers"),      icon: "ledgers",      iconComponent: BookOpen },
+    { href: "/import",      label: t("nav.import"),       icon: "import",       iconComponent: Upload },
+    { href: "/settings",    label: t("nav.settings"),     icon: "settings",     iconComponent: Settings },
   ];
 
-  const MOBILE_NAV = [
-    { href: "/dashboard", label: t("nav.homeShort"), icon: LayoutDashboard },
-    { href: "/quick", label: t("nav.quickShort"), icon: Sparkles },
-    { href: "/transactions", label: t("nav.transactions"), icon: ListOrdered },
-    { href: "/ledgers", label: t("nav.ledgersShort"), icon: BookOpen },
+  const MOBILE_NAV: NavItem[] = [
+    { href: "/dashboard",   label: t("nav.homeShort"),    icon: "home" },
+    { href: "/quick",       label: t("nav.quickShort"),   icon: "quick" },
+    { href: "/transactions",label: t("nav.transactions"), icon: "transactions" },
+    { href: "/ledgers",     label: t("nav.ledgersShort"), icon: "ledgers" },
   ];
+
+  // Strip iconComponent before handing to the client; only safe-to-serialize fields.
+  const NAV_FOR_CLIENT: NavItem[] = NAV.map(({ href, label, icon }) => ({
+    href,
+    label,
+    icon,
+  }));
 
   const ROLE_LABEL: Record<string, string> = {
     owner: t("ledgers.roleOwner"),
@@ -122,7 +136,7 @@ export async function DashboardShell({
 
       <div className="flex flex-1">
         <aside className="hidden md:flex flex-col w-56 border-r border-(--border) bg-(--card)/50 px-3 py-6 gap-1">
-          {NAV.map(({ href, label, icon: Icon }) => (
+          {NAV.map(({ href, label, iconComponent: Icon }) => (
             <Link
               key={href}
               href={href}
@@ -139,7 +153,7 @@ export async function DashboardShell({
         </main>
       </div>
 
-      <MobileNav primary={MOBILE_NAV} all={NAV} moreLabel={t("nav.more")} />
+      <MobileNav primary={MOBILE_NAV} all={NAV_FOR_CLIENT} moreLabel={t("nav.more")} />
     </div>
   );
 }
