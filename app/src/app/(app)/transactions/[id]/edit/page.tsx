@@ -1,8 +1,10 @@
 import { requireSession } from "@/lib/session";
 import { listCategories } from "@/lib/categories";
-import { TransactionForm } from "@/components/transaction-form";
+import { TransactionForm, type SplitMember } from "@/components/transaction-form";
 import { updateTransactionAction, deleteTransactionAction } from "../../actions";
 import { getServerSupabase } from "@/lib/supabase/server";
+import { listMembers } from "@/lib/members";
+import { listSplits } from "@/lib/splits";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -14,20 +16,46 @@ export default async function EditTransactionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { ledgerId } = await requireSession();
+  const { ledgerId, userId } = await requireSession();
 
   const sb = getServerSupabase();
   const { data: tx, error } = await sb
     .from("transactions")
-    .select("id, ledger_id, kind, amount, category_id, note, occurred_at")
+    .select("id, ledger_id, kind, amount, category_id, note, occurred_at, user_id")
     .eq("id", id)
     .eq("ledger_id", ledgerId)
     .maybeSingle();
   if (error) throw error;
   if (!tx) notFound();
 
+  const { data: ledger } = await sb
+    .from("ledgers")
+    .select("is_personal")
+    .eq("id", ledgerId)
+    .single();
+
   const categories = await listCategories(ledgerId);
   const boundAction = updateTransactionAction.bind(null, id);
+
+  let splitMembers: SplitMember[] | undefined;
+  let splitWith: string[] | undefined;
+  if (ledger && !ledger.is_personal) {
+    const [members, existingSplits] = await Promise.all([
+      listMembers(ledgerId),
+      listSplits(id),
+    ]);
+    splitMembers = members.map((m) => ({
+      userId: m.user_id,
+      name: m.user?.name ?? m.user?.email ?? "?",
+      email: m.user?.email ?? null,
+      image: m.user?.image ?? null,
+      isYou: m.user_id === userId,
+    }));
+    if (existingSplits.length > 0) {
+      // splitWith should include the payer + everyone with a stored share
+      splitWith = [tx.user_id, ...existingSplits.map((s) => s.user_id)];
+    }
+  }
 
   return (
     <div className="max-w-xl mx-auto">
@@ -41,6 +69,7 @@ export default async function EditTransactionPage({
       <h1 className="text-2xl font-bold mb-6">แก้ไขรายการ</h1>
       <TransactionForm
         categories={categories}
+        splitMembers={splitMembers}
         initial={{
           id: tx.id,
           kind: tx.kind,
@@ -48,6 +77,7 @@ export default async function EditTransactionPage({
           categoryId: tx.category_id,
           note: tx.note,
           occurredAt: tx.occurred_at,
+          splitWith,
         }}
         action={boundAction}
         submitLabel="อัปเดต"

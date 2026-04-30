@@ -3,7 +3,16 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Category, TxKind } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, formatTHB } from "@/lib/utils";
+import { Users } from "lucide-react";
+
+export type SplitMember = {
+  userId: string;
+  name: string;
+  email: string | null;
+  image: string | null;
+  isYou: boolean;
+};
 
 type Props = {
   categories: Category[];
@@ -14,7 +23,13 @@ type Props = {
     categoryId: string | null;
     note: string | null;
     occurredAt: string;
+    splitWith?: string[]; // user ids included in the split (including self)
   };
+  /**
+   * Members of the active ledger. Pass when the ledger is shared so the form
+   * can offer the "หารบิล" toggle. Must include the current user as `isYou: true`.
+   */
+  splitMembers?: SplitMember[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   submitLabel?: string;
 };
@@ -28,13 +43,43 @@ function toLocalInput(iso: string) {
   )}:${pad(d.getMinutes())}`;
 }
 
-export function TransactionForm({ categories, initial, action, submitLabel = "บันทึก" }: Props) {
+export function TransactionForm({
+  categories,
+  initial,
+  splitMembers,
+  action,
+  submitLabel = "บันทึก",
+}: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [kind, setKind] = useState<TxKind>(initial?.kind ?? "expense");
   const [error, setError] = useState<string | null>(null);
 
+  // Split state
+  const youId = splitMembers?.find((m) => m.isYou)?.userId ?? null;
+  const initialSelected = new Set<string>(
+    initial?.splitWith && initial.splitWith.length > 0
+      ? initial.splitWith
+      : youId
+      ? [youId]
+      : []
+  );
+  const [splitSelected, setSplitSelected] = useState<Set<string>>(initialSelected);
+  const [splitOn, setSplitOn] = useState<boolean>(
+    Boolean(initial?.splitWith && initial.splitWith.length > 1)
+  );
+  const [amountInput, setAmountInput] = useState<string>(
+    initial?.amount ? String(initial.amount) : ""
+  );
+
   const visibleCats = categories.filter((c) => c.kind === kind);
+  const canSplit = !!splitMembers && splitMembers.length > 1 && kind === "expense";
+
+  const splitIds = Array.from(splitSelected);
+  const numAmount = Number(amountInput) || 0;
+  const perPerson =
+    splitOn && splitIds.length > 0 ? numAmount / splitIds.length : 0;
+  const splitParam = splitOn && splitIds.length > 1 ? splitIds.join(",") : "";
 
   const defaultDate = initial?.occurredAt
     ? toLocalInput(initial.occurredAt)
@@ -93,12 +138,91 @@ export function TransactionForm({ categories, initial, action, submitLabel = "�
           step="0.01"
           min="0.01"
           required
-          defaultValue={initial?.amount}
+          value={amountInput}
+          onChange={(e) => setAmountInput(e.target.value)}
           placeholder="0.00"
           className="w-full px-4 py-3 rounded-xl border border-(--border) bg-(--card) text-2xl font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)"
           autoFocus={!initial}
         />
       </div>
+
+      {/* Split */}
+      {canSplit && (
+        <div className="rounded-xl border border-(--border) bg-(--card) p-3">
+          <input type="hidden" name="splitWith" value={splitParam} />
+          <label className="flex items-center justify-between gap-3 cursor-pointer">
+            <span className="flex items-center gap-2 text-sm font-medium">
+              <Users size={16} className="text-(--accent)" />
+              หารบิลกับสมาชิก
+            </span>
+            <input
+              type="checkbox"
+              checked={splitOn}
+              onChange={(e) => setSplitOn(e.target.checked)}
+              className="h-4 w-4 accent-[var(--accent)]"
+            />
+          </label>
+
+          {splitOn && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs text-(--muted)">
+                เลือกคนที่ร่วมหาร — ระบบหารเท่าๆ กัน
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {splitMembers!.map((m) => {
+                  const checked = splitSelected.has(m.userId);
+                  return (
+                    <label
+                      key={m.userId}
+                      className={cn(
+                        "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer transition",
+                        checked
+                          ? "border-(--accent) bg-(--accent)/10"
+                          : "border-(--border) bg-(--background) text-(--muted)"
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={checked}
+                        disabled={m.isYou}
+                        onChange={() => {
+                          setSplitSelected((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(m.userId)) next.delete(m.userId);
+                            else next.add(m.userId);
+                            // payer always counted in
+                            if (youId) next.add(youId);
+                            return next;
+                          });
+                        }}
+                      />
+                      {m.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={m.image}
+                          alt={m.name}
+                          className="h-5 w-5 rounded-full"
+                        />
+                      ) : (
+                        <span className="h-5 w-5 rounded-full bg-(--card) border border-(--border) text-[10px] flex items-center justify-center font-semibold">
+                          {m.name.slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                      <span>{m.isYou ? `${m.name} (คุณ)` : m.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {splitIds.length > 1 && perPerson > 0 && (
+                <p className="text-xs text-(--muted)">
+                  หาร {splitIds.length} คน คนละ ~{formatTHB(perPerson)}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Category */}
       <div>

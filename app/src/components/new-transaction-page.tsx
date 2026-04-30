@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TransactionForm } from "@/components/transaction-form";
+import { TransactionForm, type SplitMember } from "@/components/transaction-form";
 import { ReceiptUploader } from "@/components/receipt-uploader";
 import type { Category, TxKind } from "@/lib/types";
 import type { ParsedReceipt } from "@/lib/ocr";
@@ -18,10 +18,12 @@ export function NewTransactionPage({
   categories,
   action,
   ocrEnabled,
+  splitMembers,
 }: {
   categories: Category[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   ocrEnabled: boolean;
+  splitMembers?: SplitMember[];
 }) {
   // Use a key to force-remount the form when OCR fills it
   const [formKey, setFormKey] = useState(0);
@@ -47,6 +49,7 @@ export function NewTransactionPage({
         key={formKey}
         categories={categories}
         initial={initial}
+        splitMembers={splitMembers}
         action={action}
         submitLabel="บันทึก"
       />

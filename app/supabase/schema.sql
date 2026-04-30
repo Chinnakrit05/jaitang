@@ -165,6 +165,27 @@ create index if not exists idx_recur_ledger on public.recurring_transactions(led
 create index if not exists idx_recur_due on public.recurring_transactions(next_run_at) where active = true;
 
 -- ============================================================
+-- Transaction splits (หารบิล — ใครติดเงินคนจ่ายเท่าไหร่)
+--
+-- A transaction without rows here is "not split" — the payer (transactions.user_id)
+-- owns 100%. With rows, each row says "this user owes the payer `amount`".
+-- The payer typically does NOT have a row for themselves.
+-- ============================================================
+create table if not exists public.transaction_splits (
+  id uuid primary key default uuid_generate_v4(),
+  transaction_id uuid not null references public.transactions(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete cascade,
+  amount numeric(14, 2) not null check (amount > 0),
+  settled boolean not null default false,
+  settled_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique(transaction_id, user_id)
+);
+
+create index if not exists idx_splits_tx on public.transaction_splits(transaction_id);
+create index if not exists idx_splits_user on public.transaction_splits(user_id);
+
+-- ============================================================
 -- Helper: is the current user a member of this ledger?
 -- (auth.uid() returns the auth.users id; we map via users.id = auth.uid())
 -- ============================================================

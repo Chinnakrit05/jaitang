@@ -9,6 +9,7 @@ import {
   BookOpen,
   PiggyBank,
   Repeat,
+  Scale,
 } from "lucide-react";
 
 const NAV = [
@@ -16,6 +17,7 @@ const NAV = [
   { href: "/transactions", label: "รายการ", icon: ListOrdered },
   { href: "/budgets", label: "งบประมาณ", icon: PiggyBank },
   { href: "/recurring", label: "รายการประจำ", icon: Repeat },
+  { href: "/balances", label: "หารบิล", icon: Scale },
   { href: "/categories", label: "หมวดหมู่", icon: FolderTree },
   { href: "/ledgers", label: "สมุดบัญชี", icon: BookOpen },
 ];

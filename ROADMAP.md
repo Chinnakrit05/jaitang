@@ -29,7 +29,7 @@
 - [x] Budgets + alerts (per-category monthly budget + progress bars)
 - [x] Recurring transactions (daily/weekly/monthly + manual apply-due)
 - [x] Export CSV (with current filter respected)
-- [ ] Splitwise mode
+- [x] Splitwise mode (equal split + net balances + settle-between)
 - [x] Receipt OCR (Claude Vision; requires ANTHROPIC_API_KEY, gracefully hidden if absent)
 - [ ] Web push notifications
 - [x] Activity log / "by [user]" attribution (shown in shared ledgers)
