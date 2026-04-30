@@ -258,6 +258,15 @@
     "languageEnglish": "English",
     "unknownName": "(unknown)"
   },
+  "navbarStat": {
+    "label": "Period summary",
+    "periods": {
+      "today": "Today",
+      "week": "This week",
+      "month": "This month",
+      "year": "This year"
+    }
+  },
   "backup": {
     "section": "Backup & restore",
     "sectionHint": "Download every ledger you can see (yours + shared) as a JSON file — restore anytime.",

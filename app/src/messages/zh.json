@@ -258,6 +258,15 @@
     "languageEnglish": "English",
     "unknownName": "(未知)"
   },
+  "navbarStat": {
+    "label": "周期统计",
+    "periods": {
+      "today": "今天",
+      "week": "本周",
+      "month": "本月",
+      "year": "今年"
+    }
+  },
   "backup": {
     "section": "备份与恢复",
     "sectionHint": "将所有账本(你的 + 共享的)下载为 JSON 文件 — 随时可恢复。",

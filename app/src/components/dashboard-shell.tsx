@@ -3,6 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
+import { NavbarStat } from "@/components/navbar-stat";
+import { sumPeriod } from "@/lib/transactions";
+import { getNavbarPeriod, periodRange } from "@/lib/period";
 import {
   LayoutDashboard,
   ListOrdered,
@@ -33,13 +36,27 @@ export async function DashboardShell({
   userName,
   userImage,
   activeLedger,
+  ledgerCurrency = "THB",
 }: {
   children: React.ReactNode;
   userName?: string | null;
   userImage?: string | null;
   activeLedger?: ActiveLedger | null;
+  ledgerCurrency?: string;
 }) {
   const t = await getTranslations();
+
+  // Period stat for the navbar — only when a ledger is active
+  const period = await getNavbarPeriod();
+  let periodStat: { income: number; expense: number } | null = null;
+  if (activeLedger) {
+    const { from, to } = periodRange(period);
+    try {
+      periodStat = await sumPeriod(activeLedger.id, from, to);
+    } catch {
+      periodStat = null;
+    }
+  }
 
   // Each entry has both:
   // - `iconComponent` — the actual Lucide function used by the desktop sidebar (server-rendered)
@@ -102,7 +119,15 @@ export async function DashboardShell({
           </Link>
         )}
 
-        <div className="flex items-center gap-3 ml-auto">
+        <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+          {periodStat && (
+            <NavbarStat
+              income={periodStat.income}
+              expense={periodStat.expense}
+              period={period}
+              currency={ledgerCurrency}
+            />
+          )}
           <ThemeToggle />
           {userImage ? (
             // eslint-disable-next-line @next/next/no-img-element

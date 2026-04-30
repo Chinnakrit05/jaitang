@@ -124,6 +124,33 @@ export async function deleteTransaction(id: string) {
 }
 
 /**
+ * Sum income + expense in [from, to). Lightweight — just totals,
+ * no per-category breakdown. Used by the navbar period stat.
+ */
+export async function sumPeriod(
+  ledgerId: string,
+  from: Date,
+  to: Date
+): Promise<{ income: number; expense: number }> {
+  const sb = getServerSupabase();
+  const { data, error } = await sb
+    .from("transactions")
+    .select("kind, amount")
+    .eq("ledger_id", ledgerId)
+    .gte("occurred_at", from.toISOString())
+    .lt("occurred_at", to.toISOString())
+    .limit(20000);
+  if (error) throw error;
+  let income = 0;
+  let expense = 0;
+  for (const r of data ?? []) {
+    if (r.kind === "income") income += Number(r.amount);
+    else expense += Number(r.amount);
+  }
+  return { income, expense };
+}
+
+/**
  * Aggregate a single ledger's month: totals + by category + by day.
  * Computed in JS for MVP simplicity; small n. Move to SQL view later.
  */

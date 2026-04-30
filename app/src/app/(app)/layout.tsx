@@ -19,6 +19,7 @@ export default async function DashboardLayout({
         isPersonal: ledger.is_personal,
         role,
       }}
+      ledgerCurrency={ledger.currency}
     >
       {children}
     </DashboardShell>

@@ -258,6 +258,15 @@
     "languageEnglish": "English",
     "unknownName": "(不明)"
   },
+  "navbarStat": {
+    "label": "期間サマリー",
+    "periods": {
+      "today": "今日",
+      "week": "今週",
+      "month": "今月",
+      "year": "今年"
+    }
+  },
   "backup": {
     "section": "バックアップと復元",
     "sectionHint": "見えている全ての帳簿(あなたのもの + 共有)を JSON ファイルとしてダウンロード — いつでも復元可能。",
