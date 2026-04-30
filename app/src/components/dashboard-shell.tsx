@@ -12,6 +12,7 @@ import {
   Repeat,
   Scale,
   Settings,
+  Sparkles,
 } from "lucide-react";
 
 type ActiveLedger = {
@@ -37,6 +38,7 @@ export async function DashboardShell({
 
   const NAV = [
     { href: "/dashboard", label: t("nav.home"), icon: LayoutDashboard },
+    { href: "/quick", label: t("nav.quick"), icon: Sparkles },
     { href: "/transactions", label: t("nav.transactions"), icon: ListOrdered },
     { href: "/budgets", label: t("nav.budgets"), icon: PiggyBank },
     { href: "/recurring", label: t("nav.recurring"), icon: Repeat },
@@ -48,8 +50,8 @@ export async function DashboardShell({
 
   const MOBILE_NAV = [
     { href: "/dashboard", label: t("nav.homeShort"), icon: LayoutDashboard },
+    { href: "/quick", label: t("nav.quickShort"), icon: Sparkles },
     { href: "/transactions", label: t("nav.transactions"), icon: ListOrdered },
-    { href: "/budgets", label: t("nav.budgetsShort"), icon: PiggyBank },
     { href: "/ledgers", label: t("nav.ledgersShort"), icon: BookOpen },
   ];
 

@@ -38,6 +38,7 @@
   },
   "nav": {
     "home": "หน้าหลัก",
+    "quick": "พิมพ์เร็ว",
     "transactions": "รายการ",
     "budgets": "งบประมาณ",
     "recurring": "รายการประจำ",
@@ -46,6 +47,7 @@
     "ledgers": "สมุดบัญชี",
     "settings": "ตั้งค่า",
     "homeShort": "หลัก",
+    "quickShort": "เร็ว",
     "budgetsShort": "งบ",
     "ledgersShort": "สมุด"
   },
@@ -253,6 +255,21 @@
     "languageThai": "ไทย",
     "languageEnglish": "English",
     "unknownName": "(ไม่ทราบชื่อ)"
+  },
+  "quick": {
+    "title": "พิมพ์เร็ว ✨",
+    "subtitle": "พิมพ์อะไรก็ได้ — AI จะอ่านและบันทึกให้",
+    "hint": "เช่น \"30 bts\", \"ค่ากาแฟ 65\", \"เงินเดือน 30000\" — กด Enter ส่งได้เลย",
+    "placeholder": "30 bts",
+    "enterHint": "กด Enter เพื่อบันทึก, Shift+Enter ขึ้นบรรทัดใหม่",
+    "submit": "บันทึก",
+    "thinking": "กำลังคิด…",
+    "examples": "ตัวอย่าง",
+    "savedTitle": "บันทึกแล้ว",
+    "recent": "ล่าสุด",
+    "confidenceMedium": "AI ไม่ค่อยมั่นใจ — ตรวจสอบรายการอีกครั้ง",
+    "confidenceLow": "AI เดาเอา — ลองแก้ที่หน้าแก้ไขรายการ",
+    "notConfigured": "ฟีเจอร์นี้ต้องการ ANTHROPIC_API_KEY — ดู SETUP.md"
   },
   "push": {
     "notConfigured": "ฟีเจอร์แจ้งเตือนยังไม่เปิดใช้งาน — ผู้ดูแลต้องตั้ง VAPID keys ใน env ก่อน",

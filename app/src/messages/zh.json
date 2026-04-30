@@ -38,6 +38,7 @@
   },
   "nav": {
     "home": "首页",
+    "quick": "快速记账",
     "transactions": "记录",
     "budgets": "预算",
     "recurring": "定期",
@@ -46,6 +47,7 @@
     "ledgers": "账本",
     "settings": "设置",
     "homeShort": "首页",
+    "quickShort": "快速",
     "budgetsShort": "预算",
     "ledgersShort": "账本"
   },
@@ -253,6 +255,21 @@
     "languageThai": "ไทย",
     "languageEnglish": "English",
     "unknownName": "(未知)"
+  },
+  "quick": {
+    "title": "快速记账 ✨",
+    "subtitle": "随便输入 — AI 会解析并保存为交易记录。",
+    "hint": "例如「30 bts」「咖啡 65」「工资 30000」— 按 Enter 发送。",
+    "placeholder": "30 bts",
+    "enterHint": "Enter 保存,Shift+Enter 换行",
+    "submit": "保存",
+    "thinking": "思考中…",
+    "examples": "试试",
+    "savedTitle": "已保存",
+    "recent": "最近",
+    "confidenceMedium": "AI 不太确定 — 请再核对一下。",
+    "confidenceLow": "AI 是猜的 — 请到编辑页修正。",
+    "notConfigured": "此功能需要 ANTHROPIC_API_KEY — 请见 SETUP.md。"
   },
   "push": {
     "notConfigured": "通知功能尚未启用 — 管理员需先在环境变量中设置 VAPID 密钥。",

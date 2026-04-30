@@ -38,6 +38,7 @@
   },
   "nav": {
     "home": "Home",
+    "quick": "Quick add",
     "transactions": "Transactions",
     "budgets": "Budgets",
     "recurring": "Recurring",
@@ -46,6 +47,7 @@
     "ledgers": "Ledgers",
     "settings": "Settings",
     "homeShort": "Home",
+    "quickShort": "Quick",
     "budgetsShort": "Budget",
     "ledgersShort": "Ledger"
   },
@@ -253,6 +255,21 @@
     "languageThai": "ไทย",
     "languageEnglish": "English",
     "unknownName": "(unknown)"
+  },
+  "quick": {
+    "title": "Quick add ✨",
+    "subtitle": "Type anything — AI parses it and saves the transaction.",
+    "hint": "e.g. \"30 bts\", \"coffee 65\", \"salary 30000\" — press Enter to send.",
+    "placeholder": "30 bts",
+    "enterHint": "Enter to save, Shift+Enter for newline",
+    "submit": "Save",
+    "thinking": "Thinking…",
+    "examples": "Try",
+    "savedTitle": "Saved",
+    "recent": "Recent",
+    "confidenceMedium": "AI wasn't fully sure — please double-check.",
+    "confidenceLow": "AI guessed — open the edit page to fix.",
+    "notConfigured": "This feature needs ANTHROPIC_API_KEY — see SETUP.md."
   },
   "push": {
     "notConfigured": "Notifications aren't enabled yet — admin must set VAPID keys in env first.",
