@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MobileNav } from "@/components/mobile-nav";
 import {
   LayoutDashboard,
   ListOrdered,
@@ -138,20 +139,7 @@ export async function DashboardShell({
         </main>
       </div>
 
-      <nav className="md:hidden border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20">
-        <div className="flex justify-around py-2">
-          {MOBILE_NAV.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-col items-center gap-0.5 px-3 py-1 text-xs text-(--muted) hover:text-(--foreground)"
-            >
-              <Icon size={20} />
-              {label}
-            </Link>
-          ))}
-        </div>
-      </nav>
+      <MobileNav primary={MOBILE_NAV} all={NAV} moreLabel={t("nav.more")} />
     </div>
   );
 }

@@ -50,7 +50,8 @@
     "homeShort": "Home",
     "quickShort": "Quick",
     "budgetsShort": "Budget",
-    "ledgersShort": "Ledger"
+    "ledgersShort": "Ledger",
+    "more": "More"
   },
   "landing": {
     "title": "Jaitang",
