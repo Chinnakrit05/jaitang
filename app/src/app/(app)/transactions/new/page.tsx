@@ -2,7 +2,6 @@ import { requireSession } from "@/lib/session";
 import { listCategories } from "@/lib/categories";
 import { NewTransactionPage } from "@/components/new-transaction-page";
 import { createTransactionAction } from "../actions";
-import { getServerSupabase } from "@/lib/supabase/server";
 import { listMembers } from "@/lib/members";
 import type { SplitMember } from "@/components/transaction-form";
 import { getTranslations } from "next-intl/server";
@@ -10,29 +9,28 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export default async function NewTransaction() {
-  const { ledgerId, userId } = await requireSession();
-  const categories = await listCategories(ledgerId);
   const ocrEnabled = !!process.env.ANTHROPIC_API_KEY;
-  const t = await getTranslations();
 
-  const sb = getServerSupabase();
-  const { data: ledger } = await sb
-    .from("ledgers")
-    .select("is_personal")
-    .eq("id", ledgerId)
-    .single();
+  const [{ ledgerId, ledger, userId }, t] = await Promise.all([
+    requireSession(),
+    getTranslations(),
+  ]);
 
-  let splitMembers: SplitMember[] | undefined;
-  if (ledger && !ledger.is_personal) {
-    const members = await listMembers(ledgerId);
-    splitMembers = members.map((m) => ({
-      userId: m.user_id,
-      name: m.user?.name ?? m.user?.email ?? "?",
-      email: m.user?.email ?? null,
-      image: m.user?.image ?? null,
-      isYou: m.user_id === userId,
-    }));
-  }
+  // Fetch categories + members in parallel; members only for shared ledgers
+  const [categories, members] = await Promise.all([
+    listCategories(ledgerId),
+    ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
+  ]);
+
+  const splitMembers: SplitMember[] | undefined = members
+    ? members.map((m) => ({
+        userId: m.user_id,
+        name: m.user?.name ?? m.user?.email ?? "?",
+        email: m.user?.email ?? null,
+        image: m.user?.image ?? null,
+        isYou: m.user_id === userId,
+      }))
+    : undefined;
 
   return (
     <div className="max-w-xl mx-auto">

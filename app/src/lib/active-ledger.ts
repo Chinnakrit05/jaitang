@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { ensurePersonalLedger } from "@/lib/ledgers";
@@ -11,8 +12,9 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
  * 2. Otherwise fall back to the user's personal ledger.
  *
  * Always validates membership — never trusts the cookie blindly.
+ * Cached per request — multiple components calling it pay only one trip.
  */
-export async function resolveActiveLedger(userId: string): Promise<string> {
+export const resolveActiveLedger = cache(async (userId: string): Promise<string> => {
   const store = await cookies();
   const cookieValue = store.get(COOKIE)?.value;
 
@@ -36,7 +38,7 @@ export async function resolveActiveLedger(userId: string): Promise<string> {
   }
 
   return ensurePersonalLedger(userId);
-}
+});
 
 export async function setActiveLedgerCookie(ledgerId: string) {
   const store = await cookies();

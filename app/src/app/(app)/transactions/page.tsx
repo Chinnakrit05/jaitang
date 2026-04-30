@@ -6,7 +6,6 @@ import { TransactionFilters } from "@/components/transaction-filters";
 import { resolveRange } from "@/lib/date-range";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
-import { getServerSupabase } from "@/lib/supabase/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Download, Plus } from "lucide-react";
@@ -17,21 +16,16 @@ export default async function TransactionsPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const sp = await searchParams;
-  const t = await getTranslations();
-  const locale = await getLocale();
+  const [sp, { ledgerId, ledger }, t, locale] = await Promise.all([
+    searchParams,
+    requireSession(),
+    getTranslations(),
+    getLocale(),
+  ]);
   const fmtLocale = intlLocale(locale);
-  const { ledgerId } = await requireSession();
   const range = resolveRange(sp.range);
-
-  const sb = getServerSupabase();
-  const { data: ledger } = await sb
-    .from("ledgers")
-    .select("is_personal, currency")
-    .eq("id", ledgerId)
-    .single();
-  const isShared = ledger ? !ledger.is_personal : false;
-  const currency = ledger?.currency ?? "THB";
+  const isShared = !ledger.is_personal;
+  const currency = ledger.currency;
 
   const kindParam =
     sp.kind === "income" || sp.kind === "expense" ? (sp.kind as TxKind) : undefined;
@@ -117,7 +111,7 @@ export default async function TransactionsPage({
         />
       </div>
 
-      <TransactionList items={items} showAttribution={isShared} />
+      <TransactionList items={items} showAttribution={isShared} currency={currency} />
     </div>
   );
 }

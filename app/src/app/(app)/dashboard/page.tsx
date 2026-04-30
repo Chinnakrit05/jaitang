@@ -1,4 +1,3 @@
-import { auth } from "@/auth";
 import { TrendingDown, TrendingUp, Wallet, Plus } from "lucide-react";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -8,24 +7,16 @@ import { TransactionList } from "@/components/transaction-list";
 import { ExpenseByCategoryChart, DailyTrendChart } from "@/components/dashboard-charts";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
-import { getServerSupabase } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
-  const session = await auth();
-  const t = await getTranslations();
-  const locale = await getLocale();
+  const [{ ledgerId, ledger, user }, t, locale] = await Promise.all([
+    requireSession(),
+    getTranslations(),
+    getLocale(),
+  ]);
   const fmtLocale = intlLocale(locale);
-  const name = session?.user?.name?.split(" ")[0] ?? "you";
-
-  const { ledgerId } = await requireSession();
-
-  const sb = getServerSupabase();
-  const { data: ledger } = await sb
-    .from("ledgers")
-    .select("currency, is_personal")
-    .eq("id", ledgerId)
-    .single();
-  const currency = ledger?.currency ?? "THB";
+  const name = user.name?.split(" ")[0] ?? "you";
+  const currency = ledger.currency;
 
   const now = new Date();
   const [summary, recent] = await Promise.all([
@@ -103,7 +94,11 @@ export default async function DashboardPage() {
             {t("dashboard.viewAll")}
           </Link>
         </div>
-        <TransactionList items={recent} showAttribution={ledger ? !ledger.is_personal : false} />
+        <TransactionList
+          items={recent}
+          showAttribution={!ledger.is_personal}
+          currency={currency}
+        />
       </section>
     </div>
   );

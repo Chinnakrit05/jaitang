@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { resolveActiveLedger } from "@/lib/active-ledger";
@@ -12,18 +13,35 @@ export type SessionUser = {
   image?: string | null;
 };
 
+export type ActiveLedgerInfo = {
+  id: string;
+  name: string;
+  icon: string | null;
+  is_personal: boolean;
+  currency: string;
+};
+
 export type SessionContext = {
   userId: string;
   ledgerId: string;
   role: LedgerRole;
   user: SessionUser;
+  ledger: ActiveLedgerInfo;
 };
 
 /**
- * Protect a server route. Returns userId, the active ledger, and the role
- * the user has on it. Always validates ledger membership.
+ * Protect a server route. Returns userId, the active ledger (full object),
+ * and the user's role on it.
+ *
+ * Wrapped in React's `cache()` so layout + page + nested components inside
+ * the same request all share one resolution. Without this, every protected
+ * page hit Auth + 2-3 Supabase round trips repeatedly.
+ *
+ * Single ledger fetch returns the columns both layout AND pages need
+ * (id, name, icon, currency, is_personal, owner_id) — we no longer query
+ * the ledger again from the layout.
  */
-export async function requireSession(): Promise<SessionContext> {
+export const requireSession = cache(async (): Promise<SessionContext> => {
   const session = await auth();
   const userId = (session?.user as { id?: string } | undefined)?.id;
   if (!userId) redirect("/login");
@@ -31,14 +49,18 @@ export async function requireSession(): Promise<SessionContext> {
   const ledgerId = await resolveActiveLedger(userId);
 
   const sb = getServerSupabase();
-  const { data: owned } = await sb
+  const { data: ledgerRow, error: lErr } = await sb
     .from("ledgers")
-    .select("owner_id")
+    .select("id, name, icon, currency, is_personal, owner_id")
     .eq("id", ledgerId)
     .single();
+  if (lErr || !ledgerRow) {
+    // Ledger we cookied is gone — bail to a fresh personal ledger next render.
+    redirect("/ledgers");
+  }
 
   let role: LedgerRole = "viewer";
-  if (owned?.owner_id === userId) {
+  if (ledgerRow.owner_id === userId) {
     role = "owner";
   } else {
     const { data: member } = await sb
@@ -50,8 +72,20 @@ export async function requireSession(): Promise<SessionContext> {
     role = (member?.role as LedgerRole) ?? "viewer";
   }
 
-  return { userId, ledgerId, role, user: session!.user as SessionUser };
-}
+  return {
+    userId,
+    ledgerId,
+    role,
+    user: session!.user as SessionUser,
+    ledger: {
+      id: ledgerRow.id,
+      name: ledgerRow.name,
+      icon: ledgerRow.icon,
+      is_personal: ledgerRow.is_personal,
+      currency: ledgerRow.currency ?? "THB",
+    },
+  };
+});
 
 export function assertWritable(role: LedgerRole) {
   if (role === "viewer") {

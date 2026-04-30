@@ -3,12 +3,14 @@ import { requireSession } from "@/lib/session";
 import { listTransactions } from "@/lib/transactions";
 import { TransactionList } from "@/components/transaction-list";
 import { QuickAddPanel } from "@/components/quick-add-panel";
-import { getServerSupabase } from "@/lib/supabase/server";
 
 export default async function QuickAddPage() {
-  const { ledgerId } = await requireSession();
-  const t = await getTranslations();
   const enabled = !!process.env.ANTHROPIC_API_KEY;
+
+  const [{ ledgerId, ledger }, t] = await Promise.all([
+    requireSession(),
+    getTranslations(),
+  ]);
 
   if (!enabled) {
     return (
@@ -20,13 +22,6 @@ export default async function QuickAddPage() {
       </div>
     );
   }
-
-  const sb = getServerSupabase();
-  const { data: ledger } = await sb
-    .from("ledgers")
-    .select("is_personal")
-    .eq("id", ledgerId)
-    .single();
 
   const recent = await listTransactions({ ledgerId, limit: 5 });
 
@@ -43,7 +38,11 @@ export default async function QuickAddPage() {
         <h2 className="text-sm font-semibold text-(--muted) mb-2 px-1">
           {t("quick.recent")}
         </h2>
-        <TransactionList items={recent} showAttribution={ledger ? !ledger.is_personal : false} />
+        <TransactionList
+          items={recent}
+          showAttribution={!ledger.is_personal}
+          currency={ledger.currency}
+        />
       </section>
     </div>
   );
