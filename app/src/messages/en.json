@@ -258,6 +258,19 @@
     "languageEnglish": "English",
     "unknownName": "(unknown)"
   },
+  "backup": {
+    "section": "Backup & restore",
+    "sectionHint": "Download every ledger you can see (yours + shared) as a JSON file — restore anytime.",
+    "downloadButton": "Download backup",
+    "downloadHint": "📦 JSON file containing every ledger, transaction, category, budget, recurring rule, and split.",
+    "restoreButton": "Restore from file",
+    "restoreHint": "⚠️ Creates new ledgers and rows — never overwrites existing data.",
+    "restoreConfirm": "Restore from a backup file? New ledgers/rows will be created. Existing data is not removed.",
+    "restoring": "Restoring…",
+    "restoreDoneTitle": "Restored",
+    "restoreSummary": "{ledgers} ledgers • {transactions} transactions • {categories} categories • {budgets} budgets • {recurring} recurring",
+    "skipped": "Skipped {count} ledger(s) you don't own"
+  },
   "import": {
     "title": "Import from Numbers ✨",
     "subtitle": "Upload a ZIP or CSV from Apple Numbers — AI maps categories for you.",

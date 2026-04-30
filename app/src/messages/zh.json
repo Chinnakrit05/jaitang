@@ -258,6 +258,19 @@
     "languageEnglish": "English",
     "unknownName": "(未知)"
   },
+  "backup": {
+    "section": "备份与恢复",
+    "sectionHint": "将所有账本(你的 + 共享的)下载为 JSON 文件 — 随时可恢复。",
+    "downloadButton": "下载备份",
+    "downloadHint": "📦 JSON 文件包含所有账本、交易、分类、预算、定期规则和分摊。",
+    "restoreButton": "从文件恢复",
+    "restoreHint": "⚠️ 会创建新的账本和行 — 不会覆盖现有数据。",
+    "restoreConfirm": "从备份文件恢复?会创建新的账本/行,现有数据不会被删除。",
+    "restoring": "恢复中…",
+    "restoreDoneTitle": "已恢复",
+    "restoreSummary": "{ledgers} 个账本 • {transactions} 条交易 • {categories} 个分类 • {budgets} 个预算 • {recurring} 个定期",
+    "skipped": "已跳过 {count} 个非你拥有的账本"
+  },
   "import": {
     "title": "从 Numbers 导入 ✨",
     "subtitle": "上传 Apple Numbers 的 ZIP 或 CSV — AI 自动匹配分类。",

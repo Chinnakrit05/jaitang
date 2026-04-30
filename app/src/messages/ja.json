@@ -258,6 +258,19 @@
     "languageEnglish": "English",
     "unknownName": "(不明)"
   },
+  "backup": {
+    "section": "バックアップと復元",
+    "sectionHint": "見えている全ての帳簿(あなたのもの + 共有)を JSON ファイルとしてダウンロード — いつでも復元可能。",
+    "downloadButton": "バックアップをダウンロード",
+    "downloadHint": "📦 JSON ファイルには全ての帳簿・取引・カテゴリ・予算・定期ルール・割り勘が含まれます。",
+    "restoreButton": "ファイルから復元",
+    "restoreHint": "⚠️ 新しい帳簿と行を作成します — 既存データは上書きしません。",
+    "restoreConfirm": "バックアップファイルから復元しますか?新しい帳簿/行を作成しますが、既存データは削除されません。",
+    "restoring": "復元中…",
+    "restoreDoneTitle": "復元しました",
+    "restoreSummary": "帳簿 {ledgers} • 取引 {transactions} • カテゴリ {categories} • 予算 {budgets} • 定期 {recurring}",
+    "skipped": "所有していない帳簿 {count} 個をスキップ"
+  },
   "import": {
     "title": "Numbers からインポート ✨",
     "subtitle": "Apple Numbers の ZIP または CSV をアップロード — AI がカテゴリを自動マッピングします。",

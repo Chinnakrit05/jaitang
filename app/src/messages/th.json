@@ -258,6 +258,19 @@
     "languageEnglish": "English",
     "unknownName": "(ไม่ทราบชื่อ)"
   },
+  "backup": {
+    "section": "สำรองข้อมูล / กู้คืน",
+    "sectionHint": "ดาวน์โหลดข้อมูลทุกสมุด (ของคุณ + ที่แชร์) เป็นไฟล์ JSON เก็บไว้ — กู้คืนได้ทุกเมื่อ",
+    "downloadButton": "ดาวน์โหลด backup",
+    "downloadHint": "📦 ไฟล์ JSON รวมทุกสมุด, รายการ, หมวด, งบ, รายการประจำ, การหารบิล",
+    "restoreButton": "กู้คืนจากไฟล์",
+    "restoreHint": "⚠️ จะสร้างสมุด/รายการใหม่ทั้งหมด (ไม่เขียนทับของเดิม)",
+    "restoreConfirm": "กู้คืนจากไฟล์ backup? จะสร้างสมุด/รายการใหม่ทั้งหมด (ของเดิมไม่ถูกลบ)",
+    "restoring": "กำลังกู้คืน…",
+    "restoreDoneTitle": "กู้คืนสำเร็จ",
+    "restoreSummary": "สมุด {ledgers} เล่ม • รายการ {transactions} • หมวด {categories} • งบ {budgets} • ประจำ {recurring}",
+    "skipped": "ข้าม {count} สมุดที่ไม่ได้เป็นเจ้าของ"
+  },
   "import": {
     "title": "นำเข้าจาก Numbers ✨",
     "subtitle": "อัปโหลดไฟล์ ZIP / CSV จาก Apple Numbers — ระบบใช้ AI map หมวดให้",

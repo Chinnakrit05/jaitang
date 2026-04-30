@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PushToggle } from "@/components/push-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { BackupSection } from "@/components/backup-section";
 import { signOut } from "@/auth";
 import { LogOut } from "lucide-react";
 
@@ -72,6 +73,12 @@ export default async function SettingsPage() {
           <ThemeToggle />
           <span className="text-sm text-(--muted)">{t("settings.themeHint")}</span>
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
+        <h2 className="font-semibold">{t("backup.section")}</h2>
+        <p className="text-sm text-(--muted)">{t("backup.sectionHint")}</p>
+        <BackupSection />
       </section>
     </div>
   );
