@@ -7,13 +7,24 @@ import {
   FolderTree,
   LogOut,
   BookOpen,
+  PiggyBank,
+  Repeat,
 } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "หน้าหลัก", icon: LayoutDashboard },
   { href: "/transactions", label: "รายการ", icon: ListOrdered },
+  { href: "/budgets", label: "งบประมาณ", icon: PiggyBank },
+  { href: "/recurring", label: "รายการประจำ", icon: Repeat },
   { href: "/categories", label: "หมวดหมู่", icon: FolderTree },
   { href: "/ledgers", label: "สมุดบัญชี", icon: BookOpen },
+];
+
+const MOBILE_NAV = [
+  { href: "/dashboard", label: "หลัก", icon: LayoutDashboard },
+  { href: "/transactions", label: "รายการ", icon: ListOrdered },
+  { href: "/budgets", label: "งบ", icon: PiggyBank },
+  { href: "/ledgers", label: "สมุด", icon: BookOpen },
 ];
 
 const ROLE_LABEL: Record<string, string> = {
@@ -117,7 +128,7 @@ export function DashboardShell({
 
       <nav className="md:hidden border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20">
         <div className="flex justify-around py-2">
-          {NAV.map(({ href, label, icon: Icon }) => (
+          {MOBILE_NAV.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}

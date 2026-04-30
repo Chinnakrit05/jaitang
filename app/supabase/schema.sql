@@ -117,6 +117,54 @@ create index if not exists idx_invites_code on public.invites(code);
 create index if not exists idx_invites_ledger on public.invites(ledger_id);
 
 -- ============================================================
+-- Budgets (งบประมาณต่อหมวดต่อเดือน)
+-- ============================================================
+create type budget_period as enum ('month');
+
+create table if not exists public.budgets (
+  id uuid primary key default uuid_generate_v4(),
+  ledger_id uuid not null references public.ledgers(id) on delete cascade,
+  category_id uuid not null references public.categories(id) on delete cascade,
+  amount numeric(14, 2) not null check (amount > 0),
+  period budget_period not null default 'month',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(ledger_id, category_id, period)
+);
+
+create index if not exists idx_budgets_ledger on public.budgets(ledger_id);
+
+drop trigger if exists trg_budgets_updated_at on public.budgets;
+create trigger trg_budgets_updated_at
+before update on public.budgets
+for each row execute function set_updated_at();
+
+-- ============================================================
+-- Recurring transactions (รายการประจำ — เช่น ค่าเช่า ค่าเน็ต)
+-- ============================================================
+create type recur_period as enum ('daily', 'weekly', 'monthly');
+
+create table if not exists public.recurring_transactions (
+  id uuid primary key default uuid_generate_v4(),
+  ledger_id uuid not null references public.ledgers(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete restrict,
+  category_id uuid references public.categories(id) on delete set null,
+  kind tx_kind not null,
+  amount numeric(14, 2) not null check (amount > 0),
+  note text,
+  period recur_period not null default 'monthly',
+  day_of_month int,                       -- 1..31 for monthly (clamps to month length)
+  day_of_week int,                        -- 0..6 (Sun..Sat) for weekly
+  next_run_at timestamptz not null,
+  last_run_at timestamptz,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_recur_ledger on public.recurring_transactions(ledger_id);
+create index if not exists idx_recur_due on public.recurring_transactions(next_run_at) where active = true;
+
+-- ============================================================
 -- Helper: is the current user a member of this ledger?
 -- (auth.uid() returns the auth.users id; we map via users.id = auth.uid())
 -- ============================================================

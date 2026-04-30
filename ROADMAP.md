@@ -26,12 +26,13 @@
 - [ ] Activity feed
 
 ## Phase 3 — Polish & Advanced (ตามความต้องการ)
-- [ ] Budgets + alerts
-- [ ] Recurring transactions
-- [ ] Export
+- [x] Budgets + alerts (per-category monthly budget + progress bars)
+- [x] Recurring transactions (daily/weekly/monthly + manual apply-due)
+- [x] Export CSV (with current filter respected)
 - [ ] Splitwise mode
 - [ ] Receipt OCR
-- [ ] Notifications
+- [ ] Web push notifications
+- [ ] Activity log / "by [user]" attribution
 
 ## ของที่ต้องเตรียมจากพี่ฟลุ๊ค
 
