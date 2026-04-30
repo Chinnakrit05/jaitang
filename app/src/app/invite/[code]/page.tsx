@@ -51,14 +51,11 @@ export default async function AcceptInvitePage({
                   {invite.ledger?.name ?? t("ledgers.title")}
                 </h1>
                 <p className="text-sm text-(--muted)">
-                  {t.rich("invites.invitedAs", {
-                    role: () => (
-                      <strong>
-                        {invite.role === "editor"
-                          ? t("ledgers.roleEditor")
-                          : t("ledgers.roleViewer")}
-                      </strong>
-                    ),
+                  {t("invites.invitedAs", {
+                    role:
+                      invite.role === "editor"
+                        ? t("ledgers.roleEditor")
+                        : t("ledgers.roleViewer"),
                   })}
                 </p>
               </div>

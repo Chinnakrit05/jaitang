@@ -25,13 +25,7 @@ export default async function LedgersPage() {
       <CreateLedgerForm />
 
       <p className="text-xs text-(--muted)">
-        {t.rich("ledgers.joinHint", {
-          pattern: () => (
-            <code className="px-1 py-0.5 rounded bg-(--card) border border-(--border)">
-              /invite/&lt;code&gt;
-            </code>
-          ),
-        })}
+        {t("ledgers.joinHint", { pattern: "/invite/<code>" })}
       </p>
     </div>
   );
