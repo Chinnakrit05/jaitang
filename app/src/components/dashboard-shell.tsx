@@ -13,6 +13,7 @@ import {
   Scale,
   Settings,
   Sparkles,
+  Upload,
 } from "lucide-react";
 
 type ActiveLedger = {
@@ -45,6 +46,7 @@ export async function DashboardShell({
     { href: "/balances", label: t("nav.balances"), icon: Scale },
     { href: "/categories", label: t("nav.categories"), icon: FolderTree },
     { href: "/ledgers", label: t("nav.ledgers"), icon: BookOpen },
+    { href: "/import", label: t("nav.import"), icon: Upload },
     { href: "/settings", label: t("nav.settings"), icon: Settings },
   ];
 
