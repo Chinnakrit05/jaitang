@@ -19,11 +19,16 @@ export type LedgerSummary = {
 export async function ensurePersonalLedger(userId: string) {
   const sb = getServerSupabase();
 
+  // .order + .limit(1) + .maybeSingle is defensive: even if duplicates somehow
+  // exist (pre-uniq-index data, manual inserts), we deterministically pick the
+  // oldest and never throw PGRST116.
   const { data: existing, error: lookupErr } = await sb
     .from("ledgers")
     .select("id")
     .eq("owner_id", userId)
     .eq("is_personal", true)
+    .order("created_at", { ascending: true })
+    .limit(1)
     .maybeSingle();
 
   if (lookupErr) throw lookupErr;
@@ -42,7 +47,22 @@ export async function ensurePersonalLedger(userId: string) {
     .select("id")
     .single();
 
-  if (createErr) throw createErr;
+  if (createErr) {
+    // Lost the race with another concurrent insert — partial unique index
+    // (ledgers WHERE is_personal=true) rejected us. Re-read what survived.
+    if (createErr.code === "23505") {
+      const { data: winner } = await sb
+        .from("ledgers")
+        .select("id")
+        .eq("owner_id", userId)
+        .eq("is_personal", true)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (winner) return winner.id as string;
+    }
+    throw createErr;
+  }
   if (!created) throw new Error("Failed to create personal ledger");
 
   const { error: seedErr } = await sb.rpc("seed_default_categories", {
