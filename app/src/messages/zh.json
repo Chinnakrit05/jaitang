@@ -234,8 +234,8 @@
     "validity": "{used}/{max} 次使用"
   },
   "ocr": {
-    "title": "用 AI 扫描收据",
-    "hint": "上传照片 — 我们会读取金额、分类、日期填入表单。",
+    "title": "用 AI 扫描收据或转账凭证",
+    "hint": "上传收据或银行/PromptPay 转账凭证的照片 — 自动识别金额、收款人、日期、分类。",
     "selectImage": "选择图片 / 拍照",
     "reading": "正在读取收据…",
     "fileTooLarge": "文件过大(超过 16 MB)",

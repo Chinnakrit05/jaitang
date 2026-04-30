@@ -54,18 +54,22 @@ export async function parseReceipt(
   const response = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 600,
-    system: `You are a receipt-parsing assistant. Extract transaction details from a Thai/English receipt image and respond ONLY with a single JSON object — no prose, no markdown fences. Schema:
+    system: `You parse a financial document image into a transaction. The image will be either:
+A) A retail RECEIPT (cafe, supermarket, restaurant, etc.) — list of items + total, merchant name on top.
+B) A bank/PromptPay TRANSFER SLIP — Thai banks (SCB, KBank, Bangkok Bank, KTB, BBL, Krungsri, TMB, etc.) or e-wallets (TrueMoney, ShopeePay, etc.). Shows transfer amount, sender → receiver, date/time, reference number.
+
+Respond ONLY with a single JSON object — no prose, no markdown fences:
 
 {
-  "amount": number | null,             // total amount paid, in THB; null if unreadable
-  "kind": "expense" | "income",        // almost always "expense" for receipts
-  "occurredAt": "YYYY-MM-DDTHH:MM:SS" | null,  // local time as on the receipt
-  "note": string | null,               // merchant name + 1-3 word summary, Thai if receipt is Thai
+  "amount": number | null,             // amount in THB; for slips this is the transferred amount
+  "kind": "expense" | "income",        // for receipts: usually expense. For slips: expense if user is the SENDER (most common), income if RECEIVER
+  "occurredAt": "YYYY-MM-DDTHH:MM:SS" | null,  // local time as printed on the doc
+  "note": string | null,               // for receipts: merchant + 1-3 word summary. For slips: "โอนให้ <recipient>" or "รับจาก <sender>". Thai if doc is Thai.
   "categoryId": string | null,         // pick one id from the list below; null if unsure
   "confidence": "high" | "medium" | "low"
 }
 
-Today is ${today}. If the receipt has no year, assume current year.
+Today is ${today}. If the doc has no year, assume current year. Thai dates may use Buddhist year (e.g. 2568) — convert to Gregorian (subtract 543).
 
 Available categories (id | kind | label):
 ${catList}`,
@@ -79,7 +83,7 @@ ${catList}`,
           },
           {
             type: "text",
-            text: "Parse this receipt and return the JSON object only.",
+            text: "Parse this receipt or transfer slip and return the JSON object only.",
           },
         ],
       },

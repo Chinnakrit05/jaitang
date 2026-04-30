@@ -234,8 +234,8 @@
     "validity": "{used}/{max} uses"
   },
   "ocr": {
-    "title": "Scan receipt with AI",
-    "hint": "Upload a photo — we'll read amount, category, and date into the form.",
+    "title": "Scan receipt or transfer slip with AI",
+    "hint": "Upload a photo of a receipt or bank/PromptPay slip — we read amount, recipient, date, and category.",
     "selectImage": "Choose image / take photo",
     "reading": "Reading receipt…",
     "fileTooLarge": "File too large (over 16 MB)",
