@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { listMembers } from "@/lib/members";
 import { listInvitesForLedger } from "@/lib/invites";
@@ -18,6 +18,7 @@ export default async function MembersPage({
   const userId = (session?.user as { id?: string } | undefined)?.id;
   if (!userId) redirect("/login");
 
+  const t = await getTranslations();
   const { id: ledgerId } = await params;
 
   const sb = getServerSupabase();
@@ -31,15 +32,13 @@ export default async function MembersPage({
   if (ledger.is_personal) {
     return (
       <div className="max-w-2xl mx-auto">
-        <p className="text-(--muted)">สมุดส่วนตัวไม่มีระบบสมาชิก</p>
+        <p className="text-(--muted)">{t("members.personalNoMembers")}</p>
       </div>
     );
   }
 
   const isOwner = ledger.owner_id === userId;
-  if (!isOwner) {
-    redirect("/ledgers");
-  }
+  if (!isOwner) redirect("/ledgers");
 
   const [members, invites] = await Promise.all([
     listMembers(ledgerId),
@@ -53,24 +52,26 @@ export default async function MembersPage({
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
         <ArrowLeft size={16} />
-        กลับไปสมุดบัญชี
+        {t("members.back")}
       </Link>
 
       <div className="flex items-center gap-3">
         <span className="text-3xl">{ledger.icon ?? "📒"}</span>
         <div>
           <h1 className="text-2xl font-bold">{ledger.name}</h1>
-          <p className="text-sm text-(--muted)">จัดการสมาชิกและลิงก์เชิญ</p>
+          <p className="text-sm text-(--muted)">{t("members.subtitle")}</p>
         </div>
       </div>
 
       <section>
-        <h2 className="font-semibold mb-3">สมาชิก ({members.length})</h2>
+        <h2 className="font-semibold mb-3">
+          {t("members.membersTitle", { count: members.length })}
+        </h2>
         <MembersPanel members={members} currentUserId={userId} />
       </section>
 
       <section>
-        <h2 className="font-semibold mb-3">ลิงก์เชิญ</h2>
+        <h2 className="font-semibold mb-3">{t("members.invitesTitle")}</h2>
         <InvitesPanel ledgerId={ledgerId} invites={invites} />
       </section>
     </div>

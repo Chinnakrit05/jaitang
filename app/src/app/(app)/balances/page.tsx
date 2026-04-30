@@ -2,10 +2,12 @@ import { requireSession } from "@/lib/session";
 import { computeLedgerBalances } from "@/lib/splits";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { BalancesPanel } from "@/components/balances-panel";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 export default async function BalancesPage() {
   const { ledgerId, userId } = await requireSession();
+  const t = await getTranslations();
 
   const sb = getServerSupabase();
   const { data: ledger } = await sb
@@ -18,22 +20,20 @@ export default async function BalancesPage() {
     return (
       <div className="max-w-2xl mx-auto space-y-4">
         <div>
-          <h1 className="text-2xl font-bold">ยอดหนี้-เครดิต</h1>
+          <h1 className="text-2xl font-bold">{t("balances.title")}</h1>
           <p className="text-sm text-(--muted) mt-1">
-            ฟีเจอร์นี้ใช้เฉพาะสมุดแชร์เท่านั้น
+            {t("balances.subtitleSharedOnly")}
           </p>
         </div>
         <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/50 p-10 text-center">
           <span className="text-4xl mb-3 block">👥</span>
-          <p className="font-medium mb-1">ตอนนี้คุณอยู่ในสมุดส่วนตัว</p>
-          <p className="text-sm text-(--muted) mb-4">
-            สลับไปสมุดแชร์เพื่อดูยอดหารบิล
-          </p>
+          <p className="font-medium mb-1">{t("balances.personalEmptyTitle")}</p>
+          <p className="text-sm text-(--muted) mb-4">{t("balances.personalEmptyHint")}</p>
           <Link
             href="/ledgers"
             className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm"
           >
-            เปลี่ยนสมุด
+            {t("balances.switchLedger")}
           </Link>
         </div>
       </div>
@@ -46,11 +46,10 @@ export default async function BalancesPage() {
     <div className="space-y-5 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          {ledger?.icon ?? "👥"} ยอดหนี้-เครดิต
+          {ledger?.icon ?? "👥"} {t("balances.title")}
         </h1>
         <p className="text-sm text-(--muted) mt-1">
-          สรุปยอดหารบิลใน{ledger?.name ? <strong> {ledger.name}</strong> : "สมุดนี้"} —
-          ใครติดเงินใครเท่าไหร่ (หักลบสองทางแล้ว)
+          {t("balances.subtitleShared", { name: ledger?.name ?? t("balances.thisLedger") })}
         </p>
       </div>
 

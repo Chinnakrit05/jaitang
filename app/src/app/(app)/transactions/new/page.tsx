@@ -5,6 +5,7 @@ import { createTransactionAction } from "../actions";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { listMembers } from "@/lib/members";
 import type { SplitMember } from "@/components/transaction-form";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -12,6 +13,7 @@ export default async function NewTransaction() {
   const { ledgerId, userId } = await requireSession();
   const categories = await listCategories(ledgerId);
   const ocrEnabled = !!process.env.ANTHROPIC_API_KEY;
+  const t = await getTranslations();
 
   const sb = getServerSupabase();
   const { data: ledger } = await sb
@@ -39,9 +41,9 @@ export default async function NewTransaction() {
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground) mb-4"
       >
         <ArrowLeft size={16} />
-        กลับ
+        {t("common.back")}
       </Link>
-      <h1 className="text-2xl font-bold mb-6">เพิ่มรายการ</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("transactions.newTitle")}</h1>
       <NewTransactionPage
         categories={categories}
         action={createTransactionAction}

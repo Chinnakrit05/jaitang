@@ -2,20 +2,22 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import type { Category, TxKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const RANGES = [
-  { key: "month", label: "เดือนนี้" },
-  { key: "prev", label: "เดือนก่อน" },
-  { key: "30d", label: "30 วัน" },
-  { key: "ytd", label: "ปีนี้" },
-  { key: "all", label: "ทั้งหมด" },
+  { key: "month", label: "thisMonth" },
+  { key: "prev", label: "lastMonth" },
+  { key: "30d", label: "last30Days" },
+  { key: "ytd", label: "ytd" },
+  { key: "all", label: "all" },
 ] as const;
 
 export function TransactionFilters({ categories }: { categories: Category[] }) {
   const router = useRouter();
   const params = useSearchParams();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
 
   const range = params.get("range") ?? "month";
@@ -34,7 +36,6 @@ export function TransactionFilters({ categories }: { categories: Category[] }) {
 
   return (
     <div className={cn("space-y-3", pending && "opacity-60")}>
-      {/* Range */}
       <div className="flex flex-wrap gap-2">
         {RANGES.map((r) => (
           <button
@@ -48,21 +49,20 @@ export function TransactionFilters({ categories }: { categories: Category[] }) {
                 : "border-(--border) bg-(--card) text-(--muted) hover:text-(--foreground)"
             )}
           >
-            {r.label}
+            {t(`transactions.filters.${r.label}`)}
           </button>
         ))}
       </div>
 
-      {/* Kind + Category */}
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <select
           value={kind}
           onChange={(e) => update({ kind: e.target.value || null })}
           className="px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) text-sm"
         >
-          <option value="">ทั้งรายรับ-รายจ่าย</option>
-          <option value="income">📥 รายรับ</option>
-          <option value="expense">📤 รายจ่าย</option>
+          <option value="">{t("transactions.filters.allKinds")}</option>
+          <option value="income">📥 {t("common.income")}</option>
+          <option value="expense">📤 {t("common.expense")}</option>
         </select>
 
         <select
@@ -70,10 +70,11 @@ export function TransactionFilters({ categories }: { categories: Category[] }) {
           onChange={(e) => update({ category: e.target.value || null })}
           className="px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) text-sm"
         >
-          <option value="">ทุกหมวด</option>
+          <option value="">{t("transactions.filters.allCategories")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.icon} {c.name} ({c.kind === "income" ? "รับ" : "จ่าย"})
+              {c.icon} {c.name} (
+              {c.kind === "income" ? t("common.incomeShort") : t("common.expenseShort")})
             </option>
           ))}
         </select>
@@ -84,7 +85,7 @@ export function TransactionFilters({ categories }: { categories: Category[] }) {
             onClick={() => update({ kind: null, category: null })}
             className="text-(--muted) hover:text-(--foreground) underline text-xs ml-1"
           >
-            ล้าง filter
+            {t("transactions.filters.clearFilters")}
           </button>
         )}
       </div>

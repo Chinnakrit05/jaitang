@@ -141,21 +141,21 @@
         └── lib/                       # 11 server libs (categories, transactions, splits, push, ocr, ...)
 ```
 
-### เปลี่ยนภาษาแอปได้มั้ย? (ตอบคำถาม)
+### เปลี่ยนภาษาแอปได้ ✅
 
-**ตอนนี้ยังไม่ได้** — UI ทั้งหมด hardcode เป็นภาษาไทย, currency = THB, date format ใช้ `th-TH` locale
+รองรับ **ไทย** (default) + **English** สลับได้จากหน้า `/settings` → "ภาษา"
 
-**ถ้าจะรองรับ ต้องเพิ่ม:**
+**Stack ที่ใช้:**
+- [`next-intl`](https://next-intl-docs.vercel.app/) — i18n library
+- Locale เก็บใน cookie `jt_locale`
+- Message catalogs: `src/messages/th.json` + `src/messages/en.json` (~250 strings)
+- Date/currency formatting รับ locale param ทุกที่
 
-1. **i18n library** เช่น [`next-intl`](https://next-intl-docs.vercel.app/) (แนะนำสำหรับ Next.js App Router)
-2. แยก string ทั้งหมดออกเป็นไฟล์ messages: `messages/th.json`, `messages/en.json`
-3. หา/แทนที่ literal string ในทุก component (~250+ string)
-4. **Currency** — ตอนนี้ใช้ฟังก์ชัน `formatTHB()` ทุกที่ ต้องเปลี่ยนเป็น `formatCurrency(amount, ledger.currency, locale)` (DB schema มี column `currency` ใน `ledgers` อยู่แล้ว default THB)
-5. **Date** — `formatDateTH()` ก็ต้องรับ locale parameter
-6. ตัวเลือกภาษาในหน้า `/settings`
-
-**ขอบเขตงาน:** ปานกลาง — ประมาณ 1-2 sessions ของ work
-**คุ้มมั้ย:** ถ้าตั้งใจจะให้คนต่างชาติใช้/ขึ้น Apple Store ในอนาคต — คุ้ม กุ้งช่วยได้ครับถ้าพี่อยากลุย
+**เพิ่มภาษาใหม่:**
+1. เพิ่ม locale ใน `src/i18n/locales.ts` (เช่น `"ja"`)
+2. สร้างไฟล์ `src/messages/ja.json` (copy โครงจาก en.json แล้วแปล)
+3. เพิ่ม mapping ใน `src/lib/locale-format.ts` ถ้าต้องการ Intl locale พิเศษ
+จบ — language switcher จะเห็นตัวเลือกใหม่อัตโนมัติ
 
 ---
 
@@ -219,20 +219,22 @@ Full guide: [`app/SETUP.md`](./app/SETUP.md)
 - **Push**: VAPID-based, per-device subscriptions; dead 404/410 endpoints cleaned up automatically.
 - **Recurring**: backfill on demand (no background worker required); capped at 12 iterations per rule per call.
 
-### Changing the app language? (Q&A)
+### Multi-language support ✅
 
-**Not currently** — UI strings are hardcoded in Thai, currency is fixed to THB, dates use `th-TH` locale.
+Ships with **Thai** (default) and **English**, switchable in `/settings` → "Language".
 
-**To add multi-language support:**
+**Stack:**
+- [`next-intl`](https://next-intl-docs.vercel.app/) for messages and ICU formatting
+- Locale stored in `jt_locale` cookie
+- Message catalogs in `src/messages/{th,en}.json` (~250 strings)
+- All currency/date formatters take a locale argument
 
-1. Install an i18n library — [`next-intl`](https://next-intl-docs.vercel.app/) recommended for App Router
-2. Extract all UI strings to message catalogs (`messages/th.json`, `messages/en.json`)
-3. Replace literal strings across all ~14 components (~250+ strings)
-4. Refactor `formatTHB()` → `formatCurrency(amount, currency, locale)` — the DB schema already has a `currency` column on `ledgers` (default `THB`)
-5. Refactor `formatDateTH()` to accept a locale
-6. Add a language selector in `/settings`
+**Adding another language:**
+1. Append the new locale to `src/i18n/locales.ts` (e.g. `"ja"`)
+2. Create `src/messages/ja.json` (start from `en.json` and translate)
+3. Optionally extend `src/lib/locale-format.ts` for a special Intl tag
 
-**Effort:** ~1–2 sessions of focused work. Reasonable if you plan to publish or share with non-Thai users.
+The language switcher picks up the new option automatically.
 
 ### Project Status
 

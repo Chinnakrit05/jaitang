@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Camera, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { parseReceiptAction } from "@/app/(app)/transactions/ocr-action";
 import type { ParsedReceipt } from "@/lib/ocr";
@@ -40,6 +41,7 @@ async function fileToDataUrl(file: File, maxDim = 1600): Promise<string> {
 
 export function ReceiptUploader({ onParsed }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confidence, setConfidence] = useState<ParsedReceipt["confidence"] | null>(null);
@@ -48,7 +50,7 @@ export function ReceiptUploader({ onParsed }: Props) {
     setError(null);
     setConfidence(null);
     if (file.size > MAX_BYTES * 4) {
-      setError("ไฟล์ใหญ่เกินไป (เกิน 16 MB)");
+      setError(t("ocr.fileTooLarge"));
       return;
     }
     startTransition(async () => {
@@ -62,7 +64,7 @@ export function ReceiptUploader({ onParsed }: Props) {
         setConfidence(result.result.confidence);
         onParsed(result.result);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
+        setError(e instanceof Error ? e.message : t("ocr.confidenceLow"));
       }
     });
   }
@@ -74,10 +76,8 @@ export function ReceiptUploader({ onParsed }: Props) {
           <Camera size={22} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm">สแกนใบเสร็จด้วย AI</h3>
-          <p className="text-xs text-(--muted) mt-0.5">
-            อัปโหลดรูป ระบบจะอ่านยอด/หมวด/วันที่ มาเติมในฟอร์มให้
-          </p>
+          <h3 className="font-semibold text-sm">{t("ocr.title")}</h3>
+          <p className="text-xs text-(--muted) mt-0.5">{t("ocr.hint")}</p>
         </div>
       </div>
 
@@ -104,12 +104,12 @@ export function ReceiptUploader({ onParsed }: Props) {
           {pending ? (
             <>
               <Loader2 size={16} className="animate-spin" />
-              กำลังอ่านใบเสร็จ…
+              {t("ocr.reading")}
             </>
           ) : (
             <>
               <Camera size={16} />
-              เลือกรูป / ถ่ายภาพ
+              {t("ocr.selectImage")}
             </>
           )}
         </button>
@@ -126,10 +126,10 @@ export function ReceiptUploader({ onParsed }: Props) {
           >
             <CheckCircle2 size={14} />
             {confidence === "high"
-              ? "อ่านได้ครบ"
+              ? t("ocr.confidenceHigh")
               : confidence === "medium"
-              ? "อ่านบางส่วน — ตรวจก่อนบันทึก"
-              : "อ่านไม่ค่อยชัด — ใส่เองดีกว่า"}
+              ? t("ocr.confidenceMedium")
+              : t("ocr.confidenceLow")}
           </span>
         )}
       </div>

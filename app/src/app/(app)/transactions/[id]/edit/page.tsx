@@ -6,6 +6,7 @@ import { getServerSupabase } from "@/lib/supabase/server";
 import { listMembers } from "@/lib/members";
 import { listSplits } from "@/lib/splits";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { DeleteForm } from "./delete-form";
@@ -17,6 +18,7 @@ export default async function EditTransactionPage({
 }) {
   const { id } = await params;
   const { ledgerId, userId } = await requireSession();
+  const t = await getTranslations();
 
   const sb = getServerSupabase();
   const { data: tx, error } = await sb
@@ -64,9 +66,9 @@ export default async function EditTransactionPage({
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground) mb-4"
       >
         <ArrowLeft size={16} />
-        กลับ
+        {t("common.back")}
       </Link>
-      <h1 className="text-2xl font-bold mb-6">แก้ไขรายการ</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("transactions.editTitle")}</h1>
       <TransactionForm
         categories={categories}
         splitMembers={splitMembers}
@@ -80,7 +82,7 @@ export default async function EditTransactionPage({
           splitWith,
         }}
         action={boundAction}
-        submitLabel="อัปเดต"
+        submitLabel={t("transactions.submitUpdate")}
       />
       <div className="mt-8 pt-6 border-t border-(--border)">
         <DeleteForm

@@ -2,22 +2,29 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, X, Pencil } from "lucide-react";
 import type { Category } from "@/lib/types";
 import type { Budget } from "@/lib/budgets";
 import { setBudgetAction } from "@/app/(app)/budgets/actions";
-import { formatTHB } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { intlLocale } from "@/lib/locale-format";
 
 export function BudgetRow({
   category,
   budget,
   spent,
+  currency = "THB",
 }: {
   category: Category;
   budget: Budget | undefined;
   spent: number;
+  currency?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations();
+  const locale = useLocale();
+  const fmtLocale = intlLocale(locale);
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<string>(budget ? String(budget.amount) : "");
@@ -84,7 +91,8 @@ export function BudgetRow({
                 onClick={() => setEditing(true)}
                 className="text-sm tabular-nums text-(--muted) hover:text-(--foreground) flex items-center gap-1"
               >
-                {formatTHB(spent)} / {formatTHB(amount)}
+                {formatCurrency(spent, currency, fmtLocale)} /{" "}
+                {formatCurrency(amount, currency, fmtLocale)}
                 <Pencil size={12} />
               </button>
             ) : (
@@ -93,7 +101,7 @@ export function BudgetRow({
                 onClick={() => setEditing(true)}
                 className="text-xs text-(--accent) hover:underline"
               >
-                + ตั้งงบ
+                {t("budgets.setBudget")}
               </button>
             )}
           </div>
@@ -124,13 +132,17 @@ export function BudgetRow({
                   }
                 >
                   {over
-                    ? `เกินงบ ${formatTHB(spent - amount)}`
+                    ? t("budgets.overBudget", {
+                        amount: formatCurrency(spent - amount, currency, fmtLocale),
+                      })
                     : near
-                    ? `ใกล้เต็ม ${pct}%`
+                    ? t("budgets.nearBudget", { pct })
                     : `${pct}%`}
                 </span>
                 <span className="text-(--muted)">
-                  เหลือ {formatTHB(Math.max(0, amount - spent))}
+                  {t("budgets.remaining", {
+                    amount: formatCurrency(Math.max(0, amount - spent), currency, fmtLocale),
+                  })}
                 </span>
               </div>
             </div>

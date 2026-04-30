@@ -2,18 +2,13 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import type { Member } from "@/lib/members";
 import {
   removeMemberAction,
   updateMemberRoleAction,
 } from "@/app/(app)/ledgers/actions";
-
-const ROLE_LABEL: Record<string, string> = {
-  owner: "เจ้าของ",
-  editor: "ร่วมจด",
-  viewer: "ดูอย่างเดียว",
-};
 
 export function MembersPanel({
   members,
@@ -23,7 +18,13 @@ export function MembersPanel({
   currentUserId: string;
 }) {
   const router = useRouter();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
+  const ROLE_LABEL: Record<string, string> = {
+    owner: t("ledgers.roleOwner"),
+    editor: t("ledgers.roleEditor"),
+    viewer: t("ledgers.roleViewer"),
+  };
 
   return (
     <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
@@ -49,10 +50,10 @@ export function MembersPanel({
             )}
             <div className="flex-1 min-w-0">
               <div className="font-medium truncate flex items-center gap-2">
-                {m.user?.name ?? m.user?.email ?? "(ไม่ทราบชื่อ)"}
+                {m.user?.name ?? m.user?.email ?? t("settings.unknownName")}
                 {isYou && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-(--accent)/15 text-(--accent)">
-                    คุณ
+                    {t("common.you")}
                   </span>
                 )}
               </div>
@@ -86,14 +87,21 @@ export function MembersPanel({
                   type="button"
                   disabled={pending}
                   onClick={() => {
-                    if (!confirm(`เอา ${m.user?.name ?? "สมาชิก"} ออกจากสมุด?`)) return;
+                    if (
+                      !confirm(
+                        t("members.removeConfirm", {
+                          name: m.user?.name ?? t("members.removeFallbackName"),
+                        })
+                      )
+                    )
+                      return;
                     startTransition(async () => {
                       await removeMemberAction(m.id);
                       router.refresh();
                     });
                   }}
                   className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
-                  aria-label="ลบสมาชิก"
+                  aria-label={t("common.delete")}
                 >
                   <Trash2 size={16} />
                 </button>

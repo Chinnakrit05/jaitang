@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Plus, Trash2, Pencil, X, Check } from "lucide-react";
 import type { Category, TxKind } from "@/lib/types";
 import {
@@ -23,9 +24,12 @@ const PRESET_ICONS = [
 ];
 
 export function CategoryManager({ initial }: { initial: Category[] }) {
+  const t = useTranslations();
   const [tab, setTab] = useState<TxKind>("expense");
 
   const filtered = initial.filter((c) => c.kind === tab);
+  const expenseCount = initial.filter((c) => c.kind === "expense").length;
+  const incomeCount = initial.filter((c) => c.kind === "income").length;
 
   return (
     <div className="space-y-4">
@@ -40,7 +44,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
               : "text-(--muted) hover:text-(--foreground)"
           )}
         >
-          📤 รายจ่าย ({initial.filter((c) => c.kind === "expense").length})
+          {t("categories.expenseTab", { count: expenseCount })}
         </button>
         <button
           type="button"
@@ -52,7 +56,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
               : "text-(--muted) hover:text-(--foreground)"
           )}
         >
-          📥 รายรับ ({initial.filter((c) => c.kind === "income").length})
+          {t("categories.incomeTab", { count: incomeCount })}
         </button>
       </div>
 
@@ -64,7 +68,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
         ))}
         {filtered.length === 0 && (
           <li className="px-4 py-8 text-center text-(--muted) text-sm">
-            ยังไม่มีหมวด — เพิ่มด้านบนได้เลย
+            {t("categories.empty")}
           </li>
         )}
       </ul>
@@ -74,6 +78,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
 
 function CreateCategoryForm({ kind }: { kind: TxKind }) {
   const router = useRouter();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("✨");
@@ -106,7 +111,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          aria-label="เลือกไอคอน"
+          aria-label={t("ledgers.icon")}
           className="text-2xl px-3 py-2 rounded-lg border border-(--border) hover:bg-(--background)"
           onClick={() => {
             const idx = PRESET_ICONS.indexOf(icon);
@@ -118,7 +123,11 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder={kind === "expense" ? "เช่น ค่ากาแฟ" : "เช่น ค่าคอมมิชชั่น"}
+          placeholder={
+            kind === "expense"
+              ? t("categories.expensePlaceholder")
+              : t("categories.incomePlaceholder")
+          }
           maxLength={50}
           className="flex-1 px-3 py-2 rounded-lg border border-(--border) bg-(--background) focus:outline-none focus:ring-2 focus:ring-(--accent)"
         />
@@ -127,7 +136,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
           disabled={pending || !name.trim()}
           className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) font-medium text-sm disabled:opacity-50"
         >
-          <Plus size={16} /> เพิ่ม
+          <Plus size={16} /> {t("categories.addButton")}
         </button>
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -152,6 +161,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
 
 function CategoryRow({ category }: { category: Category }) {
   const router = useRouter();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(category.name);
@@ -172,12 +182,7 @@ function CategoryRow({ category }: { category: Category }) {
   }
 
   function remove() {
-    if (
-      !confirm(
-        "ลบหมวดนี้? รายการที่ใช้หมวดนี้จะกลายเป็น 'ไม่ระบุหมวด' (ไม่ถูกลบ)"
-      )
-    )
-      return;
+    if (!confirm(t("categories.deleteConfirm"))) return;
     startTransition(async () => {
       await deleteCategoryAction(category.id);
       router.refresh();
@@ -210,7 +215,7 @@ function CategoryRow({ category }: { category: Category }) {
             onClick={save}
             disabled={pending}
             className="p-1.5 rounded-lg text-(--income) hover:bg-(--income)/10"
-            aria-label="บันทึก"
+            aria-label={t("common.save")}
           >
             <Check size={18} />
           </button>
@@ -222,7 +227,7 @@ function CategoryRow({ category }: { category: Category }) {
               setIcon(category.icon ?? "✨");
             }}
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
-            aria-label="ยกเลิก"
+            aria-label={t("common.cancel")}
           >
             <X size={18} />
           </button>
@@ -239,7 +244,7 @@ function CategoryRow({ category }: { category: Category }) {
             type="button"
             onClick={() => setEditing(true)}
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
-            aria-label="แก้ไข"
+            aria-label={t("common.edit")}
           >
             <Pencil size={16} />
           </button>
@@ -248,7 +253,7 @@ function CategoryRow({ category }: { category: Category }) {
             onClick={remove}
             disabled={pending}
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
-            aria-label="ลบ"
+            aria-label={t("common.delete")}
           >
             <Trash2 size={16} />
           </button>

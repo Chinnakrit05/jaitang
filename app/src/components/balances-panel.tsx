@@ -2,34 +2,38 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import type { Balance } from "@/lib/splits";
 import { settleBetweenAction } from "@/app/(app)/balances/actions";
-import { formatTHB } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { intlLocale } from "@/lib/locale-format";
 
 export function BalancesPanel({
   balances,
   currentUserId,
+  currency = "THB",
 }: {
   balances: Balance[];
   currentUserId: string;
+  currency?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations();
+  const locale = useLocale();
+  const fmtLocale = intlLocale(locale);
   const [pending, startTransition] = useTransition();
 
   if (balances.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/50 p-10 text-center">
         <span className="text-4xl mb-3 block">✨</span>
-        <p className="font-medium mb-1">ทุกคนเคลียร์ยอดกันหมดแล้ว</p>
-        <p className="text-sm text-(--muted)">
-          ยังไม่มีบิลที่หารกันค้างไว้ในสมุดนี้
-        </p>
+        <p className="font-medium mb-1">{t("balances.allCleared")}</p>
+        <p className="text-sm text-(--muted)">{t("balances.noOpenBills")}</p>
       </div>
     );
   }
 
-  // Group by current user vs others to surface "what concerns me" first
   const youOwe = balances.filter((b) => b.debtorId === currentUserId);
   const owedToYou = balances.filter((b) => b.payerId === currentUserId);
   const others = balances.filter(
@@ -40,13 +44,16 @@ export function BalancesPanel({
     <div className="space-y-5">
       {youOwe.length > 0 && (
         <Section
-          title="คุณติดเงินคนอื่น"
+          title={t("balances.youOwe")}
           tone="expense"
           balances={youOwe}
           currentUserId={currentUserId}
           pending={pending}
+          currency={currency}
+          fmtLocale={fmtLocale}
           onSettle={(b) => {
-            if (!confirm(`ยืนยันว่าจ่ายคืน ${b.payerName} แล้ว?`)) return;
+            if (!confirm(t("balances.settleConfirmYouOwe", { name: b.payerName ?? "?" })))
+              return;
             startTransition(async () => {
               await settleBetweenAction({ debtorId: b.debtorId, payerId: b.payerId });
               router.refresh();
@@ -56,13 +63,16 @@ export function BalancesPanel({
       )}
       {owedToYou.length > 0 && (
         <Section
-          title="คนอื่นติดเงินคุณ"
+          title={t("balances.owedToYou")}
           tone="income"
           balances={owedToYou}
           currentUserId={currentUserId}
           pending={pending}
+          currency={currency}
+          fmtLocale={fmtLocale}
           onSettle={(b) => {
-            if (!confirm(`${b.debtorName} จ่ายคืนแล้ว ปิดบิล?`)) return;
+            if (!confirm(t("balances.settleConfirmOwedToYou", { name: b.debtorName ?? "?" })))
+              return;
             startTransition(async () => {
               await settleBetweenAction({ debtorId: b.debtorId, payerId: b.payerId });
               router.refresh();
@@ -72,13 +82,23 @@ export function BalancesPanel({
       )}
       {others.length > 0 && (
         <Section
-          title="ระหว่างสมาชิกคนอื่น"
+          title={t("balances.betweenOthers")}
           tone="muted"
           balances={others}
           currentUserId={currentUserId}
           pending={pending}
+          currency={currency}
+          fmtLocale={fmtLocale}
           onSettle={(b) => {
-            if (!confirm(`ปิดบิล ${b.debtorName} → ${b.payerName}?`)) return;
+            if (
+              !confirm(
+                t("balances.settleConfirmOthers", {
+                  debtor: b.debtorName ?? "?",
+                  payer: b.payerName ?? "?",
+                })
+              )
+            )
+              return;
             startTransition(async () => {
               await settleBetweenAction({ debtorId: b.debtorId, payerId: b.payerId });
               router.refresh();
@@ -97,6 +117,8 @@ function Section({
   currentUserId,
   pending,
   onSettle,
+  currency,
+  fmtLocale,
 }: {
   title: string;
   tone: "income" | "expense" | "muted";
@@ -104,7 +126,10 @@ function Section({
   currentUserId: string;
   pending: boolean;
   onSettle: (b: Balance) => void;
+  currency: string;
+  fmtLocale: string;
 }) {
+  const t = useTranslations();
   const accentClass =
     tone === "income"
       ? "text-(--income)"
@@ -123,25 +148,25 @@ function Section({
           >
             <Avatar name={b.debtorName} image={b.debtorImage} />
             <span className="text-sm">
-              {b.debtorId === currentUserId ? "คุณ" : b.debtorName ?? "?"}
+              {b.debtorId === currentUserId ? t("common.you") : b.debtorName ?? "?"}
             </span>
             <ArrowRight size={14} className="text-(--muted) shrink-0" />
             <Avatar name={b.payerName} image={b.payerImage} />
             <span className="text-sm">
-              {b.payerId === currentUserId ? "คุณ" : b.payerName ?? "?"}
+              {b.payerId === currentUserId ? t("common.you") : b.payerName ?? "?"}
             </span>
             <div className={`ml-auto tabular-nums font-semibold ${accentClass}`}>
-              {formatTHB(b.amount)}
+              {formatCurrency(b.amount, currency, fmtLocale)}
             </div>
             <button
               type="button"
               disabled={pending}
               onClick={() => onSettle(b)}
               className="inline-flex items-center gap-1 text-xs text-(--accent) hover:underline disabled:opacity-50 shrink-0"
-              aria-label="ปิดบิล"
+              aria-label={t("balances.settle")}
             >
               <CheckCircle2 size={14} />
-              ปิดบิล
+              {t("balances.settle")}
             </button>
           </li>
         ))}

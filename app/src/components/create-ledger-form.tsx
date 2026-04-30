@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { createSharedLedgerAction } from "@/app/(app)/ledgers/actions";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ const COLORS = [
 
 export function CreateLedgerForm() {
   const router = useRouter();
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState("");
@@ -29,7 +31,7 @@ export function CreateLedgerForm() {
         className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-(--border) bg-(--card)/30 hover:bg-(--card) hover:border-(--accent) px-4 py-5 text-(--muted) hover:text-(--foreground) transition font-medium"
       >
         <Plus size={18} />
-        สร้างสมุดแชร์ใหม่
+        {t("ledgers.createNew")}
       </button>
     );
   }
@@ -52,18 +54,16 @@ export function CreateLedgerForm() {
       className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-4"
     >
       <div>
-        <h3 className="font-semibold mb-1">สร้างสมุดแชร์ใหม่</h3>
-        <p className="text-xs text-(--muted)">
-          หลังสร้างเสร็จจะพาไปหน้าจัดการสมาชิกเพื่อเชิญคนเข้า
-        </p>
+        <h3 className="font-semibold mb-1">{t("ledgers.createFormTitle")}</h3>
+        <p className="text-xs text-(--muted)">{t("ledgers.createFormSubtitle")}</p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">ชื่อสมุด</label>
+        <label className="block text-sm font-medium mb-1.5">{t("ledgers.ledgerName")}</label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="เช่น บ้านเรา, ทริปเชียงใหม่, รูมเมท..."
+          placeholder={t("ledgers.ledgerNamePlaceholder")}
           maxLength={50}
           autoFocus
           className="w-full px-3 py-2.5 rounded-xl border border-(--border) bg-(--background) focus:outline-none focus:ring-2 focus:ring-(--accent)"
@@ -71,7 +71,7 @@ export function CreateLedgerForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">ไอคอน</label>
+        <label className="block text-sm font-medium mb-1.5">{t("ledgers.icon")}</label>
         <div className="flex flex-wrap gap-2">
           {ICONS.map((i) => (
             <button
@@ -92,7 +92,7 @@ export function CreateLedgerForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">สี</label>
+        <label className="block text-sm font-medium mb-1.5">{t("ledgers.color")}</label>
         <div className="flex flex-wrap gap-2">
           {COLORS.map((c) => (
             <button
@@ -121,14 +121,14 @@ export function CreateLedgerForm() {
           }}
           className="flex-1 px-4 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium"
         >
-          ยกเลิก
+          {t("common.cancel")}
         </button>
         <button
           type="submit"
           disabled={pending || !name.trim()}
           className="flex-[2] px-4 py-2.5 rounded-xl bg-(--accent) text-(--accent-foreground) text-sm font-semibold disabled:opacity-50"
         >
-          {pending ? "กำลังสร้าง…" : "สร้างสมุด"}
+          {pending ? t("common.creating") : t("ledgers.createSubmit")}
         </button>
       </div>
     </form>

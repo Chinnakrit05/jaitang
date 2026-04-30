@@ -1,17 +1,19 @@
 import { signIn, auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function LoginPage() {
   const session = await auth();
   if (session?.user) redirect("/dashboard");
+  const t = await getTranslations();
 
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex items-center justify-between px-6 py-4 border-b border-(--border)">
         <a href="/" className="flex items-center gap-2">
           <span className="text-2xl">📒</span>
-          <span className="font-semibold text-lg">Jaitang</span>
+          <span className="font-semibold text-lg">{t("appName")}</span>
         </a>
         <ThemeToggle />
       </header>
@@ -20,10 +22,8 @@ export default async function LoginPage() {
         <div className="w-full max-w-sm rounded-2xl border border-(--border) bg-(--card) p-8 shadow-sm">
           <div className="text-center mb-8">
             <span className="text-5xl block mb-3">💰</span>
-            <h1 className="text-2xl font-bold mb-1">เข้าสู่ระบบ</h1>
-            <p className="text-sm text-(--muted)">
-              ใช้บัญชี Google ของคุณเพื่อเริ่มจดบันทึก
-            </p>
+            <h1 className="text-2xl font-bold mb-1">{t("login.title")}</h1>
+            <p className="text-sm text-(--muted)">{t("login.subtitle")}</p>
           </div>
 
           <form
@@ -37,12 +37,12 @@ export default async function LoginPage() {
               className="w-full inline-flex items-center justify-center gap-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-3 font-medium transition"
             >
               <GoogleIcon />
-              ดำเนินการต่อด้วย Google
+              {t("login.continueWithGoogle")}
             </button>
           </form>
 
           <p className="text-xs text-(--muted) text-center mt-6">
-            ใช้งานครั้งแรก ระบบจะสร้างสมุดส่วนตัวให้อัตโนมัติ
+            {t("login.firstUseHint")}
           </p>
         </div>
       </main>

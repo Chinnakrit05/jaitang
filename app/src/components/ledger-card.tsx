@@ -2,17 +2,12 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Check, Settings } from "lucide-react";
 import type { LedgerSummary } from "@/lib/ledgers";
 import { switchLedgerAction } from "@/app/(app)/ledgers/actions";
 import { cn } from "@/lib/utils";
-
-const ROLE_LABEL: Record<string, string> = {
-  owner: "เจ้าของ",
-  editor: "ร่วมจด",
-  viewer: "ดูอย่างเดียว",
-};
 
 export function LedgerCard({
   ledger,
@@ -22,7 +17,13 @@ export function LedgerCard({
   isActive: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
+  const ROLE_LABEL: Record<string, string> = {
+    owner: t("ledgers.roleOwner"),
+    editor: t("ledgers.roleEditor"),
+    viewer: t("ledgers.roleViewer"),
+  };
 
   function activate() {
     if (isActive || pending) return;
@@ -54,7 +55,7 @@ export function LedgerCard({
         <div className="flex-1 min-w-0">
           <div className="font-semibold truncate">{ledger.name}</div>
           <div className="text-xs text-(--muted) flex items-center gap-2 mt-0.5">
-            <span>{ledger.is_personal ? "สมุดส่วนตัว" : "สมุดแชร์"}</span>
+            <span>{ledger.is_personal ? t("ledgers.personal") : t("ledgers.shared")}</span>
             <span>•</span>
             <span>{ROLE_LABEL[ledger.role]}</span>
           </div>
@@ -67,7 +68,7 @@ export function LedgerCard({
           href={`/ledgers/${ledger.id}/members`}
           onClick={(e) => e.stopPropagation()}
           className="absolute top-3 right-3 text-(--muted) hover:text-(--foreground) p-1 rounded-md hover:bg-(--card)"
-          aria-label="จัดการสมาชิก"
+          aria-label={t("members.subtitle")}
         >
           <Settings size={16} />
         </Link>

@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import type { Category, TxKind } from "@/lib/types";
-import { cn, formatTHB } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
+import { intlLocale } from "@/lib/locale-format";
 import { Users } from "lucide-react";
 
 export type SplitMember = {
@@ -23,19 +25,15 @@ type Props = {
     categoryId: string | null;
     note: string | null;
     occurredAt: string;
-    splitWith?: string[]; // user ids included in the split (including self)
+    splitWith?: string[];
   };
-  /**
-   * Members of the active ledger. Pass when the ledger is shared so the form
-   * can offer the "หารบิล" toggle. Must include the current user as `isYou: true`.
-   */
   splitMembers?: SplitMember[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   submitLabel?: string;
+  currency?: string;
 };
 
 function toLocalInput(iso: string) {
-  // "2026-04-29T22:30:00.000Z" → "2026-04-29T22:30" in local TZ
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
@@ -48,14 +46,17 @@ export function TransactionForm({
   initial,
   splitMembers,
   action,
-  submitLabel = "บันทึก",
+  submitLabel,
+  currency = "THB",
 }: Props) {
   const router = useRouter();
+  const t = useTranslations();
+  const locale = useLocale();
+  const fmtLocale = intlLocale(locale);
   const [pending, startTransition] = useTransition();
   const [kind, setKind] = useState<TxKind>(initial?.kind ?? "expense");
   const [error, setError] = useState<string | null>(null);
 
-  // Split state
   const youId = splitMembers?.find((m) => m.isYou)?.userId ?? null;
   const initialSelected = new Set<string>(
     initial?.splitWith && initial.splitWith.length > 0
@@ -77,13 +78,14 @@ export function TransactionForm({
 
   const splitIds = Array.from(splitSelected);
   const numAmount = Number(amountInput) || 0;
-  const perPerson =
-    splitOn && splitIds.length > 0 ? numAmount / splitIds.length : 0;
+  const perPerson = splitOn && splitIds.length > 0 ? numAmount / splitIds.length : 0;
   const splitParam = splitOn && splitIds.length > 1 ? splitIds.join(",") : "";
 
   const defaultDate = initial?.occurredAt
     ? toLocalInput(initial.occurredAt)
     : toLocalInput(new Date().toISOString());
+
+  const submit = submitLabel ?? t("common.save");
 
   return (
     <form
@@ -99,7 +101,6 @@ export function TransactionForm({
       }}
       className="space-y-5"
     >
-      {/* Kind toggle */}
       <div className="grid grid-cols-2 gap-2 p-1 bg-(--card) rounded-xl border border-(--border)">
         <input type="hidden" name="kind" value={kind} />
         <button
@@ -112,7 +113,7 @@ export function TransactionForm({
               : "text-(--muted) hover:text-(--foreground)"
           )}
         >
-          📤 รายจ่าย
+          {t("transactions.kindToggleExpense")}
         </button>
         <button
           type="button"
@@ -124,13 +125,12 @@ export function TransactionForm({
               : "text-(--muted) hover:text-(--foreground)"
           )}
         >
-          📥 รายรับ
+          {t("transactions.kindToggleIncome")}
         </button>
       </div>
 
-      {/* Amount */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">จำนวน (บาท)</label>
+        <label className="block text-sm font-medium mb-1.5">{t("common.amountTHB")}</label>
         <input
           name="amount"
           type="number"
@@ -140,20 +140,19 @@ export function TransactionForm({
           required
           value={amountInput}
           onChange={(e) => setAmountInput(e.target.value)}
-          placeholder="0.00"
+          placeholder={t("transactions.amountPlaceholder")}
           className="w-full px-4 py-3 rounded-xl border border-(--border) bg-(--card) text-2xl font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)"
           autoFocus={!initial}
         />
       </div>
 
-      {/* Split */}
       {canSplit && (
         <div className="rounded-xl border border-(--border) bg-(--card) p-3">
           <input type="hidden" name="splitWith" value={splitParam} />
           <label className="flex items-center justify-between gap-3 cursor-pointer">
             <span className="flex items-center gap-2 text-sm font-medium">
               <Users size={16} className="text-(--accent)" />
-              หารบิลกับสมาชิก
+              {t("transactions.splitTitle")}
             </span>
             <input
               type="checkbox"
@@ -165,9 +164,7 @@ export function TransactionForm({
 
           {splitOn && (
             <div className="mt-3 space-y-2">
-              <p className="text-xs text-(--muted)">
-                เลือกคนที่ร่วมหาร — ระบบหารเท่าๆ กัน
-              </p>
+              <p className="text-xs text-(--muted)">{t("transactions.splitHint")}</p>
               <div className="flex flex-wrap gap-2">
                 {splitMembers!.map((m) => {
                   const checked = splitSelected.has(m.userId);
@@ -191,7 +188,6 @@ export function TransactionForm({
                             const next = new Set(prev);
                             if (next.has(m.userId)) next.delete(m.userId);
                             else next.add(m.userId);
-                            // payer always counted in
                             if (youId) next.add(youId);
                             return next;
                           });
@@ -209,14 +205,17 @@ export function TransactionForm({
                           {m.name.slice(0, 1).toUpperCase()}
                         </span>
                       )}
-                      <span>{m.isYou ? `${m.name} (คุณ)` : m.name}</span>
+                      <span>{m.isYou ? `${m.name} (${t("common.you")})` : m.name}</span>
                     </label>
                   );
                 })}
               </div>
               {splitIds.length > 1 && perPerson > 0 && (
                 <p className="text-xs text-(--muted)">
-                  หาร {splitIds.length} คน คนละ ~{formatTHB(perPerson)}
+                  {t("transactions.splitSummary", {
+                    count: splitIds.length,
+                    amount: formatCurrency(perPerson, currency, fmtLocale),
+                  })}
                 </p>
               )}
             </div>
@@ -224,9 +223,8 @@ export function TransactionForm({
         </div>
       )}
 
-      {/* Category */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">หมวดหมู่</label>
+        <label className="block text-sm font-medium mb-1.5">{t("common.category")}</label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {visibleCats.map((c) => (
             <CategoryRadio
@@ -238,9 +236,8 @@ export function TransactionForm({
         </div>
       </div>
 
-      {/* Date */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">วันที่/เวลา</label>
+        <label className="block text-sm font-medium mb-1.5">{t("common.dateTime")}</label>
         <input
           name="occurredAt"
           type="datetime-local"
@@ -250,15 +247,16 @@ export function TransactionForm({
         />
       </div>
 
-      {/* Note */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">โน้ต (ไม่บังคับ)</label>
+        <label className="block text-sm font-medium mb-1.5">
+          {t("common.noteOptional")}
+        </label>
         <input
           name="note"
           type="text"
           maxLength={500}
           defaultValue={initial?.note ?? ""}
-          placeholder="กาแฟตอนเช้า, ค่าน้ำมัน, ..."
+          placeholder={t("transactions.noteHint")}
           className="w-full px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--accent)"
         />
       </div>
@@ -275,14 +273,14 @@ export function TransactionForm({
           onClick={() => router.back()}
           className="flex-1 px-4 py-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition font-medium"
         >
-          ยกเลิก
+          {t("common.cancel")}
         </button>
         <button
           type="submit"
           disabled={pending}
           className="flex-[2] px-4 py-3 rounded-xl bg-(--accent) text-(--accent-foreground) font-semibold hover:opacity-90 transition disabled:opacity-50"
         >
-          {pending ? "กำลังบันทึก…" : submitLabel}
+          {pending ? t("common.saving") : submit}
         </button>
       </div>
     </form>
@@ -306,9 +304,7 @@ function CategoryRadio({
         className="peer sr-only"
         required
       />
-      <div
-        className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition peer-checked:border-(--accent) peer-checked:bg-(--accent)/5 peer-checked:ring-2 peer-checked:ring-(--accent)/30"
-      >
+      <div className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition peer-checked:border-(--accent) peer-checked:bg-(--accent)/5 peer-checked:ring-2 peer-checked:ring-(--accent)/30">
         <span className="text-2xl">{category.icon ?? "✨"}</span>
         <span className="text-xs font-medium">{category.name}</span>
       </div>

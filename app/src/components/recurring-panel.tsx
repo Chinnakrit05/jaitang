@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Plus, Trash2, Play, Pause, RefreshCw } from "lucide-react";
 import type { Category, TxKind } from "@/lib/types";
 import type { RecurPeriod, RecurringRule } from "@/lib/recurring";
@@ -11,13 +12,8 @@ import {
   runDueAction,
   toggleRecurringAction,
 } from "@/app/(app)/recurring/actions";
-import { formatTHB, formatDateTH, cn } from "@/lib/utils";
-
-const PERIOD_LABEL: Record<RecurPeriod, string> = {
-  daily: "ทุกวัน",
-  weekly: "ทุกสัปดาห์",
-  monthly: "ทุกเดือน",
-};
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
+import { intlLocale } from "@/lib/locale-format";
 
 function toLocalInput(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -34,6 +30,7 @@ export function RecurringPanel({
   categories: Category[];
 }) {
   const router = useRouter();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(rules.length === 0);
 
@@ -42,9 +39,9 @@ export function RecurringPanel({
       const result = await runDueAction();
       router.refresh();
       if (result.created > 0) {
-        alert(`สร้างรายการใหม่ ${result.created} รายการ`);
+        alert(t("recurring.runDueResultCreated", { count: result.created }));
       } else {
-        alert("ยังไม่มีรายการประจำที่ถึงกำหนด");
+        alert(t("recurring.runDueResultEmpty"));
       }
     });
   }
@@ -58,7 +55,7 @@ export function RecurringPanel({
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition"
         >
           <Plus size={16} />
-          เพิ่มรายการประจำ
+          {t("recurring.addButton")}
         </button>
         <button
           type="button"
@@ -67,7 +64,7 @@ export function RecurringPanel({
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition disabled:opacity-50"
         >
           <RefreshCw size={16} className={pending ? "animate-spin" : ""} />
-          รันรายการที่ครบกำหนด
+          {t("recurring.runDue")}
         </button>
       </div>
 
@@ -79,9 +76,7 @@ export function RecurringPanel({
       )}
 
       {rules.length === 0 ? (
-        <p className="text-sm text-(--muted) px-1">
-          ยังไม่มีรายการประจำ — กดปุ่มด้านบนเพื่อเพิ่มอันแรก
-        </p>
+        <p className="text-sm text-(--muted) px-1">{t("recurring.empty")}</p>
       ) : (
         <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
           {rules.map((r) => (
@@ -101,6 +96,7 @@ function CreateRecurringForm({
   onDone: () => void;
 }) {
   const router = useRouter();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [kind, setKind] = useState<TxKind>("expense");
   const [period, setPeriod] = useState<RecurPeriod>("monthly");
@@ -136,7 +132,7 @@ function CreateRecurringForm({
               : "text-(--muted)"
           )}
         >
-          📤 รายจ่าย
+          {t("transactions.kindToggleExpense")}
         </button>
         <button
           type="button"
@@ -146,14 +142,14 @@ function CreateRecurringForm({
             kind === "income" ? "bg-(--income) text-white" : "text-(--muted)"
           )}
         >
-          📥 รายรับ
+          {t("transactions.kindToggleIncome")}
         </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium mb-1 text-(--muted)">
-            จำนวน (บาท)
+            {t("common.amountTHB")}
           </label>
           <input
             name="amount"
@@ -166,30 +162,30 @@ function CreateRecurringForm({
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-(--muted)">
-            ความถี่
+            {t("recurring.frequency")}
           </label>
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as RecurPeriod)}
             className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
           >
-            <option value="monthly">ทุกเดือน</option>
-            <option value="weekly">ทุกสัปดาห์</option>
-            <option value="daily">ทุกวัน</option>
+            <option value="monthly">{t("recurring.frequencyMonthly")}</option>
+            <option value="weekly">{t("recurring.frequencyWeekly")}</option>
+            <option value="daily">{t("recurring.frequencyDaily")}</option>
           </select>
         </div>
       </div>
 
       <div>
         <label className="block text-xs font-medium mb-1 text-(--muted)">
-          หมวดหมู่
+          {t("recurring.categoryLabel")}
         </label>
         <select
           name="categoryId"
           required
           className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
         >
-          <option value="">เลือกหมวด</option>
+          <option value="">{t("recurring.selectCategory")}</option>
           {visibleCats.map((c) => (
             <option key={c.id} value={c.id}>
               {c.icon} {c.name}
@@ -200,7 +196,7 @@ function CreateRecurringForm({
 
       <div>
         <label className="block text-xs font-medium mb-1 text-(--muted)">
-          รันครั้งแรกเมื่อ
+          {t("recurring.startDate")}
         </label>
         <input
           name="startDate"
@@ -213,13 +209,13 @@ function CreateRecurringForm({
 
       <div>
         <label className="block text-xs font-medium mb-1 text-(--muted)">
-          โน้ต (ไม่บังคับ)
+          {t("common.noteOptional")}
         </label>
         <input
           name="note"
           type="text"
           maxLength={500}
-          placeholder="ค่าเช่าบ้าน, เน็ต, ค่าสมาชิก..."
+          placeholder={t("recurring.notePlaceholder")}
           className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
         />
       </div>
@@ -232,14 +228,14 @@ function CreateRecurringForm({
           onClick={onDone}
           className="flex-1 px-3 py-2 rounded-lg border border-(--border) bg-(--card) text-sm"
         >
-          ยกเลิก
+          {t("common.cancel")}
         </button>
         <button
           type="submit"
           disabled={pending}
           className="flex-[2] px-3 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) text-sm font-semibold disabled:opacity-50"
         >
-          {pending ? "กำลังสร้าง…" : "สร้างรายการประจำ"}
+          {pending ? t("common.creating") : t("recurring.createButton")}
         </button>
       </div>
     </form>
@@ -248,7 +244,15 @@ function CreateRecurringForm({
 
 function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
   const router = useRouter();
+  const t = useTranslations();
+  const locale = useLocale();
+  const fmtLocale = intlLocale(locale);
   const [busy, startTransition] = useTransition();
+  const PERIOD_LABEL: Record<RecurPeriod, string> = {
+    daily: t("recurring.frequencyDaily"),
+    weekly: t("recurring.frequencyWeekly"),
+    monthly: t("recurring.frequencyMonthly"),
+  };
 
   return (
     <li
@@ -260,12 +264,14 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
       <span className="text-2xl">{rule.category?.icon ?? "✨"}</span>
       <div className="flex-1 min-w-0">
         <div className="font-medium truncate">
-          {rule.category?.name ?? "ไม่ระบุหมวด"}
+          {rule.category?.name ?? t("common.uncategorizedFull")}
         </div>
         <div className="text-xs text-(--muted) flex items-center gap-2 flex-wrap">
           <span>{PERIOD_LABEL[rule.period]}</span>
           <span>•</span>
-          <span>ครั้งถัดไป: {formatDateTH(rule.next_run_at)}</span>
+          <span>
+            {t("recurring.nextRun", { when: formatDate(rule.next_run_at, fmtLocale) })}
+          </span>
           {rule.note && (
             <>
               <span>•</span>
@@ -280,7 +286,7 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
         }`}
       >
         {rule.kind === "income" ? "+" : "−"}
-        {formatTHB(rule.amount)}
+        {formatCurrency(rule.amount, "THB", fmtLocale)}
       </div>
       <button
         type="button"
@@ -292,7 +298,7 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
           })
         }
         className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
-        aria-label={rule.active ? "หยุดชั่วคราว" : "เปิดใช้งาน"}
+        aria-label={rule.active ? t("common.cancel") : t("common.confirm")}
       >
         {rule.active ? <Pause size={16} /> : <Play size={16} />}
       </button>
@@ -300,14 +306,14 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
         type="button"
         disabled={pending || busy}
         onClick={() => {
-          if (!confirm("ลบรายการประจำนี้?")) return;
+          if (!confirm(t("recurring.deleteConfirm"))) return;
           startTransition(async () => {
             await deleteRecurringAction(rule.id);
             router.refresh();
           });
         }}
         className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
-        aria-label="ลบ"
+        aria-label={t("common.delete")}
       >
         <Trash2 size={16} />
       </button>

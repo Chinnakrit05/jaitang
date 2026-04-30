@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import {
   subscribePushAction,
@@ -17,6 +18,7 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }) {
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [supported, setSupported] = useState<boolean>(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
@@ -40,19 +42,11 @@ export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }
   }, []);
 
   if (!vapidPublicKey) {
-    return (
-      <p className="text-sm text-(--muted)">
-        ฟีเจอร์แจ้งเตือนยังไม่เปิดใช้งาน — ผู้ดูแลต้องตั้ง VAPID keys ใน env ก่อน
-      </p>
-    );
+    return <p className="text-sm text-(--muted)">{t("push.notConfigured")}</p>;
   }
 
   if (!supported) {
-    return (
-      <p className="text-sm text-(--muted)">
-        เบราว์เซอร์นี้ไม่รองรับ Web Push (ลอง Chrome/Edge/Firefox/Safari ใหม่ ๆ)
-      </p>
-    );
+    return <p className="text-sm text-(--muted)">{t("push.browserUnsupported")}</p>;
   }
 
   async function turnOn() {
@@ -65,7 +59,7 @@ export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }
         const perm = await Notification.requestPermission();
         setPermission(perm);
         if (perm !== "granted") {
-          setError("คุณยังไม่อนุญาตการแจ้งเตือน");
+          setError(t("push.noPermission"));
           return;
         }
         const sub = await reg.pushManager.subscribe({
@@ -81,7 +75,7 @@ export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }
         });
         setSubscribed(true);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "ไม่สามารถเปิดการแจ้งเตือน");
+        setError(e instanceof Error ? e.message : t("push.turnOn"));
       }
     });
   }
@@ -98,7 +92,7 @@ export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }
         }
         setSubscribed(false);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "ไม่สามารถปิดการแจ้งเตือน");
+        setError(e instanceof Error ? e.message : t("push.turnOff"));
       }
     });
   }
@@ -114,7 +108,7 @@ export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }
             className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium disabled:opacity-50"
           >
             {pending ? <Loader2 size={16} className="animate-spin" /> : <BellOff size={16} />}
-            ปิดการแจ้งเตือน
+            {t("push.turnOff")}
           </button>
         ) : (
           <button
@@ -124,25 +118,19 @@ export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }
             className="inline-flex items-center gap-2 rounded-xl bg-(--accent) text-(--accent-foreground) hover:opacity-90 px-4 py-2.5 text-sm font-semibold disabled:opacity-50"
           >
             {pending ? <Loader2 size={16} className="animate-spin" /> : <Bell size={16} />}
-            เปิดการแจ้งเตือน
+            {t("push.turnOn")}
           </button>
         )}
 
-        {subscribed && (
-          <span className="text-xs text-(--income)">เปิดอยู่ — เบราว์เซอร์นี้</span>
-        )}
+        {subscribed && <span className="text-xs text-(--income)">{t("push.active")}</span>}
         {permission === "denied" && (
-          <span className="text-xs text-(--expense)">
-            ถูกบล็อก — แก้ที่ตั้งค่าเบราว์เซอร์
-          </span>
+          <span className="text-xs text-(--expense)">{t("push.blocked")}</span>
         )}
       </div>
 
       {error && <p className="text-sm text-(--expense)">{error}</p>}
 
-      <p className="text-xs text-(--muted)">
-        เปิดเครื่องไหน เครื่องนั้นจะรับแจ้งเตือนแยกกัน — เช่น มือถือ + คอมจะได้คนละสาย
-      </p>
+      <p className="text-xs text-(--muted)">{t("push.perDeviceHint")}</p>
     </div>
   );
 }

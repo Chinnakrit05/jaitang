@@ -3,6 +3,7 @@
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 export function DeleteForm({
   deleteAction,
@@ -11,6 +12,7 @@ export function DeleteForm({
   deleteAction: () => Promise<void>;
 }) {
   const router = useRouter();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -18,7 +20,7 @@ export function DeleteForm({
       type="button"
       disabled={pending}
       onClick={() => {
-        if (!confirm("ลบรายการนี้ ไม่สามารถกู้คืนได้")) return;
+        if (!confirm(t("transactions.deleteConfirmHard"))) return;
         startTransition(async () => {
           await deleteAction();
           router.push("/transactions");
@@ -28,7 +30,7 @@ export function DeleteForm({
       className="inline-flex items-center gap-2 text-sm text-(--expense) hover:underline disabled:opacity-50"
     >
       <Trash2 size={16} />
-      ลบรายการนี้
+      {t("transactions.deleteThisItem")}
     </button>
   );
 }

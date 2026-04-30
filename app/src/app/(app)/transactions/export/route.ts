@@ -48,7 +48,7 @@ export async function GET(req: Request) {
 
   // Prepend BOM so Excel reads UTF-8 Thai correctly
   const csv = "﻿" + lines.join("\n");
-  const filename = `jaitang-${range.label}-${new Date().toISOString().slice(0, 10)}.csv`;
+  const filename = `jaitang-${range.key}-${new Date().toISOString().slice(0, 10)}.csv`;
 
   return new Response(csv, {
     headers: {

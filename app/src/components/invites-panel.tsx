@@ -2,12 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Copy, Check, Trash2, Plus, Link as LinkIcon } from "lucide-react";
 import {
   createInviteAction,
   deleteInviteAction,
 } from "@/app/(app)/ledgers/actions";
-import { formatDateTH } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { intlLocale } from "@/lib/locale-format";
 
 type Invite = {
   id: string;
@@ -27,6 +29,9 @@ export function InvitesPanel({
   invites: Invite[];
 }) {
   const router = useRouter();
+  const t = useTranslations();
+  const locale = useLocale();
+  const fmtLocale = intlLocale(locale);
   const [pending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(false);
   const [role, setRole] = useState<"editor" | "viewer">("editor");
@@ -55,7 +60,7 @@ export function InvitesPanel({
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition"
         >
           <Plus size={16} />
-          สร้างลิงก์เชิญใหม่
+          {t("invites.createNew")}
         </button>
       ) : (
         <form
@@ -82,20 +87,20 @@ export function InvitesPanel({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1 text-(--muted)">
-                สิทธิ์
+                {t("invites.permission")}
               </label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as "editor" | "viewer")}
                 className="w-full px-2.5 py-2 rounded-lg border border-(--border) bg-(--background) text-sm"
               >
-                <option value="editor">ร่วมจด (editor)</option>
-                <option value="viewer">ดูอย่างเดียว (viewer)</option>
+                <option value="editor">{t("invites.permissionEditor")}</option>
+                <option value="viewer">{t("invites.permissionViewer")}</option>
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 text-(--muted)">
-                ใช้ได้กี่ครั้ง
+                {t("invites.maxUses")}
               </label>
               <input
                 type="number"
@@ -108,7 +113,7 @@ export function InvitesPanel({
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 text-(--muted)">
-                หมดอายุ (วัน, 0 = ไม่หมด)
+                {t("invites.expiresInDays")}
               </label>
               <input
                 type="number"
@@ -127,23 +132,21 @@ export function InvitesPanel({
               onClick={() => setShowForm(false)}
               className="flex-1 px-3 py-2 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm"
             >
-              ยกเลิก
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
               disabled={pending}
               className="flex-[2] px-3 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) text-sm font-semibold disabled:opacity-50"
             >
-              {pending ? "กำลังสร้าง…" : "สร้างลิงก์"}
+              {pending ? t("common.creating") : t("invites.createButton")}
             </button>
           </div>
         </form>
       )}
 
       {invites.length === 0 ? (
-        <p className="text-sm text-(--muted) px-1">
-          ยังไม่มีลิงก์เชิญ — สร้างใหม่ด้านบน
-        </p>
+        <p className="text-sm text-(--muted) px-1">{t("invites.empty")}</p>
       ) : (
         <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
           {invites.map((inv) => {
@@ -164,19 +167,22 @@ export function InvitesPanel({
                       {inv.code}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-(--background) border border-(--border)">
-                      {inv.role === "editor" ? "ร่วมจด" : "ดูอย่างเดียว"}
+                      {inv.role === "editor" ? t("ledgers.roleEditor") : t("ledgers.roleViewer")}
                     </span>
                     {dead && (
                       <span className="text-xs px-2 py-0.5 rounded-full bg-(--expense)/15 text-(--expense)">
-                        {expired ? "หมดอายุ" : "ใช้ครบแล้ว"}
+                        {expired ? t("invites.expired") : t("invites.exhausted")}
                       </span>
                     )}
                   </div>
                   <div className="text-xs text-(--muted) mt-0.5">
-                    ใช้ไป {inv.used_count}/{inv.max_uses} ครั้ง
+                    {t("invites.usedCount", { used: inv.used_count, max: inv.max_uses })}
                     {inv.expires_at && (
                       <span className="ml-2">
-                        • หมดอายุ {formatDateTH(inv.expires_at)}
+                        •{" "}
+                        {t("invites.expiresAt", {
+                          when: formatDate(inv.expires_at, fmtLocale),
+                        })}
                       </span>
                     )}
                   </div>
@@ -188,7 +194,7 @@ export function InvitesPanel({
                   type="button"
                   onClick={() => copy(inv.code)}
                   className="p-2 rounded-lg text-(--muted) hover:bg-(--background) hover:text-(--foreground)"
-                  aria-label="คัดลอกลิงก์"
+                  aria-label={t("common.more")}
                 >
                   {copiedCode === inv.code ? (
                     <Check size={16} className="text-(--income)" />
@@ -200,14 +206,14 @@ export function InvitesPanel({
                   type="button"
                   disabled={pending}
                   onClick={() => {
-                    if (!confirm("ลบลิงก์เชิญนี้?")) return;
+                    if (!confirm(t("invites.deleteConfirm"))) return;
                     startTransition(async () => {
                       await deleteInviteAction(inv.id);
                       router.refresh();
                     });
                   }}
                   className="p-2 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
-                  aria-label="ลบลิงก์"
+                  aria-label={t("common.delete")}
                 >
                   <Trash2 size={16} />
                 </button>

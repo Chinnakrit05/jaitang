@@ -13,7 +13,9 @@ import { equalSplit, replaceSplits } from "@/lib/splits";
 import { sendToUsers } from "@/lib/push";
 import { listMembers } from "@/lib/members";
 import { getServerSupabase } from "@/lib/supabase/server";
-import { formatTHB } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { intlLocale } from "@/lib/locale-format";
+import { getLocale, getTranslations } from "next-intl/server";
 
 const TxSchema = z.object({
   kind: z.enum(["income", "expense"]),
@@ -101,14 +103,23 @@ export async function createTransactionAction(formData: FormData) {
         .filter((id) => id !== userId);
       if (recipients.length > 0) {
         const sign = parsed.data.kind === "income" ? "+" : "−";
+        const t = await getTranslations();
+        const fmtLocale = intlLocale(await getLocale());
+        const amountStr = formatCurrency(parsed.data.amount, "THB", fmtLocale);
+        const title = t("push.txNewTitle", { ledger: ledger.name });
+        const body =
+          splitOthers.length > 0
+            ? t("push.txSplitBody", {
+                sign,
+                amount: amountStr,
+                count: splitOthers.length + 1,
+              })
+            : parsed.data.note
+            ? t("push.txBodyWithNote", { sign, amount: amountStr, note: parsed.data.note })
+            : t("push.txBody", { sign, amount: amountStr });
         await sendToUsers(recipients, {
-          title: `${ledger.name} — รายการใหม่`,
-          body:
-            splitOthers.length > 0
-              ? `${sign}${formatTHB(parsed.data.amount)} • หาร ${splitOthers.length + 1} คน`
-              : `${sign}${formatTHB(parsed.data.amount)}${
-                  parsed.data.note ? ` • ${parsed.data.note}` : ""
-                }`,
+          title,
+          body,
           url: "/transactions",
           tag: `tx-${tx.id}`,
         });

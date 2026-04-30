@@ -1,21 +1,27 @@
 "use client";
 
 import { useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import type { TransactionWithCategory } from "@/lib/types";
-import { formatDateTH, formatTHB } from "@/lib/utils";
+import { formatDate, formatCurrency } from "@/lib/utils";
+import { intlLocale } from "@/lib/locale-format";
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import { useRouter } from "next/navigation";
 
 export function TransactionList({
   items,
   showAttribution = false,
+  currency = "THB",
 }: {
   items: TransactionWithCategory[];
-  /** Show small avatar + name of who created each transaction. Useful in shared ledgers. */
   showAttribution?: boolean;
+  currency?: string;
 }) {
+  const t = useTranslations();
+  const locale = useLocale();
+  const fmtLocale = intlLocale(locale);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -23,15 +29,13 @@ export function TransactionList({
     return (
       <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/50 p-10 text-center">
         <span className="text-4xl mb-3 block">📭</span>
-        <p className="font-medium mb-1">ยังไม่มีรายการในช่วงนี้</p>
-        <p className="text-sm text-(--muted) mb-4">
-          เพิ่มรายการแรกเพื่อเริ่มจดบันทึก
-        </p>
+        <p className="font-medium mb-1">{t("transactions.emptyTitle")}</p>
+        <p className="text-sm text-(--muted) mb-4">{t("transactions.emptyHint")}</p>
         <Link
           href="/transactions/new"
           className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm hover:opacity-90 transition"
         >
-          + เพิ่มรายการ
+          + {t("transactions.addNew")}
         </Link>
       </div>
     );
@@ -60,7 +64,7 @@ export function TransactionList({
           <section key={day}>
             <header className="flex items-center justify-between mb-2 px-1">
               <h3 className="text-sm font-semibold text-(--muted)">
-                {new Intl.DateTimeFormat("th-TH", {
+                {new Intl.DateTimeFormat(fmtLocale, {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
@@ -70,12 +74,12 @@ export function TransactionList({
               <span className="text-xs tabular-nums text-(--muted)">
                 {dayIncome > 0 && (
                   <span className="text-(--income) mr-2">
-                    +{formatTHB(dayIncome)}
+                    +{formatCurrency(dayIncome, currency, fmtLocale)}
                   </span>
                 )}
                 {dayExpense > 0 && (
                   <span className="text-(--expense)">
-                    −{formatTHB(dayExpense)}
+                    −{formatCurrency(dayExpense, currency, fmtLocale)}
                   </span>
                 )}
               </span>
@@ -89,15 +93,13 @@ export function TransactionList({
                   <span className="text-2xl">{tx.category?.icon ?? "✨"}</span>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">
-                      {tx.category?.name ?? "ไม่ระบุหมวด"}
+                      {tx.category?.name ?? t("common.uncategorizedFull")}
                     </div>
                     {tx.note && (
-                      <div className="text-sm text-(--muted) truncate">
-                        {tx.note}
-                      </div>
+                      <div className="text-sm text-(--muted) truncate">{tx.note}</div>
                     )}
                     <div className="text-xs text-(--muted) flex items-center gap-1.5 flex-wrap">
-                      <span>{formatDateTH(tx.occurred_at)}</span>
+                      <span>{formatDate(tx.occurred_at, fmtLocale)}</span>
                       {showAttribution && tx.user && (
                         <>
                           <span>•</span>
@@ -122,13 +124,13 @@ export function TransactionList({
                     }`}
                   >
                     {tx.kind === "income" ? "+" : "−"}
-                    {formatTHB(tx.amount)}
+                    {formatCurrency(tx.amount, currency, fmtLocale)}
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                     <Link
                       href={`/transactions/${tx.id}/edit`}
                       className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
-                      aria-label="แก้ไข"
+                      aria-label={t("common.edit")}
                     >
                       <Pencil size={16} />
                     </Link>
@@ -136,14 +138,14 @@ export function TransactionList({
                       type="button"
                       disabled={pending}
                       onClick={() => {
-                        if (!confirm("ลบรายการนี้?")) return;
+                        if (!confirm(t("transactions.deleteConfirm"))) return;
                         startTransition(async () => {
                           await deleteTransactionAction(tx.id);
                           router.refresh();
                         });
                       }}
                       className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
-                      aria-label="ลบ"
+                      aria-label={t("common.delete")}
                     >
                       <Trash2 size={16} />
                     </button>

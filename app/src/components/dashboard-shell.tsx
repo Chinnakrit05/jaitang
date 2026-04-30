@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -13,30 +14,6 @@ import {
   Settings,
 } from "lucide-react";
 
-const NAV = [
-  { href: "/dashboard", label: "หน้าหลัก", icon: LayoutDashboard },
-  { href: "/transactions", label: "รายการ", icon: ListOrdered },
-  { href: "/budgets", label: "งบประมาณ", icon: PiggyBank },
-  { href: "/recurring", label: "รายการประจำ", icon: Repeat },
-  { href: "/balances", label: "หารบิล", icon: Scale },
-  { href: "/categories", label: "หมวดหมู่", icon: FolderTree },
-  { href: "/ledgers", label: "สมุดบัญชี", icon: BookOpen },
-  { href: "/settings", label: "ตั้งค่า", icon: Settings },
-];
-
-const MOBILE_NAV = [
-  { href: "/dashboard", label: "หลัก", icon: LayoutDashboard },
-  { href: "/transactions", label: "รายการ", icon: ListOrdered },
-  { href: "/budgets", label: "งบ", icon: PiggyBank },
-  { href: "/ledgers", label: "สมุด", icon: BookOpen },
-];
-
-const ROLE_LABEL: Record<string, string> = {
-  owner: "เจ้าของ",
-  editor: "ร่วมจด",
-  viewer: "ดูอย่างเดียว",
-};
-
 type ActiveLedger = {
   id: string;
   name: string;
@@ -45,7 +22,7 @@ type ActiveLedger = {
   role: "owner" | "editor" | "viewer";
 };
 
-export function DashboardShell({
+export async function DashboardShell({
   children,
   userName,
   userImage,
@@ -56,12 +33,39 @@ export function DashboardShell({
   userImage?: string | null;
   activeLedger?: ActiveLedger | null;
 }) {
+  const t = await getTranslations();
+
+  const NAV = [
+    { href: "/dashboard", label: t("nav.home"), icon: LayoutDashboard },
+    { href: "/transactions", label: t("nav.transactions"), icon: ListOrdered },
+    { href: "/budgets", label: t("nav.budgets"), icon: PiggyBank },
+    { href: "/recurring", label: t("nav.recurring"), icon: Repeat },
+    { href: "/balances", label: t("nav.balances"), icon: Scale },
+    { href: "/categories", label: t("nav.categories"), icon: FolderTree },
+    { href: "/ledgers", label: t("nav.ledgers"), icon: BookOpen },
+    { href: "/settings", label: t("nav.settings"), icon: Settings },
+  ];
+
+  const MOBILE_NAV = [
+    { href: "/dashboard", label: t("nav.homeShort"), icon: LayoutDashboard },
+    { href: "/transactions", label: t("nav.transactions"), icon: ListOrdered },
+    { href: "/budgets", label: t("nav.budgetsShort"), icon: PiggyBank },
+    { href: "/ledgers", label: t("nav.ledgersShort"), icon: BookOpen },
+  ];
+
+  const ROLE_LABEL: Record<string, string> = {
+    owner: t("ledgers.roleOwner"),
+    editor: t("ledgers.roleEditor"),
+    viewer: t("ledgers.roleViewer"),
+  };
+  const personalLabel = t("ledgers.personal");
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-(--border) sticky top-0 z-20 bg-(--background)/80 backdrop-blur">
         <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
           <span className="text-xl">📒</span>
-          <span className="font-semibold hidden sm:inline">Jaitang</span>
+          <span className="font-semibold hidden sm:inline">{t("appName")}</span>
         </Link>
 
         {activeLedger && (
@@ -74,7 +78,7 @@ export function DashboardShell({
               {activeLedger.name}
             </span>
             <span className="text-xs text-(--muted) shrink-0 hidden sm:inline">
-              {activeLedger.isPersonal ? "ส่วนตัว" : ROLE_LABEL[activeLedger.role]}
+              {activeLedger.isPersonal ? personalLabel : ROLE_LABEL[activeLedger.role]}
             </span>
           </Link>
         )}
@@ -102,10 +106,10 @@ export function DashboardShell({
             <button
               type="submit"
               className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground) transition"
-              aria-label="ออกจากระบบ"
+              aria-label={t("common.logoutFull")}
             >
               <LogOut size={16} />
-              <span className="hidden sm:inline">ออก</span>
+              <span className="hidden sm:inline">{t("common.logout")}</span>
             </button>
           </form>
         </div>

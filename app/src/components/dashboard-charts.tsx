@@ -13,8 +13,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useTranslations } from "next-intl";
 import type { MonthSummary } from "@/lib/types";
-import { formatTHB } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 const FALLBACK_COLORS = [
   "#f97316",
@@ -29,7 +30,14 @@ const FALLBACK_COLORS = [
   "#22c55e",
 ];
 
-export function ExpenseByCategoryChart({ summary }: { summary: MonthSummary }) {
+type ChartProps = {
+  summary: MonthSummary;
+  currency: string;
+  fmtLocale: string;
+};
+
+export function ExpenseByCategoryChart({ summary, currency, fmtLocale }: ChartProps) {
+  const t = useTranslations();
   const data = summary.byCategory
     .filter((c) => c.kind === "expense")
     .map((c, i) => ({
@@ -42,7 +50,7 @@ export function ExpenseByCategoryChart({ summary }: { summary: MonthSummary }) {
   if (data.length === 0) {
     return (
       <p className="text-sm text-(--muted) py-12 text-center">
-        ยังไม่มีรายจ่ายในช่วงนี้
+        {t("transactions.emptyTitle")}
       </p>
     );
   }
@@ -66,7 +74,7 @@ export function ExpenseByCategoryChart({ summary }: { summary: MonthSummary }) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(v) => formatTHB(Number(v))}
+            formatter={(v) => formatCurrency(Number(v), currency, fmtLocale)}
             contentStyle={{
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",
@@ -92,7 +100,7 @@ export function ExpenseByCategoryChart({ summary }: { summary: MonthSummary }) {
                 </span>
               </span>
               <span className="text-(--muted) tabular-nums shrink-0">
-                {formatTHB(d.value)}
+                {formatCurrency(d.value, currency, fmtLocale)}
                 <span className="ml-1 text-xs">({pct}%)</span>
               </span>
             </li>
@@ -103,20 +111,23 @@ export function ExpenseByCategoryChart({ summary }: { summary: MonthSummary }) {
   );
 }
 
-export function DailyTrendChart({ summary }: { summary: MonthSummary }) {
-  // Fill missing days with zeros for a smoother chart
+export function DailyTrendChart({ summary, currency, fmtLocale }: ChartProps) {
+  const t = useTranslations();
   if (summary.byDay.length === 0) {
     return (
       <p className="text-sm text-(--muted) py-12 text-center">
-        ยังไม่มีข้อมูลรายวัน
+        {t("transactions.emptyTitle")}
       </p>
     );
   }
 
+  const incomeLabel = t("common.income");
+  const expenseLabel = t("common.expense");
+
   const data = summary.byDay.map((d) => ({
-    day: d.day.slice(8, 10), // DD only
-    รายรับ: d.income,
-    รายจ่าย: d.expense,
+    day: d.day.slice(8, 10),
+    [incomeLabel]: d.income,
+    [expenseLabel]: d.expense,
   }));
 
   return (
@@ -126,7 +137,7 @@ export function DailyTrendChart({ summary }: { summary: MonthSummary }) {
         <XAxis dataKey="day" stroke="var(--muted)" fontSize={12} />
         <YAxis stroke="var(--muted)" fontSize={12} />
         <Tooltip
-          formatter={(v) => formatTHB(Number(v))}
+          formatter={(v) => formatCurrency(Number(v), currency, fmtLocale)}
           contentStyle={{
             backgroundColor: "var(--card)",
             border: "1px solid var(--border)",
@@ -135,8 +146,8 @@ export function DailyTrendChart({ summary }: { summary: MonthSummary }) {
           }}
         />
         <Legend wrapperStyle={{ fontSize: 13 }} />
-        <Bar dataKey="รายรับ" fill="var(--income)" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="รายจ่าย" fill="var(--expense)" radius={[4, 4, 0, 0]} />
+        <Bar dataKey={incomeLabel} fill="var(--income)" radius={[4, 4, 0, 0]} />
+        <Bar dataKey={expenseLabel} fill="var(--expense)" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
