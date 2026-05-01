@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Banknote, Landmark, Pencil, Trash2 } from "lucide-react";
 import type { TransactionWithCategory } from "@/lib/types";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate, formatCurrency, dayKeyInTz } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import { useRouter } from "next/navigation";
@@ -41,10 +41,14 @@ export function TransactionList({
     );
   }
 
-  // Group by day
+  // Group by day in the BROWSER's local timezone. The naive `.slice(0, 10)`
+  // we used to do takes the UTC date out of the ISO string — for a Bangkok
+  // user, a transaction recorded at 03:00 local (= 20:00 UTC the previous
+  // day) would land in the wrong day group, with the section header
+  // claiming May 1 while the row plainly displayed May 2 03:00.
   const groups = new Map<string, TransactionWithCategory[]>();
   for (const tx of items) {
-    const day = tx.occurred_at.slice(0, 10);
+    const day = dayKeyInTz(tx.occurred_at);
     const arr = groups.get(day) ?? [];
     arr.push(tx);
     groups.set(day, arr);
@@ -60,6 +64,16 @@ export function TransactionList({
           .filter((t) => t.kind === "expense")
           .reduce((s, t) => s + t.amount, 0);
 
+        // Construct from parts so the header date is the LOCAL midnight of
+        // the day key — not `new Date("YYYY-MM-DD")` which would be parsed
+        // as UTC midnight and could shift a date for users far from UTC.
+        const [yStr, mStr, dStr] = day.split("-");
+        const headerDate = new Date(
+          Number(yStr),
+          Number(mStr) - 1,
+          Number(dStr)
+        );
+
         return (
           <section key={day}>
             <header className="flex items-center justify-between mb-2 px-1">
@@ -69,7 +83,7 @@ export function TransactionList({
                   month: "long",
                   year: "numeric",
                   weekday: "short",
-                }).format(new Date(day))}
+                }).format(headerDate)}
               </h3>
               <span className="text-xs tabular-nums text-(--muted)">
                 {dayIncome > 0 && (

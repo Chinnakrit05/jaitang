@@ -1,4 +1,5 @@
 import { getServerSupabase } from "@/lib/supabase/server";
+import { dayKeyInTz } from "@/lib/utils";
 import type {
   MonthSummary,
   PaymentMethod,
@@ -6,6 +7,15 @@ import type {
   TransactionWithCategory,
   TxKind,
 } from "@/lib/types";
+
+/**
+ * The "calendar" timezone the server uses when bucketing rows into days
+ * and months. This app is Thai-first, currency THB, no DST in scope —
+ * Asia/Bangkok is the right default. Make this per-user/per-ledger if we
+ * ever ship outside of Thailand.
+ */
+const BUSINESS_TZ = "Asia/Bangkok";
+const BUSINESS_TZ_OFFSET_HOURS = 7; // Asia/Bangkok = UTC+7, no DST
 
 export type ListOptions = {
   ledgerId: string;
@@ -227,7 +237,10 @@ export function aggregateMonthSummary(
       });
     }
 
-    const day = tx.occurred_at.slice(0, 10);
+    // Bucket by day in BUSINESS_TZ, not UTC. A Bangkok row at 02:00 local
+    // is 19:00 UTC the previous day — bucketing on the UTC date would
+    // attribute it to yesterday on the daily-trend chart.
+    const day = dayKeyInTz(tx.occurred_at, BUSINESS_TZ);
     const dayEntry = byDayMap.get(day) ?? { income: 0, expense: 0 };
     if (tx.kind === "income") dayEntry.income += tx.amount;
     else dayEntry.expense += tx.amount;
@@ -261,14 +274,27 @@ export function aggregateMonthSummary(
 /**
  * Aggregate a single ledger's month: totals + by category + by day.
  * Computed in JS for MVP simplicity; small n. Move to SQL view later.
+ *
+ * The month window is [BUSINESS_TZ-midnight of month start, BUSINESS_TZ-
+ * midnight of month-after start). With UTC bounds we'd over-count the last
+ * 7 hours of the previous month and under-count the last 7 hours of this
+ * month, both visible to the user as "why is May 31 23:00 missing from
+ * my May report?"
  */
 export async function getMonthSummary(
   ledgerId: string,
   year: number,
   month: number // 1-12
 ): Promise<MonthSummary> {
-  const start = new Date(Date.UTC(year, month - 1, 1));
-  const end = new Date(Date.UTC(year, month, 1));
+  // Asia/Bangkok midnight of (year, month, 1) in UTC = the BUSINESS_TZ
+  // wall-clock minus 7 hours. The negative-hour overflow into Date.UTC()
+  // is well-defined: it rolls into the previous day cleanly.
+  const start = new Date(
+    Date.UTC(year, month - 1, 1, -BUSINESS_TZ_OFFSET_HOURS, 0, 0)
+  );
+  const end = new Date(
+    Date.UTC(year, month, 1, -BUSINESS_TZ_OFFSET_HOURS, 0, 0)
+  );
 
   const txs = await listTransactions({
     ledgerId,

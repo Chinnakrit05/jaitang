@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toLocalDateTimeInput } from "./utils";
+import { dayKeyInTz, toLocalDateTimeInput } from "./utils";
 
 describe("toLocalDateTimeInput", () => {
   // The test runner sets process.env.TZ before any Date is constructed (see
@@ -47,6 +47,45 @@ describe("toLocalDateTimeInput", () => {
     );
     expect(toLocalDateTimeInput("2026-05-02T03:30:00.000Z")).toBe(
       "2026-05-02T10:30"
+    );
+  });
+});
+
+describe("dayKeyInTz", () => {
+  it("uses the runtime TZ when no tz is passed (browser case)", () => {
+    // 2026-05-01T20:46:00Z = 2026-05-02 03:46 in Bangkok — different UTC
+    // and Bangkok dates. Test runner is TZ=Asia/Bangkok, so this proves
+    // the default-arg path picks up the user's local calendar day.
+    expect(dayKeyInTz("2026-05-01T20:46:00Z")).toBe("2026-05-02");
+  });
+
+  it("respects an explicit timezone (server-side BUSINESS_TZ case)", () => {
+    expect(dayKeyInTz("2026-05-01T20:46:00Z", "Asia/Bangkok")).toBe("2026-05-02");
+    expect(dayKeyInTz("2026-05-01T20:46:00Z", "UTC")).toBe("2026-05-01");
+    // Honolulu is UTC-10, so the same instant is still May 1 there
+    expect(dayKeyInTz("2026-05-01T20:46:00Z", "Pacific/Honolulu")).toBe(
+      "2026-05-01"
+    );
+  });
+
+  it("regression: the user-reported screenshot bug", () => {
+    // From the bug report: "บาร์ปีกนก" was shown as 2 พ.ค. 03:46 Bangkok
+    // but grouped under 1 พ.ค. — because the grouping code did
+    // `iso.slice(0, 10)` which is the UTC date. Verify the new helper
+    // produces the local date that matches what the user sees.
+    const occurredAt = "2026-05-01T20:46:00Z"; // = 03:46 Bangkok next day
+    expect(dayKeyInTz(occurredAt, "Asia/Bangkok")).toBe("2026-05-02");
+  });
+
+  it("handles the lexicographic ordering invariant the byDay sort relies on", () => {
+    // The dashboard's byDay array is sorted by `day.localeCompare(b.day)`.
+    // With YYYY-MM-DD strings, lexicographic order equals chronological
+    // order — but only because we zero-pad. Spot-check the padding here.
+    expect(dayKeyInTz("2026-01-09T05:00:00Z", "Asia/Bangkok")).toBe(
+      "2026-01-09"
+    );
+    expect(dayKeyInTz("2026-09-01T05:00:00Z", "Asia/Bangkok")).toBe(
+      "2026-09-01"
     );
   });
 });

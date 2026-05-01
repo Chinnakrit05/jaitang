@@ -108,6 +108,34 @@ describe("aggregateMonthSummary — byPaymentMethod", () => {
     expect(out.balance).toBe(out.income - out.expense);
   });
 
+  it("buckets day keys in BUSINESS_TZ (Asia/Bangkok), not UTC", () => {
+    // 20:46 UTC May 1 = 03:46 Bangkok May 2. The aggregator must put this
+    // under 2026-05-02, otherwise late-night Bangkok rows leak into the
+    // previous day on the daily-trend chart.
+    const out = aggregateMonthSummary([
+      tx({
+        kind: "expense",
+        amount: 274,
+        paymentMethod: "cash",
+        occurredAt: "2026-05-01T20:46:00Z",
+      }),
+      tx({
+        kind: "expense",
+        amount: 95,
+        paymentMethod: "cash",
+        occurredAt: "2026-05-01T07:59:00Z", // 14:59 Bangkok same day
+      }),
+    ]);
+    const days = out.byDay.map((d) => d.day);
+    expect(days).toContain("2026-05-02");
+    expect(days).toContain("2026-05-01");
+
+    const may1 = out.byDay.find((d) => d.day === "2026-05-01");
+    const may2 = out.byDay.find((d) => d.day === "2026-05-02");
+    expect(may1?.expense).toBe(95);
+    expect(may2?.expense).toBe(274);
+  });
+
   it("does not let payment_method buckets affect byCategory math", () => {
     // Same category, two different payment methods → still one byCategory row
     const out = aggregateMonthSummary([

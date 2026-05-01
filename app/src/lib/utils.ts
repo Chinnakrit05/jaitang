@@ -61,3 +61,22 @@ export function toLocalDateTimeInput(iso: string | Date): string {
     d.getHours()
   )}:${pad(d.getMinutes())}`;
 }
+
+/**
+ * Return the calendar day (`YYYY-MM-DD`) that an ISO instant falls on,
+ * relative to the given timezone. Uses Intl with `en-CA` because that
+ * locale produces ISO-shaped dates natively.
+ *
+ * The `tz` argument exists so server code can compute "May 1 in Bangkok"
+ * even though the runtime is UTC. Pass `undefined` (or omit) on the client
+ * to use the browser's TZ — convenient for the transaction list grouping.
+ */
+export function dayKeyInTz(iso: string | Date, tz?: string): string {
+  const d = typeof iso === "string" ? new Date(iso) : iso;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
