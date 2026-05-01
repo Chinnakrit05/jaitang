@@ -18,7 +18,7 @@ const TxSchema = z.object({
   categoryId: z.string().uuid().nullable().optional(),
   note: z.string().max(500).optional(),
   paymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
-  occurredAt: z.string().min(1),
+  occurredAt: z.iso.datetime({ offset: true }),
 });
 
 const validBase = {
@@ -27,7 +27,8 @@ const validBase = {
   // Zod v4 .uuid() requires a real version digit + variant; use a v4 UUID.
   categoryId: "11111111-1111-4111-8111-111111111111",
   note: "test",
-  occurredAt: "2026-05-02T10:30",
+  // ISO with Z is what the client-side onSubmit converts user input to.
+  occurredAt: "2026-05-02T03:30:00.000Z",
 };
 
 describe("transaction action TxSchema", () => {
@@ -78,6 +79,25 @@ describe("transaction action TxSchema", () => {
   it("requires occurredAt", () => {
     const result = TxSchema.safeParse({ ...validBase, occurredAt: "" });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects TZ-naive datetime (regression — this is the bug we fixed)", () => {
+    // "2026-05-02T10:30" with no Z/offset would silently be parsed in the
+    // server's local TZ (UTC on Vercel), shifting the stored instant by
+    // the user's UTC offset. Schema must reject it now.
+    const result = TxSchema.safeParse({
+      ...validBase,
+      occurredAt: "2026-05-02T10:30",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts ISO with explicit offset (e.g. +07:00)", () => {
+    const result = TxSchema.safeParse({
+      ...validBase,
+      occurredAt: "2026-05-02T10:30:00+07:00",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("coerces stringy amount into a number (FormData always yields strings)", () => {

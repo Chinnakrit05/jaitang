@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Plus, Trash2, Play, Pause, RefreshCw } from "lucide-react";
@@ -12,15 +12,8 @@ import {
   runDueAction,
   toggleRecurringAction,
 } from "@/app/(app)/recurring/actions";
-import { formatCurrency, formatDate, cn } from "@/lib/utils";
+import { formatCurrency, formatDate, cn, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
-
-function toLocalInput(d: Date) {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
-  )}:${pad(d.getMinutes())}`;
-}
 
 export function RecurringPanel({
   rules,
@@ -103,6 +96,17 @@ function CreateRecurringForm({
   const [error, setError] = useState<string | null>(null);
   const visibleCats = categories.filter((c) => c.kind === kind);
 
+  // datetime-local must be initialised on the client (browser TZ). Computing
+  // it on the server would emit the value formatted in UTC, which the user's
+  // browser then displays verbatim as if it were local — off by the user's
+  // UTC offset. See transaction-form.tsx for the longer write-up.
+  const startRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const el = startRef.current;
+    if (!el) return;
+    el.value = toLocalDateTimeInput(new Date(Date.now() + 60_000));
+  }, []);
+
   return (
     <form
       onSubmit={(e) => {
@@ -110,6 +114,15 @@ function CreateRecurringForm({
         const fd = new FormData(e.currentTarget);
         fd.set("kind", kind);
         fd.set("period", period);
+        // Convert TZ-naive "wall clock" string to UTC ISO so the server-side
+        // `new Date(str)` parse doesn't reinterpret it in UTC.
+        const startRaw = fd.get("startDate");
+        if (typeof startRaw === "string" && startRaw.length > 0) {
+          const inst = new Date(startRaw);
+          if (!Number.isNaN(inst.getTime())) {
+            fd.set("startDate", inst.toISOString());
+          }
+        }
         startTransition(async () => {
           const result = await createRecurringAction(fd);
           if (result?.ok === false) setError(result.error);
@@ -199,10 +212,13 @@ function CreateRecurringForm({
           {t("recurring.startDate")}
         </label>
         <input
+          ref={startRef}
           name="startDate"
           type="datetime-local"
           required
-          defaultValue={toLocalInput(new Date(Date.now() + 60_000))}
+          // No defaultValue — see useEffect; SSR-rendered TZ would mislead
+          // the user. The effect fills in `now + 1 min` in their browser TZ.
+          suppressHydrationWarning
           className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
         />
       </div>

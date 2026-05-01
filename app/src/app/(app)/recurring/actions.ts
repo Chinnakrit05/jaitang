@@ -19,7 +19,9 @@ const Schema = z.object({
   period: z.enum(["daily", "weekly", "monthly"]),
   dayOfMonth: z.coerce.number().int().min(1).max(31).nullable().optional(),
   dayOfWeek: z.coerce.number().int().min(0).max(6).nullable().optional(),
-  startDate: z.string().min(1),
+  // Same TZ-correctness reasoning as transactions.actions.ts — see comment
+  // there. Form converts the wall-clock string to UTC ISO before submit.
+  startDate: z.iso.datetime({ offset: true }),
 });
 
 function refresh() {

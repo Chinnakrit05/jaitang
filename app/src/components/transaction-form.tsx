@@ -105,6 +105,20 @@ export function TransactionForm({
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
+        // The datetime-local input gives us a TZ-naive string like
+        // "2026-05-02T10:30" representing the user's wall-clock time. If we
+        // hand that to the server as-is, `new Date(str)` parses it in the
+        // server's local TZ (UTC on Vercel) and the recorded instant is off
+        // by the user's UTC offset. Convert here in the browser, where
+        // `new Date()` parses the string in the user's TZ and serialises
+        // back as UTC ISO with a Z suffix the server can trust.
+        const occurredAtRaw = fd.get("occurredAt");
+        if (typeof occurredAtRaw === "string" && occurredAtRaw.length > 0) {
+          const asInstant = new Date(occurredAtRaw);
+          if (!Number.isNaN(asInstant.getTime())) {
+            fd.set("occurredAt", asInstant.toISOString());
+          }
+        }
         startTransition(async () => {
           const result = await action(fd);
           if (result && "ok" in result && result.ok === false) {

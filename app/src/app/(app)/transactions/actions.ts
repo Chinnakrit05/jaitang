@@ -23,7 +23,11 @@ const TxSchema = z.object({
   categoryId: z.string().uuid().nullable().optional(),
   note: z.string().max(500).optional(),
   paymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
-  occurredAt: z.string().min(1),
+  // Must include a TZ designator (`Z` or `±HH:MM`). Without one, the server
+  // would reinterpret the string in UTC and store an instant N hours off
+  // from what the user actually typed. The form converts before submitting;
+  // this validator catches stale clients or out-of-band callers.
+  occurredAt: z.iso.datetime({ offset: true }),
 });
 
 function refreshAll() {
