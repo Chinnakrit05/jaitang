@@ -1,5 +1,9 @@
 import { getServerSupabase } from "@/lib/supabase/server";
 import { dayKeyInTz } from "@/lib/utils";
+import {
+  BUSINESS_TZ,
+  businessTzMidnightUtc,
+} from "@/lib/business-tz";
 import type {
   MonthSummary,
   PaymentMethod,
@@ -7,15 +11,6 @@ import type {
   TransactionWithCategory,
   TxKind,
 } from "@/lib/types";
-
-/**
- * The "calendar" timezone the server uses when bucketing rows into days
- * and months. This app is Thai-first, currency THB, no DST in scope —
- * Asia/Bangkok is the right default. Make this per-user/per-ledger if we
- * ever ship outside of Thailand.
- */
-const BUSINESS_TZ = "Asia/Bangkok";
-const BUSINESS_TZ_OFFSET_HOURS = 7; // Asia/Bangkok = UTC+7, no DST
 
 export type ListOptions = {
   ledgerId: string;
@@ -286,15 +281,9 @@ export async function getMonthSummary(
   year: number,
   month: number // 1-12
 ): Promise<MonthSummary> {
-  // Asia/Bangkok midnight of (year, month, 1) in UTC = the BUSINESS_TZ
-  // wall-clock minus 7 hours. The negative-hour overflow into Date.UTC()
-  // is well-defined: it rolls into the previous day cleanly.
-  const start = new Date(
-    Date.UTC(year, month - 1, 1, -BUSINESS_TZ_OFFSET_HOURS, 0, 0)
-  );
-  const end = new Date(
-    Date.UTC(year, month, 1, -BUSINESS_TZ_OFFSET_HOURS, 0, 0)
-  );
+  // BUSINESS_TZ midnight on the 1st of the month, in UTC instant terms.
+  const start = businessTzMidnightUtc(year, month - 1, 1);
+  const end = businessTzMidnightUtc(year, month, 1);
 
   const txs = await listTransactions({
     ledgerId,
