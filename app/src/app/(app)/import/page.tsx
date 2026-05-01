@@ -3,7 +3,11 @@ import { requireSession } from "@/lib/session";
 import { ImportWizard } from "@/components/import-wizard";
 
 export default async function ImportPage() {
-  const enabled = !!process.env.ANTHROPIC_API_KEY;
+  // The Jaitang CSV path doesn't need an LLM (categories are matched by
+  // name), so we always render the wizard. Users without ANTHROPIC_API_KEY
+  // see an inline note that AI mapping for Numbers files is unavailable;
+  // the action returns a clean error if they upload one anyway.
+  const aiEnabled = !!process.env.ANTHROPIC_API_KEY;
   const [{ ledger }, t] = await Promise.all([
     requireSession(),
     getTranslations(),
@@ -16,13 +20,12 @@ export default async function ImportPage() {
         <p className="text-sm text-(--muted) mt-1">{t("import.subtitle")}</p>
       </div>
 
-      {!enabled ? (
-        <div className="rounded-2xl border border-(--border) bg-(--card) p-6">
-          <p className="text-sm text-(--muted)">{t("import.notConfigured")}</p>
+      {!aiEnabled && (
+        <div className="rounded-2xl border border-(--border) bg-(--card) p-4 text-sm text-(--muted)">
+          {t("import.notConfigured")}
         </div>
-      ) : (
-        <ImportWizard ledgerCurrency={ledger.currency} />
       )}
+      <ImportWizard ledgerCurrency={ledger.currency} />
     </div>
   );
 }

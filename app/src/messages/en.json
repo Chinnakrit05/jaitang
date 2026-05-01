@@ -83,7 +83,11 @@
     "expenseByCategory": "Expense by category",
     "dailyTrend": "Daily trend",
     "recent": "Recent transactions",
-    "viewAll": "View all →"
+    "viewAll": "View all →",
+    "paymentMethodTitle": "By payment method",
+    "paymentMethodEmpty": "No transactions yet this month",
+    "paymentMethodUnspecified": "Not tagged",
+    "paymentMethodUnspecifiedHint": "Older rows with no cash/transfer tag — edit them on the transaction page to fill in"
   },
   "transactions": {
     "title": "All transactions",

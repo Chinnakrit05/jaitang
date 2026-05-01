@@ -36,6 +36,11 @@ export type TransactionWithCategory = Transaction & {
   } | null;
 };
 
+export type PaymentMethodTotals = {
+  income: number;
+  expense: number;
+};
+
 export type MonthSummary = {
   income: number;
   expense: number;
@@ -53,4 +58,13 @@ export type MonthSummary = {
     income: number;
     expense: number;
   }>;
+  /**
+   * Aggregated income+expense per payment method. `unspecified` covers
+   * legacy rows that pre-date the payment_method column (DB NULL).
+   */
+  byPaymentMethod: {
+    cash: PaymentMethodTotals;
+    transfer: PaymentMethodTotals;
+    unspecified: PaymentMethodTotals;
+  };
 };

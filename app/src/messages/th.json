@@ -83,7 +83,11 @@
     "expenseByCategory": "รายจ่ายตามหมวด",
     "dailyTrend": "รายวัน",
     "recent": "รายการล่าสุด",
-    "viewAll": "ดูทั้งหมด →"
+    "viewAll": "ดูทั้งหมด →",
+    "paymentMethodTitle": "สรุปตามช่องทาง",
+    "paymentMethodEmpty": "เดือนนี้ยังไม่มีรายการ",
+    "paymentMethodUnspecified": "ไม่ระบุช่องทาง",
+    "paymentMethodUnspecifiedHint": "รายการเก่าที่ยังไม่ได้ระบุเงินสด/เงินโอน — แก้ที่หน้าแก้ไขรายการได้"
   },
   "transactions": {
     "title": "รายการทั้งหมด",

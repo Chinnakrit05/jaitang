@@ -83,7 +83,11 @@
     "expenseByCategory": "カテゴリ別支出",
     "dailyTrend": "日別推移",
     "recent": "最近の取引",
-    "viewAll": "すべて表示 →"
+    "viewAll": "すべて表示 →",
+    "paymentMethodTitle": "支払い方法別",
+    "paymentMethodEmpty": "今月の取引はまだありません",
+    "paymentMethodUnspecified": "未指定",
+    "paymentMethodUnspecifiedHint": "現金/振込が未設定の古い取引 — 取引編集ページで補完できます"
   },
   "transactions": {
     "title": "すべての取引",

@@ -83,7 +83,11 @@
     "expenseByCategory": "按分类支出",
     "dailyTrend": "每日趋势",
     "recent": "最近记录",
-    "viewAll": "查看全部 →"
+    "viewAll": "查看全部 →",
+    "paymentMethodTitle": "按付款方式",
+    "paymentMethodEmpty": "本月还没有记录",
+    "paymentMethodUnspecified": "未标注",
+    "paymentMethodUnspecifiedHint": "尚未标注现金/转账的旧记录 — 可在记录编辑页补充"
   },
   "transactions": {
     "title": "全部记录",

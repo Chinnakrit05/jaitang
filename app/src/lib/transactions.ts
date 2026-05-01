@@ -181,24 +181,13 @@ export async function sumPeriod(
 }
 
 /**
- * Aggregate a single ledger's month: totals + by category + by day.
- * Computed in JS for MVP simplicity; small n. Move to SQL view later.
+ * Pure aggregation. Extracted from `getMonthSummary` so unit tests can
+ * exercise it without a Supabase round trip. Whatever fetch the caller
+ * runs, hand the row list here and you get the dashboard's shape.
  */
-export async function getMonthSummary(
-  ledgerId: string,
-  year: number,
-  month: number // 1-12
-): Promise<MonthSummary> {
-  const start = new Date(Date.UTC(year, month - 1, 1));
-  const end = new Date(Date.UTC(year, month, 1));
-
-  const txs = await listTransactions({
-    ledgerId,
-    from: start.toISOString(),
-    to: end.toISOString(),
-    limit: 5000,
-  });
-
+export function aggregateMonthSummary(
+  txs: TransactionWithCategory[]
+): MonthSummary {
   let income = 0;
   let expense = 0;
   const byCatMap = new Map<
@@ -213,6 +202,11 @@ export async function getMonthSummary(
     }
   >();
   const byDayMap = new Map<string, { income: number; expense: number }>();
+  const byPaymentMethod = {
+    cash: { income: 0, expense: 0 },
+    transfer: { income: 0, expense: 0 },
+    unspecified: { income: 0, expense: 0 },
+  };
 
   for (const tx of txs) {
     if (tx.kind === "income") income += tx.amount;
@@ -238,6 +232,18 @@ export async function getMonthSummary(
     if (tx.kind === "income") dayEntry.income += tx.amount;
     else dayEntry.expense += tx.amount;
     byDayMap.set(day, dayEntry);
+
+    // Bucket by payment method. NULL → "unspecified" so the dashboard can
+    // show users how much of their history is missing this tag and nudge
+    // them to backfill.
+    const bucket =
+      tx.payment_method === "cash"
+        ? byPaymentMethod.cash
+        : tx.payment_method === "transfer"
+        ? byPaymentMethod.transfer
+        : byPaymentMethod.unspecified;
+    if (tx.kind === "income") bucket.income += tx.amount;
+    else bucket.expense += tx.amount;
   }
 
   return {
@@ -248,5 +254,28 @@ export async function getMonthSummary(
     byDay: Array.from(byDayMap.entries())
       .map(([day, v]) => ({ day, ...v }))
       .sort((a, b) => a.day.localeCompare(b.day)),
+    byPaymentMethod,
   };
+}
+
+/**
+ * Aggregate a single ledger's month: totals + by category + by day.
+ * Computed in JS for MVP simplicity; small n. Move to SQL view later.
+ */
+export async function getMonthSummary(
+  ledgerId: string,
+  year: number,
+  month: number // 1-12
+): Promise<MonthSummary> {
+  const start = new Date(Date.UTC(year, month - 1, 1));
+  const end = new Date(Date.UTC(year, month, 1));
+
+  const txs = await listTransactions({
+    ledgerId,
+    from: start.toISOString(),
+    to: end.toISOString(),
+    limit: 5000,
+  });
+
+  return aggregateMonthSummary(txs);
 }
