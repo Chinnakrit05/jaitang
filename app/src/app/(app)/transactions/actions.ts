@@ -22,6 +22,7 @@ const TxSchema = z.object({
   amount: z.coerce.number().positive("จำนวนต้องมากกว่า 0").max(1e12),
   categoryId: z.string().uuid().nullable().optional(),
   note: z.string().max(500).optional(),
+  paymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
   occurredAt: z.string().min(1),
 });
 
@@ -56,6 +57,7 @@ export async function createTransactionAction(formData: FormData) {
     amount: formData.get("amount"),
     categoryId: formData.get("categoryId") || null,
     note: formData.get("note") || undefined,
+    paymentMethod: formData.get("paymentMethod") || null,
     occurredAt: formData.get("occurredAt"),
   });
   if (!parsed.success) {
@@ -69,6 +71,7 @@ export async function createTransactionAction(formData: FormData) {
     kind: parsed.data.kind,
     amount: parsed.data.amount,
     note: parsed.data.note,
+    paymentMethod: parsed.data.paymentMethod ?? null,
     occurredAt: new Date(parsed.data.occurredAt).toISOString(),
   });
 
@@ -141,6 +144,7 @@ export async function updateTransactionAction(id: string, formData: FormData) {
     amount: formData.get("amount"),
     categoryId: formData.get("categoryId") || null,
     note: formData.get("note") || undefined,
+    paymentMethod: formData.get("paymentMethod") || null,
     occurredAt: formData.get("occurredAt"),
   });
   if (!parsed.success) {
@@ -152,6 +156,7 @@ export async function updateTransactionAction(id: string, formData: FormData) {
     amount: parsed.data.amount,
     categoryId: parsed.data.categoryId ?? null,
     note: parsed.data.note ?? null,
+    paymentMethod: parsed.data.paymentMethod ?? null,
     occurredAt: new Date(parsed.data.occurredAt).toISOString(),
   });
 

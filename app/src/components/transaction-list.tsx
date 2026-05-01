@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
+import { Banknote, Landmark, Pencil, Trash2 } from "lucide-react";
 import type { TransactionWithCategory } from "@/lib/types";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
@@ -100,6 +100,23 @@ export function TransactionList({
                     )}
                     <div className="text-xs text-(--muted) flex items-center gap-1.5 flex-wrap">
                       <span>{formatDate(tx.occurred_at, fmtLocale)}</span>
+                      {tx.payment_method && (
+                        <>
+                          <span>•</span>
+                          <span className="inline-flex items-center gap-1">
+                            {tx.payment_method === "cash" ? (
+                              <Banknote size={12} />
+                            ) : (
+                              <Landmark size={12} />
+                            )}
+                            <span>
+                              {tx.payment_method === "cash"
+                                ? t("transactions.paymentCash")
+                                : t("transactions.paymentTransfer")}
+                            </span>
+                          </span>
+                        </>
+                      )}
                       {showAttribution && tx.user && (
                         <>
                           <span>•</span>

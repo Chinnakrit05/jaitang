@@ -28,7 +28,9 @@ export default async function EditTransactionPage({
   const [txRes, categories, members, existingSplits] = await Promise.all([
     sb
       .from("transactions")
-      .select("id, ledger_id, kind, amount, category_id, note, occurred_at, user_id")
+      .select(
+        "id, ledger_id, kind, amount, category_id, note, payment_method, occurred_at, user_id"
+      )
       .eq("id", id)
       .eq("ledger_id", ledgerId)
       .maybeSingle(),
@@ -77,6 +79,7 @@ export default async function EditTransactionPage({
           amount: Number(tx.amount),
           categoryId: tx.category_id,
           note: tx.note,
+          paymentMethod: tx.payment_method ?? null,
           occurredAt: tx.occurred_at,
           splitWith,
         }}

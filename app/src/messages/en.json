@@ -109,6 +109,9 @@
     "splitTitle": "Split with members",
     "splitHint": "Pick who's in — split equally among everyone selected",
     "splitSummary": "Split among {count} • ~{amount} each",
+    "paymentMethod": "Payment method",
+    "paymentCash": "Cash",
+    "paymentTransfer": "Transfer",
     "filters": {
       "thisMonth": "This month",
       "lastMonth": "Last month",
@@ -256,7 +259,20 @@
     "languageHint": "Pick the app display language",
     "languageThai": "ไทย",
     "languageEnglish": "English",
-    "unknownName": "(unknown)"
+    "unknownName": "(unknown)",
+    "dangerSection": "Danger zone",
+    "dangerHint": "Actions here permanently destroy data — there's no undo. Consider running \"Download backup\" above first.",
+    "wipeLedgerTitle": "Delete all transactions in active ledger",
+    "wipeLedgerHint": "Removes every income/expense record (and any attached bill splits) in \"{ledger}\". Categories, budgets, recurring rules, and members are kept.",
+    "wipeLedgerButton": "Wipe transactions in this ledger",
+    "wipeLedgerConfirmType": "Type the ledger name \"{ledger}\" to confirm",
+    "wipeLedgerOwnerOnly": "Only the ledger owner can do this",
+    "wipeLedgerDone": "Deleted {count} transactions in \"{ledger}\"",
+    "wipeAllTitle": "Delete all my data",
+    "wipeAllHint": "Removes every ledger you own — its transactions, categories, budgets, recurring rules, and push subscriptions — then signs you out. Ledgers others shared with you are untouched.",
+    "wipeAllButton": "Delete everything and sign out",
+    "wipeAllConfirmType": "Type \"DELETE\" to confirm",
+    "wipeWorking": "Deleting…"
   },
   "navbarStat": {
     "label": "Period summary",

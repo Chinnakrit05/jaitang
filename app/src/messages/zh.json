@@ -109,6 +109,9 @@
     "splitTitle": "与成员分摊",
     "splitHint": "选择参与人 — 系统将平均分摊",
     "splitSummary": "{count} 人分摊 • 每人约 {amount}",
+    "paymentMethod": "付款方式",
+    "paymentCash": "现金",
+    "paymentTransfer": "转账",
     "filters": {
       "thisMonth": "本月",
       "lastMonth": "上月",
@@ -256,7 +259,20 @@
     "languageHint": "选择应用显示语言",
     "languageThai": "ไทย",
     "languageEnglish": "English",
-    "unknownName": "(未知)"
+    "unknownName": "(未知)",
+    "dangerSection": "危险区",
+    "dangerHint": "此处操作会永久删除数据,无法恢复。建议先点击上方的「下载备份」。",
+    "wipeLedgerTitle": "删除当前账本的所有记录",
+    "wipeLedgerHint": "删除「{ledger}」中的所有收入/支出记录(及关联分摊)。分类、预算、定期、成员保留。",
+    "wipeLedgerButton": "清空此账本的记录",
+    "wipeLedgerConfirmType": "请输入账本名称「{ledger}」以确认",
+    "wipeLedgerOwnerOnly": "仅账本所有者可执行",
+    "wipeLedgerDone": "已删除「{ledger}」中的 {count} 条记录",
+    "wipeAllTitle": "删除我的所有数据",
+    "wipeAllHint": "删除您拥有的所有账本(包括记录、分类、预算、定期、推送通知)并退出登录。他人分享给您的账本不受影响。",
+    "wipeAllButton": "删除全部并退出登录",
+    "wipeAllConfirmType": "请输入「DELETE」以确认",
+    "wipeWorking": "删除中…"
   },
   "navbarStat": {
     "label": "周期统计",

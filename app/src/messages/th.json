@@ -109,6 +109,9 @@
     "splitTitle": "หารบิลกับสมาชิก",
     "splitHint": "เลือกคนที่ร่วมหาร — ระบบหารเท่าๆ กัน",
     "splitSummary": "หาร {count} คน คนละ ~{amount}",
+    "paymentMethod": "ช่องทางการเงิน",
+    "paymentCash": "เงินสด",
+    "paymentTransfer": "เงินโอน",
     "filters": {
       "thisMonth": "เดือนนี้",
       "lastMonth": "เดือนก่อน",
@@ -256,7 +259,20 @@
     "languageHint": "เลือกภาษาแสดงผลของแอป",
     "languageThai": "ไทย",
     "languageEnglish": "English",
-    "unknownName": "(ไม่ทราบชื่อ)"
+    "unknownName": "(ไม่ทราบชื่อ)",
+    "dangerSection": "โซนอันตราย",
+    "dangerHint": "การกระทำในโซนนี้ลบข้อมูลถาวร — ไม่สามารถกู้คืนได้ ควรกด \"ดาวน์โหลด backup\" ด้านบนก่อน",
+    "wipeLedgerTitle": "ลบรายการทั้งหมดในสมุดที่ใช้อยู่",
+    "wipeLedgerHint": "ลบทุกรายการรายรับ-รายจ่าย (และการหารบิลที่ผูกอยู่) ในสมุด \"{ledger}\" — หมวด/งบ/รายการประจำ/สมาชิกยังอยู่",
+    "wipeLedgerButton": "ลบรายการทั้งหมดในสมุดนี้",
+    "wipeLedgerConfirmType": "พิมพ์ชื่อสมุด \"{ledger}\" เพื่อยืนยัน",
+    "wipeLedgerOwnerOnly": "ทำได้เฉพาะเจ้าของสมุดเท่านั้น",
+    "wipeLedgerDone": "ลบ {count} รายการในสมุด \"{ledger}\" แล้ว",
+    "wipeAllTitle": "ลบข้อมูลทั้งหมดของฉัน",
+    "wipeAllHint": "ลบทุกสมุดที่คุณเป็นเจ้าของ พร้อมรายการ หมวด งบ รายการประจำ การแจ้งเตือน — แล้วลงชื่อออก สมุดที่คนอื่นแชร์ให้คุณจะไม่ถูกแตะ",
+    "wipeAllButton": "ลบข้อมูลทั้งหมดและออก",
+    "wipeAllConfirmType": "พิมพ์ \"DELETE\" เพื่อยืนยัน",
+    "wipeWorking": "กำลังลบ…"
   },
   "navbarStat": {
     "label": "สรุปยอดช่วงนี้",

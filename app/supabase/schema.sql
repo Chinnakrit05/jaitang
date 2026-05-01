@@ -83,10 +83,17 @@ create table if not exists public.transactions (
   kind tx_kind not null,
   amount numeric(14, 2) not null check (amount > 0),
   note text,
+  -- 'cash' | 'transfer' | null (unspecified, e.g. legacy rows)
+  payment_method text check (payment_method in ('cash', 'transfer')),
   occurred_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Idempotent migration for existing deployments where the column did not exist.
+alter table public.transactions
+  add column if not exists payment_method text
+  check (payment_method in ('cash', 'transfer'));
 
 create index if not exists idx_tx_ledger_occurred on public.transactions(ledger_id, occurred_at desc);
 create index if not exists idx_tx_user on public.transactions(user_id);

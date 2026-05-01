@@ -4,11 +4,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { PushToggle } from "@/components/push-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { BackupSection } from "@/components/backup-section";
+import { DangerZoneSection } from "@/components/danger-zone-section";
 import { signOut } from "@/auth";
-import { LogOut } from "lucide-react";
+import { AlertTriangle, LogOut } from "lucide-react";
 
 export default async function SettingsPage() {
-  const { user } = await requireSession();
+  const { user, ledger, role } = await requireSession();
   const t = await getTranslations();
   const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null;
 
@@ -79,6 +80,18 @@ export default async function SettingsPage() {
         <h2 className="font-semibold">{t("backup.section")}</h2>
         <p className="text-sm text-(--muted)">{t("backup.sectionHint")}</p>
         <BackupSection />
+      </section>
+
+      <section className="rounded-2xl border border-(--expense)/40 bg-(--expense)/5 p-5 space-y-3">
+        <h2 className="font-semibold flex items-center gap-2 text-(--expense)">
+          <AlertTriangle size={16} />
+          {t("settings.dangerSection")}
+        </h2>
+        <p className="text-sm text-(--muted)">{t("settings.dangerHint")}</p>
+        <DangerZoneSection
+          ledgerName={ledger.name}
+          isOwnerOfActiveLedger={role === "owner"}
+        />
       </section>
     </div>
   );

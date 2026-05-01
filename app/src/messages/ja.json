@@ -109,6 +109,9 @@
     "splitTitle": "メンバーで割り勘",
     "splitHint": "参加者を選択 — 全員で均等に割り勘します",
     "splitSummary": "{count} 人で割り勘 • 一人約 {amount}",
+    "paymentMethod": "支払い方法",
+    "paymentCash": "現金",
+    "paymentTransfer": "振込",
     "filters": {
       "thisMonth": "今月",
       "lastMonth": "先月",
@@ -256,7 +259,20 @@
     "languageHint": "アプリの表示言語を選択",
     "languageThai": "ไทย",
     "languageEnglish": "English",
-    "unknownName": "(不明)"
+    "unknownName": "(不明)",
+    "dangerSection": "危険ゾーン",
+    "dangerHint": "ここでの操作はデータを完全に削除し、復元できません。先に上の「バックアップをダウンロード」を実行してください。",
+    "wipeLedgerTitle": "アクティブな帳簿の全取引を削除",
+    "wipeLedgerHint": "「{ledger}」のすべての収入/支出レコード(および関連する割り勘)を削除します。カテゴリ、予算、定期取引、メンバーは保持されます。",
+    "wipeLedgerButton": "この帳簿の取引を全削除",
+    "wipeLedgerConfirmType": "確認のため帳簿名「{ledger}」を入力",
+    "wipeLedgerOwnerOnly": "帳簿のオーナーのみ実行できます",
+    "wipeLedgerDone": "「{ledger}」で {count} 件の取引を削除しました",
+    "wipeAllTitle": "全てのデータを削除",
+    "wipeAllHint": "あなたが所有する全帳簿(取引、カテゴリ、予算、定期取引、プッシュ通知)を削除してサインアウトします。他人が共有した帳簿は影響を受けません。",
+    "wipeAllButton": "全て削除してサインアウト",
+    "wipeAllConfirmType": "確認のため「DELETE」と入力",
+    "wipeWorking": "削除中…"
   },
   "navbarStat": {
     "label": "期間サマリー",

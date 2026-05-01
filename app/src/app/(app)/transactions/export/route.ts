@@ -30,15 +30,22 @@ export async function GET(req: Request) {
     limit: 50000,
   });
 
-  const header = ["วันที่", "ประเภท", "หมวด", "จำนวน", "โน้ต"];
+  const header = ["วันที่", "ประเภท", "หมวด", "จำนวน", "ช่องทาง", "โน้ต"];
   const lines = [header.join(",")];
   for (const tx of items) {
+    const method =
+      tx.payment_method === "cash"
+        ? "เงินสด"
+        : tx.payment_method === "transfer"
+        ? "เงินโอน"
+        : "";
     lines.push(
       [
         new Date(tx.occurred_at).toISOString(),
         tx.kind === "income" ? "รายรับ" : "รายจ่าย",
         tx.category?.name ?? "ไม่ระบุ",
         tx.amount.toFixed(2),
+        method,
         tx.note ?? "",
       ]
         .map(csvEscape)

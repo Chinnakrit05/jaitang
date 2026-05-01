@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { Category, TxKind } from "@/lib/types";
+import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 
 export type ParsedReceipt = {
   amount: number | null;
@@ -7,6 +7,7 @@ export type ParsedReceipt = {
   occurredAt: string | null; // ISO date or null if unknown
   note: string | null;
   categoryId: string | null;
+  paymentMethod: PaymentMethod | null;
   confidence: "high" | "medium" | "low";
   raw: string; // full assistant note for debugging
 };
@@ -66,6 +67,7 @@ Respond ONLY with a single JSON object — no prose, no markdown fences:
   "occurredAt": "YYYY-MM-DDTHH:MM:SS" | null,  // local time as printed on the doc
   "note": string | null,               // for receipts: merchant + 1-3 word summary. For slips: "โอนให้ <recipient>" or "รับจาก <sender>". Thai if doc is Thai.
   "categoryId": string | null,         // pick one id from the list below; null if unsure
+  "paymentMethod": "cash" | "transfer", // "transfer" if image is a bank/PromptPay slip (case B), "cash" if it's a paper retail receipt (case A)
   "confidence": "high" | "medium" | "low"
 }
 
@@ -108,6 +110,7 @@ ${catList}`,
       occurredAt: null,
       note: null,
       categoryId: null,
+      paymentMethod: null,
       confidence: "low",
       raw,
     };
@@ -130,6 +133,10 @@ ${catList}`,
         : null,
     note: typeof parsed.note === "string" ? parsed.note : null,
     categoryId,
+    paymentMethod:
+      parsed.paymentMethod === "transfer" || parsed.paymentMethod === "cash"
+        ? parsed.paymentMethod
+        : null,
     confidence:
       parsed.confidence === "high" || parsed.confidence === "medium"
         ? parsed.confidence

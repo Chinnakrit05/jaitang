@@ -3,8 +3,10 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { resolveActiveLedger } from "@/lib/active-ledger";
 import { getServerSupabase } from "@/lib/supabase/server";
+import type { LedgerRole } from "@/lib/role";
 
-export type LedgerRole = "owner" | "editor" | "viewer";
+export { assertOwner, assertWritable } from "@/lib/role";
+export type { LedgerRole } from "@/lib/role";
 
 export type SessionUser = {
   id?: string;
@@ -87,14 +89,3 @@ export const requireSession = cache(async (): Promise<SessionContext> => {
   };
 });
 
-export function assertWritable(role: LedgerRole) {
-  if (role === "viewer") {
-    throw new Error("คุณไม่มีสิทธิ์แก้ไขสมุดเล่มนี้ (viewer only)");
-  }
-}
-
-export function assertOwner(role: LedgerRole) {
-  if (role !== "owner") {
-    throw new Error("เฉพาะเจ้าของสมุดเท่านั้นที่ทำการนี้ได้");
-  }
-}

@@ -1,6 +1,7 @@
 import { getServerSupabase } from "@/lib/supabase/server";
 import type {
   MonthSummary,
+  PaymentMethod,
   Transaction,
   TransactionWithCategory,
   TxKind,
@@ -23,7 +24,7 @@ export async function listTransactions(
   let q = sb
     .from("transactions")
     .select(
-      "id, ledger_id, user_id, category_id, kind, amount, note, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), user:users(id, name, email, image)"
+      "id, ledger_id, user_id, category_id, kind, amount, note, payment_method, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), user:users(id, name, email, image)"
     )
     .eq("ledger_id", opts.ledgerId)
     .order("occurred_at", { ascending: false })
@@ -51,6 +52,7 @@ export async function listTransactions(
       kind: row.kind as TxKind,
       amount: Number(row.amount),
       note: row.note,
+      payment_method: (row.payment_method as PaymentMethod | null) ?? null,
       occurred_at: row.occurred_at,
       created_at: row.created_at,
       updated_at: row.updated_at,
@@ -67,6 +69,7 @@ export type CreateTxInput = {
   kind: TxKind;
   amount: number;
   note?: string;
+  paymentMethod?: PaymentMethod | null;
   occurredAt: string;
 };
 
@@ -81,6 +84,7 @@ export async function createTransaction(input: CreateTxInput) {
       kind: input.kind,
       amount: input.amount,
       note: input.note ?? null,
+      payment_method: input.paymentMethod ?? null,
       occurred_at: input.occurredAt,
     })
     .select()
@@ -96,6 +100,7 @@ export async function updateTransaction(
     kind: TxKind;
     amount: number;
     note: string | null;
+    paymentMethod: PaymentMethod | null;
     occurredAt: string;
   }>
 ) {
@@ -105,6 +110,7 @@ export async function updateTransaction(
   if (input.kind !== undefined) patch.kind = input.kind;
   if (input.amount !== undefined) patch.amount = input.amount;
   if (input.note !== undefined) patch.note = input.note;
+  if (input.paymentMethod !== undefined) patch.payment_method = input.paymentMethod;
   if (input.occurredAt !== undefined) patch.occurred_at = input.occurredAt;
 
   const { data, error } = await sb
@@ -121,6 +127,30 @@ export async function deleteTransaction(id: string) {
   const sb = getServerSupabase();
   const { error } = await sb.from("transactions").delete().eq("id", id);
   if (error) throw error;
+}
+
+/**
+ * Delete every transaction in a ledger. Splits are removed automatically by
+ * the `transaction_splits.transaction_id` ON DELETE CASCADE foreign key.
+ * Caller is responsible for authorizing — typically owner-only.
+ *
+ * Returns the number of transactions deleted (best-effort; supabase doesn't
+ * always report a row count, so this falls back to 0).
+ */
+export async function wipeLedgerTransactions(ledgerId: string): Promise<number> {
+  const sb = getServerSupabase();
+  // First count, so we can report it back to the UI.
+  const { count } = await sb
+    .from("transactions")
+    .select("id", { count: "exact", head: true })
+    .eq("ledger_id", ledgerId);
+
+  const { error } = await sb
+    .from("transactions")
+    .delete()
+    .eq("ledger_id", ledgerId);
+  if (error) throw error;
+  return count ?? 0;
 }
 
 /**

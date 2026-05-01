@@ -44,3 +44,20 @@ export function formatDate(date: Date | string, locale = "th-TH") {
 export function formatDateTH(date: Date | string) {
   return formatDate(date, "th-TH");
 }
+
+/**
+ * Format an ISO datetime string for an `<input type="datetime-local">`.
+ * Returns `YYYY-MM-DDTHH:MM` in the **runtime's** local timezone.
+ *
+ * IMPORTANT: only call this on the client. Server-side it formats with the
+ * server's TZ (UTC on Vercel), and the browser would display that string
+ * verbatim as if it were the user's local time — producing an off-by-N-hours
+ * default. Components should set the input's value via `useEffect` + ref.
+ */
+export function toLocalDateTimeInput(iso: string | Date): string {
+  const d = typeof iso === "string" ? new Date(iso) : iso;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}

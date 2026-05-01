@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { TransactionForm, type SplitMember } from "@/components/transaction-form";
 import { ReceiptUploader } from "@/components/receipt-uploader";
-import type { Category, TxKind } from "@/lib/types";
+import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 import type { ParsedReceipt } from "@/lib/ocr";
 
 type Initial = {
@@ -11,6 +11,7 @@ type Initial = {
   amount: number;
   categoryId: string | null;
   note: string | null;
+  paymentMethod: PaymentMethod | null;
   occurredAt: string;
 };
 
@@ -35,6 +36,7 @@ export function NewTransactionPage({
       amount: result.amount ?? 0,
       categoryId: result.categoryId,
       note: result.note,
+      paymentMethod: result.paymentMethod,
       occurredAt: result.occurredAt
         ? new Date(result.occurredAt).toISOString()
         : new Date().toISOString(),

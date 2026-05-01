@@ -1,5 +1,7 @@
 export type TxKind = "income" | "expense";
 
+export type PaymentMethod = "cash" | "transfer";
+
 export type Category = {
   id: string;
   ledger_id: string;
@@ -18,6 +20,7 @@ export type Transaction = {
   kind: TxKind;
   amount: number;
   note: string | null;
+  payment_method: PaymentMethod | null;
   occurred_at: string;
   created_at: string;
   updated_at: string;

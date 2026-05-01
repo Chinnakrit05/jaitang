@@ -19,6 +19,8 @@ export type BackupTransaction = {
   kind: "income" | "expense";
   amount: number;
   note: string | null;
+  // Optional: pre-payment-method backups don't include this field.
+  payment_method?: "cash" | "transfer" | null;
   occurred_at: string;
   created_at: string;
 };
@@ -100,7 +102,9 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
         .order("sort_order"),
       sb
         .from("transactions")
-        .select("id, category_id, kind, amount, note, occurred_at, created_at")
+        .select(
+          "id, category_id, kind, amount, note, payment_method, occurred_at, created_at"
+        )
         .eq("ledger_id", l.id)
         .order("occurred_at"),
       sb
@@ -215,6 +219,7 @@ const BackupSchema = z.object({
           kind: z.enum(["income", "expense"]),
           amount: z.number().positive(),
           note: z.string().nullable(),
+          payment_method: z.enum(["cash", "transfer"]).nullable().optional(),
           occurred_at: z.string(),
           created_at: z.string().optional(),
         })
@@ -378,6 +383,7 @@ export async function restoreBackup(
               kind: t.kind,
               amount: t.amount,
               note: t.note,
+              payment_method: t.payment_method ?? null,
               occurred_at: t.occurred_at,
             })
             .select("id")
@@ -394,6 +400,7 @@ export async function restoreBackup(
           kind: t.kind,
           amount: t.amount,
           note: t.note,
+          payment_method: t.payment_method ?? null,
           occurred_at: t.occurred_at,
         }));
         for (let i = 0; i < rows.length; i += 200) {

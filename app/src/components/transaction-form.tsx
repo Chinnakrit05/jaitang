@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import type { Category, TxKind } from "@/lib/types";
-import { cn, formatCurrency } from "@/lib/utils";
+import type { Category, PaymentMethod, TxKind } from "@/lib/types";
+import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
-import { Users } from "lucide-react";
+import { Banknote, Landmark, Users } from "lucide-react";
 
 export type SplitMember = {
   userId: string;
@@ -25,6 +25,7 @@ type Props = {
     categoryId: string | null;
     note: string | null;
     occurredAt: string;
+    paymentMethod?: PaymentMethod | null;
     splitWith?: string[];
   };
   splitMembers?: SplitMember[];
@@ -32,14 +33,6 @@ type Props = {
   submitLabel?: string;
   currency?: string;
 };
-
-function toLocalInput(iso: string) {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
-  )}:${pad(d.getMinutes())}`;
-}
 
 export function TransactionForm({
   categories,
@@ -72,6 +65,30 @@ export function TransactionForm({
   const [amountInput, setAmountInput] = useState<string>(
     initial?.amount ? String(initial.amount) : ""
   );
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    initial?.paymentMethod ?? "cash"
+  );
+
+  // datetime-local must be initialized on the client.
+  //
+  // `toLocalDateTimeInput()` calls Date.getHours() / getMonth() / etc., which return
+  // the **runtime's** local time. SSR runs in the server's timezone (UTC on
+  // Vercel) — so anything we hardcode into the rendered HTML is in UTC, but
+  // the browser displays the string verbatim as if it were the user's local
+  // time. A user in Bangkok would see a default that's 7 hours behind reality.
+  //
+  // Fix: SSR with no value, then fill in on the client via a ref. This
+  // applies to BOTH paths:
+  //   - new tx: use `now`
+  //   - edit tx: format `initial.occurredAt` in the browser's timezone
+  const dateRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const el = dateRef.current;
+    if (!el) return;
+    el.value = initial?.occurredAt
+      ? toLocalDateTimeInput(initial.occurredAt)
+      : toLocalDateTimeInput(new Date().toISOString());
+  }, [initial?.occurredAt]);
 
   const visibleCats = categories.filter((c) => c.kind === kind);
   const canSplit = !!splitMembers && splitMembers.length > 1 && kind === "expense";
@@ -80,10 +97,6 @@ export function TransactionForm({
   const numAmount = Number(amountInput) || 0;
   const perPerson = splitOn && splitIds.length > 0 ? numAmount / splitIds.length : 0;
   const splitParam = splitOn && splitIds.length > 1 ? splitIds.join(",") : "";
-
-  const defaultDate = initial?.occurredAt
-    ? toLocalInput(initial.occurredAt)
-    : toLocalInput(new Date().toISOString());
 
   const submit = submitLabel ?? t("common.save");
 
@@ -237,12 +250,51 @@ export function TransactionForm({
       </div>
 
       <div>
+        <label className="block text-sm font-medium mb-1.5">
+          {t("transactions.paymentMethod")}
+        </label>
+        <input type="hidden" name="paymentMethod" value={paymentMethod} />
+        <div className="grid grid-cols-2 gap-2 p-1 bg-(--card) rounded-xl border border-(--border)">
+          <button
+            type="button"
+            onClick={() => setPaymentMethod("cash")}
+            className={cn(
+              "flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition",
+              paymentMethod === "cash"
+                ? "bg-(--accent) text-(--accent-foreground)"
+                : "text-(--muted) hover:text-(--foreground)"
+            )}
+          >
+            <Banknote size={16} />
+            {t("transactions.paymentCash")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setPaymentMethod("transfer")}
+            className={cn(
+              "flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition",
+              paymentMethod === "transfer"
+                ? "bg-(--accent) text-(--accent-foreground)"
+                : "text-(--muted) hover:text-(--foreground)"
+            )}
+          >
+            <Landmark size={16} />
+            {t("transactions.paymentTransfer")}
+          </button>
+        </div>
+      </div>
+
+      <div>
         <label className="block text-sm font-medium mb-1.5">{t("common.dateTime")}</label>
         <input
+          ref={dateRef}
           name="occurredAt"
           type="datetime-local"
           required
-          defaultValue={defaultDate}
+          // Intentionally no defaultValue — see useEffect above. The browser's
+          // `required` validation only fires on submit, by which time the
+          // effect has populated the value.
+          suppressHydrationWarning
           className="w-full px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--accent)"
         />
       </div>
