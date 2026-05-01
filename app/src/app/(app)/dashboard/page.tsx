@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/session";
 import { getMonthSummary, listTransactions } from "@/lib/transactions";
 import { TransactionList } from "@/components/transaction-list";
 import { ExpenseByCategoryChart, DailyTrendChart } from "@/components/dashboard-charts";
+import { PaymentMethodBreakdown } from "@/components/payment-method-breakdown";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 
@@ -86,6 +87,12 @@ export default async function DashboardPage() {
           <DailyTrendChart summary={summary} currency={currency} fmtLocale={fmtLocale} />
         </section>
       </div>
+
+      <PaymentMethodBreakdown
+        summary={summary}
+        currency={currency}
+        fmtLocale={fmtLocale}
+      />
 
       <section>
         <div className="flex items-center justify-between mb-3">
