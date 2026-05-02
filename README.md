@@ -1,78 +1,116 @@
 # Jaitang (ใจถัง) 📒
 
-> สมุดบัญชีในใจ — รายรับ-รายจ่ายแบบส่วนตัว + แชร์ พร้อม AI สแกนใบเสร็จ
-> Heart-pocket ledger — personal & shared expense tracking with AI receipt scanning
+> สมุดบัญชีในใจ — รายรับ-รายจ่ายส่วนตัว + แชร์ + ทริปต่างประเทศ พร้อม AI ผู้ช่วย
+> Heart-pocket ledger — personal & shared expense tracking with trips, multi-currency, and AI
 
 ---
 
 ## 🇹🇭 ภาษาไทย
 
-### โปรเจกต์นี้คืออะไร
+### Jaitang คืออะไร
 
-**Jaitang** เป็น web app (PWA) สำหรับบันทึกรายรับ-รายจ่าย ออกแบบให้ใช้คนเดียวก็คล่อง แชร์กับคู่ชีวิต/ครอบครัว/รูมเมทก็ได้
-- บันทึกง่าย ดูประวัติย้อนหลังละเอียด
-- กราฟสรุปรายเดือน ตามหมวด ตามวัน
-- ตั้งงบประมาณต่อหมวด เตือนเมื่อใช้เกิน
-- ตั้งรายการประจำ (ค่าเช่า เน็ต ค่าสมาชิก) ระบบสร้างให้อัตโนมัติ
-- หารบิลกับสมาชิกในสมุดแชร์ + คำนวณยอดติดเงินเป็น net
-- 📸 สแกนใบเสร็จด้วย Claude Vision → กรอกฟอร์มอัตโนมัติ
-- 🔔 Web Push แจ้งเตือนเมื่อมีกิจกรรมในสมุดแชร์
-- ติดตั้งบนหน้าจอมือถือเหมือนแอปจริง (PWA)
+**Jaitang** เป็น web app (PWA) สำหรับบันทึกรายรับ-รายจ่าย ออกแบบให้ใช้คนเดียวก็คล่อง แชร์กับคู่ชีวิต/ครอบครัว/รูมเมทก็ได้ พกไปต่างประเทศก็จดด้วยสกุลเงินท้องถิ่น แล้วระบบแปลงเป็นบาทให้
+
+- บันทึก/แก้/ค้นหา รายการรายรับ-รายจ่าย ตามหมวด/ทริป/ช่วงเวลา/สกุลเงิน
+- Dashboard + กราฟ + ปฏิทิน heatmap + วิเคราะห์เดือนนี้ vs เดือนก่อน (พร้อม AI summary)
+- งบประมาณรายเดือนต่อหมวด, รายการประจำ, หารบิลแบบ Splitwise
+- ทริป (เช่น "ทริปญี่ปุ่น") พร้อม **multi-currency** — จด JPY แล้วเก็บอัตราแลกเปลี่ยนสด ๆ ให้ ดูสรุปเป็น THB ได้
+- AI สแกน **ใบเสร็จ + สลิปโอน** + AI พิมพ์เร็ว ("กาแฟ 65" → จัดเข้าหมวดให้)
+- Web push แจ้งเตือน, sync ข้ามอุปกรณ์, dark mode, 4 ภาษา (TH/EN/JA/ZH)
+- Backup/restore ทุกข้อมูลเป็น JSON, export CSV เปิดใน Excel ได้
+
+---
 
 ### ฟีเจอร์ครบทั้งหมด
 
-#### 📝 จดบันทึก
-- เพิ่ม/แก้/ลบรายการ — รายรับ/รายจ่าย, จำนวน, หมวด, โน้ต, วันเวลา
-- หมวดเริ่มต้น 13 หมวด (อาหาร, เดินทาง, ของใช้, สุขภาพ, เงินเดือน, ลงทุน, ฯลฯ)
-- เพิ่ม/แก้หมวด ตั้งไอคอน + สีเอง
+#### 📝 บันทึกรายการ
+- รายรับ/รายจ่าย — จำนวน, หมวด, โน้ต, วันเวลา
+- หมวดเริ่มต้น 13 หมวด — เพิ่ม/แก้/ลบ ตั้งไอคอน+สีเอง
+- **ช่องทางจ่าย** — เงินสด / เงินโอน
+- **Trip tagging** — ผูกรายการกับทริปได้ default จากทริปที่ active หรือเลือกได้
+- ค้นหา note + filter รวมตามช่วงเวลา / หมวด / รับ-จ่าย / ทริป
 
-#### 📊 ดูรายงาน
-- Dashboard: ยอดรับ/จ่าย/คงเหลือเดือนปัจจุบัน + กราฟ pie ตามหมวด + กราฟ bar รายวัน
-- หน้ารายการ: filter ตามช่วงเวลา (เดือนนี้/เดือนก่อน/30 วัน/ปีนี้/ทั้งหมด) × รับ/จ่าย × หมวด
-- สรุปยอดบนหัว: รวมรายรับ, รวมรายจ่าย, ยอดสุทธิ
-- Group ตามวัน + แสดงผลรวมรายวัน
+#### 📊 Dashboard + Reports
+- 3 cards: รายรับ / รายจ่าย / ยอดสุทธิ ของช่วงที่เลือก
+- 2 กราฟ: pie ตามหมวด + bar รายวัน
+- **Range filter ใหม่**: วันนี้ / เมื่อวาน / เมื่อวันก่อน / เดือนนี้ / เดือนก่อน / 30 วัน / ปีนี้ / ทั้งหมด
+- **Payment method breakdown** — สรุปเงินสด vs เงินโอน vs ไม่ระบุ ในช่วงเดือน
+- **Currency toggle** บน dashboard เมื่อมีรายการต่างสกุลเงิน — สลับดู THB หรือ JPY ได้
+
+#### 📅 Calendar / Heatmap (ใหม่)
+- ปฏิทินรายเดือน — สีเข้ม = วันใช้เยอะ, สีอ่อน = ใช้น้อย
+- คลิกวัน → expand แสดงยอดรายรับ/รายจ่ายของวันนั้น
+- Navigate prev/next month
+- Bangkok timezone aware — รายการ 03:00 น. ของวันที่ 1 ขึ้นวันที่ 1 ไม่ใช่วันก่อน
+
+#### 📈 Insights — เดือนนี้ vs เดือนก่อน (ใหม่)
+- **AI summary** 2-3 ประโยค (Claude Haiku 4.5) — ภาษาไทย/อังกฤษ/ญี่ปุ่น/จีนตาม locale
+- เทียบ income/expense + delta % (handle baseline = 0 → "ใหม่เดือนนี้")
+- Top 3 หมวดที่ใช้เพิ่มขึ้น / ใช้ลดลง
+
+#### ✈️ ทริป + Multi-currency (ใหม่)
+- สร้างทริป ("ทริปญี่ปุ่น") พร้อมไอคอน, สี, วันเริ่ม/สิ้นสุด, **สกุลเงิน**
+- 32 currencies รองรับ (10 pinned ยอดนิยมไทย + 22 alphabetical)
+- รายการในทริป default = trip currency แต่ override ต่อ tx ได้
+- **Live FX preview** ขณะกรอก: "≈ ฿350.00 (อัตรา 0.2333 / 1 JPY)"
+- FX rate snapshot ตอน submit (Frankfurter.dev → fallback exchangerate.host) cache 24 ชม.
+- Trip detail แสดง multi-currency totals + home equivalent รวม
+- Active trip banner ใต้ navbar — ทุกรายการใหม่ auto-tag จนกด X ปิด
+- Archive/unarchive/delete trip — รายการที่ tag ไว้กลายเป็นรายการธรรมดา (ไม่ถูกลบ)
+- ดึงรายการออกจากทริปทีละแถวได้
 
 #### 💰 งบประมาณ
-- ตั้งงบรายเดือนต่อหมวด
-- Progress bar 3 ระดับ: ปกติ/ใกล้เต็ม (≥80%)/เกินงบ
-- เห็นยอดที่เหลือทันที
+- ตั้งงบรายเดือนต่อหมวด — Progress bar 3 ระดับ (ปกติ / ≥80% / เกิน)
+- ใช้ home currency เสมอ (FX รายการแปลงให้แล้ว)
 
 #### 🔁 รายการประจำ
-- ตั้งรายการที่เกิดทุกวัน/สัปดาห์/เดือน
-- Pause/Resume ได้
-- ปุ่ม "รันที่ครบกำหนด" — สร้าง transaction ที่ค้างทั้งหมดในครั้งเดียว (backfill ได้สูงสุด 12 ครั้งต่อกฎ)
+- daily / weekly / monthly + วันที่กำหนด
+- Pause/Resume, "รันที่ครบกำหนด" backfill สูงสุด 12 ครั้ง/กฎ
 
 #### 👥 สมุดแชร์
-- สมุดส่วนตัว + สมุดแชร์ใช้พร้อมกันได้
-- เชิญผ่านลิงก์ + QR (ตั้งจำนวนใช้และวันหมดอายุได้)
-- Roles: Owner, Editor (ร่วมจด), Viewer (ดูอย่างเดียว)
-- สลับสมุดได้ทันที (cookie-backed) — header โชว์สมุดที่ active
-- แสดงชื่อ + avatar คนที่จดในแต่ละรายการ (สมุดแชร์)
+- ส่วนตัว + แชร์พร้อมกัน, slash ได้ทันที
+- เชิญผ่านลิงก์ + QR (ตั้ง max uses + expiry)
+- Roles: Owner / Editor / Viewer
+- แสดงชื่อ+avatar ของคนที่จดในแต่ละรายการ
 
 #### 💸 หารบิล (Splitwise mode)
-- Toggle "หารบิล" ตอนเพิ่มรายจ่าย → เลือกสมาชิก → ระบบหารเท่ากัน
-- หน้า `/balances` สรุปยอดติดเงินกัน (หักลบ 2 ทางแล้ว)
-- ปุ่ม "ปิดบิล" — settle ระหว่าง 2 คนรวดเดียว
+- Toggle ตอนเพิ่มรายจ่าย → เลือกสมาชิก → หารเท่ากัน (cent-precise)
+- หน้า `/balances` สรุปยอดติดเงินกัน (net both ways)
+- ปุ่ม "ปิดบิล" settle ระหว่าง 2 คน
 
-#### 📸 สแกนใบเสร็จ (Optional)
-- กดถ่ายภาพหรือเลือกรูปใน `/transactions/new`
-- ส่งให้ Claude Haiku 4.5 อ่าน → ดึงยอด/หมวด/วันที่/โน้ต
-- Auto-prefill ฟอร์ม + Confidence indicator
-- ต้องตั้ง `ANTHROPIC_API_KEY` (ไม่ตั้งก็ใช้ฟอร์มกรอกเองได้)
+#### 📸 AI สแกนใบเสร็จ / สลิปโอน
+- Claude Haiku 4.5 ผ่าน Anthropic SDK
+- รองรับ 2 ประเภท: ใบเสร็จร้านค้า + สลิปโอนเงินธนาคารไทย/PromptPay
+- Auto-detect: ใบเสร็จ → cash, สลิป → transfer
+- Auto-prefill ยอด/หมวด/วันที่/โน้ต + Confidence indicator (high/medium/low)
 
-#### 🔔 แจ้งเตือน Web Push (Optional)
-- เปิด/ปิดที่ `/settings` แยกแต่ละเครื่อง
-- แจ้งเตือนอัตโนมัติเมื่อมีคนเพิ่มรายการในสมุดแชร์
-- ต้องตั้ง VAPID keys (ไม่ตั้งก็ใช้แอปได้ปกติ ปุ่มหายไปอัตโนมัติ)
+#### ✨ AI พิมพ์เร็ว
+- พิมพ์ "30 bts" หรือ "ค่ากาแฟ 65" → ระบบ parse + บันทึก
+- เลือกหมวดอัตโนมัติ + แสดง confidence
 
-#### 📥 Export
-- ปุ่ม "CSV" บนหน้ารายการ → ดาวน์โหลดตาม filter ปัจจุบัน
-- UTF-8 BOM → Excel เปิดอ่านภาษาไทยได้ทันที
+#### 🔔 Web Push
+- เปิด/ปิดต่อเครื่อง — มือถือ + คอมแยกกัน
+- แจ้งเตือนเมื่อ:
+  - มีคนเพิ่มรายการในสมุดแชร์ (รวม trip context, FX amount)
+- ต้อง VAPID keys (optional)
 
-#### 🌗 ธีม
-- Light (default) + Dark mode
-- Toggle อยู่บน header + หน้า settings
-- เก็บค่าใน localStorage ผ่าน next-themes
+#### 📥 Export / Import / Backup
+- **CSV export** — 10 columns: วันที่, ประเภท, หมวด, จำนวน, ช่องทาง, ทริป, สกุลต่างประเทศ, จำนวนต่างประเทศ, อัตรา, โน้ต. UTF-8 BOM (Excel เปิดอ่านไทยได้)
+- **Jaitang CSV import** — auto-detect format ระหว่างฟอร์แมตของเรา (round-trip ครบ) กับ Apple Numbers .zip/.csv
+- ภาษาไทยจาก Numbers app: AI map หมวด + recreate trip linkage by name
+- **JSON Backup/Restore** — เก็บ/กู้คืนทุกข้อมูล (สมุด, รายการ, หมวด, งบ, รายการประจำ, splits, ทริป, FX) — รองรับ cross-user (รายการ split routed by email)
+
+#### 🔐 Danger zone (Settings)
+- **ลบรายการทั้งหมดในสมุดที่ใช้อยู่** — owner-only, type-to-confirm
+- **ลบข้อมูลทั้งหมดของฉัน** — ลบทุกสมุดที่ user เป็น owner + push subscriptions + sign out
+
+#### 🌗 Theme + i18n + PWA
+- Light (default) + Dark mode — toggle บน header (desktop) หรือ /settings (mobile)
+- 4 ภาษา: ไทย / English / 日本語 / 中文 — สลับได้ที่ /settings
+- Date/currency formatting ตาม locale
+- PWA: ติดตั้งบน home screen, offline shell, service worker
+
+---
 
 ### Tech Stack
 
@@ -84,13 +122,18 @@
 | Database | Supabase (PostgreSQL) |
 | Charts | Recharts |
 | Forms | Zod + React Hook Form |
-| AI Vision | Anthropic SDK (Claude Haiku 4.5) |
-| Push | web-push + service worker |
+| AI | Anthropic SDK — Claude Haiku 4.5 (OCR / quick parse / insights summary) |
+| FX rates | Frankfurter.dev + exchangerate.host (free, no key) |
+| Push | web-push + service worker (VAPID) |
+| i18n | next-intl |
+| Tests | Vitest |
 | Deploy | Vercel |
+
+---
 
 ### Setup
 
-1. ดูคู่มือเต็มใน [`app/SETUP.md`](./app/SETUP.md)
+1. ดูคู่มือเต็ม: [`app/SETUP.md`](./app/SETUP.md)
 2. สรุปสั้น:
    ```bash
    cd app
@@ -100,62 +143,106 @@
    ```
 3. ต้องเตรียม:
    - Google OAuth credentials (จำเป็น)
-   - Supabase project + run `supabase/schema.sql` (จำเป็น)
-   - Anthropic API key (optional — สแกนใบเสร็จ)
-   - VAPID keys via `npx web-push generate-vapid-keys` (optional — แจ้งเตือน)
+   - Supabase project + run `supabase/schema.sql` (จำเป็น) — schema เป็น idempotent (run ซ้ำได้, ไม่ทำลายข้อมูลเดิม)
+   - `ANTHROPIC_API_KEY` (optional — AI OCR + quick parse + insights)
+   - VAPID keys via `npx web-push generate-vapid-keys` (optional — push notifications)
+
+### Run tests
+
+```bash
+cd app
+npm test           # one-off (TZ=Asia/Bangkok built-in)
+npm run test:watch # watch mode
+```
+
+99 unit tests ครอบคลุม: timezone correctness, FX fetcher fallback, CSV import/export round-trip, MoM compare math, role authorization, search highlight, currency aggregation
+
+---
 
 ### โครงสร้างโปรเจกต์
 
 ```
-~/Desktop/jaitang/
-├── SPEC.md                  # spec ฉบับเต็ม (data model, security, etc.)
-├── ROADMAP.md               # phase progression
-├── README.md                # ไฟล์นี้
+~/Documents/jaitang/
+├── SPEC.md, ROADMAP.md, README.md
 └── app/
-    ├── README.md, SETUP.md, .env.example
+    ├── README.md, SETUP.md, AGENTS.md, CLAUDE.md
     ├── public/
-    │   ├── sw.js            # service worker (push + PWA shell)
+    │   ├── sw.js              # service worker (push + PWA shell)
     │   └── manifest.json
     ├── supabase/
-    │   └── schema.sql       # run ครั้งเดียวบน Supabase
+    │   └── schema.sql         # idempotent — รัน 1 ครั้งหรือซ้ำก็ได้
+    ├── vitest.config.ts
     └── src/
         ├── app/
-        │   ├── (app)/       # route group สำหรับหน้าที่ต้อง auth
-        │   │   ├── layout.tsx        # shell + active ledger
-        │   │   ├── dashboard/
-        │   │   ├── transactions/
+        │   ├── (app)/         # routes ที่ต้อง auth
+        │   │   ├── dashboard/         # หน้าแรก + range/currency toggle
+        │   │   ├── transactions/      # list + new + edit + export route
+        │   │   ├── trips/             # list + create + detail + actions + fx-actions
+        │   │   ├── calendar/          # heatmap view
+        │   │   ├── insights/          # MoM compare + AI summary
         │   │   ├── budgets/
         │   │   ├── recurring/
-        │   │   ├── balances/
+        │   │   ├── balances/          # split balances
         │   │   ├── categories/
-        │   │   ├── ledgers/
-        │   │   └── settings/
-        │   ├── invite/[code]/         # accept invite (public)
-        │   ├── login/                 # Google sign-in
-        │   ├── api/auth/[...nextauth]/
-        │   ├── layout.tsx
-        │   └── page.tsx               # landing
-        ├── auth.ts                    # Auth.js config
-        ├── middleware.ts              # protect routes
-        ├── components/                # 14 React components
-        └── lib/                       # 11 server libs (categories, transactions, splits, push, ocr, ...)
+        │   │   ├── ledgers/[id]/members/
+        │   │   ├── import/            # auto-detect Numbers vs Jaitang CSV
+        │   │   ├── settings/          # account, push, theme, lang, backup, danger zone
+        │   │   └── layout.tsx
+        │   ├── api/
+        │   │   ├── auth/[...nextauth]/
+        │   │   └── backup/route.ts
+        │   ├── invite/[code]/
+        │   ├── login/, page.tsx, layout.tsx, globals.css
+        ├── auth.ts, middleware.ts
+        ├── components/        # ~25 React components
+        ├── lib/
+        │   ├── transactions.ts, trips.ts, splits.ts, members.ts, invites.ts
+        │   ├── ledgers.ts, categories.ts, recurring.ts, budgets.ts
+        │   ├── push.ts, ocr.ts, quick-parser.ts
+        │   ├── insights.ts, insights-ai.ts        # MoM compare + AI summary
+        │   ├── fx.ts, currencies.ts                # FX fetcher + 32 currencies
+        │   ├── jaitang-csv.ts, numbers-parser.ts   # 2 import formats
+        │   ├── import-mapper.ts, backup.ts
+        │   ├── active-ledger.ts, active-trip.ts    # cookie-backed selection
+        │   ├── session.ts, role.ts                 # auth helpers
+        │   ├── business-tz.ts, date-range.ts       # Asia/Bangkok TZ math
+        │   ├── locale-format.ts, period.ts
+        │   ├── types.ts, utils.ts
+        │   └── supabase/server.ts
+        └── messages/          # th.json / en.json / ja.json / zh.json (~340 strings each)
 ```
 
-### เปลี่ยนภาษาแอปได้ ✅
+---
 
-รองรับ **ไทย** (default) + **English** สลับได้จากหน้า `/settings` → "ภาษา"
+### Multi-language
 
-**Stack ที่ใช้:**
-- [`next-intl`](https://next-intl-docs.vercel.app/) — i18n library
+รองรับ **ไทย** (default) + **English** + **日本語** + **中文** — สลับได้จาก `/settings` → "ภาษา"
+
+**Stack:**
+- [`next-intl`](https://next-intl-docs.vercel.app/) สำหรับ messages + ICU formatting
 - Locale เก็บใน cookie `jt_locale`
-- Message catalogs: `src/messages/th.json` + `src/messages/en.json` (~250 strings)
-- Date/currency formatting รับ locale param ทุกที่
+- Message catalogs: `src/messages/{th,en,ja,zh}.json` (~340 strings/file)
+- Currency/date formatters รับ locale ทุกที่
 
 **เพิ่มภาษาใหม่:**
-1. เพิ่ม locale ใน `src/i18n/locales.ts` (เช่น `"ja"`)
-2. สร้างไฟล์ `src/messages/ja.json` (copy โครงจาก en.json แล้วแปล)
-3. เพิ่ม mapping ใน `src/lib/locale-format.ts` ถ้าต้องการ Intl locale พิเศษ
+1. เพิ่ม locale ใน `src/i18n/locales.ts` (เช่น `"vi"`)
+2. สร้าง `src/messages/vi.json` (copy จาก `en.json` แล้วแปล)
+3. เพิ่ม mapping ใน `src/lib/locale-format.ts` ถ้าต้องการ Intl tag พิเศษ
+
 จบ — language switcher จะเห็นตัวเลือกใหม่อัตโนมัติ
+
+---
+
+### Timezone correctness
+
+Jaitang ใช้ **Asia/Bangkok (UTC+7)** เป็น "business timezone" สำหรับ:
+- Bucket รายการเข้าวัน/เดือน (Calendar, Insights, Dashboard)
+- Range filter "เดือนนี้/เดือนก่อน" — ขอบเขตคือเที่ยงคืน Bangkok ไม่ใช่ UTC
+- Group by day ใน Transactions list ใช้ browser timezone
+
+หมายความว่า: รายการที่ user จดตอน 02:00 น. กรุงเทพของวันที่ 1 พ.ค. → ขึ้นวันที่ 1 พ.ค. ใน UI (ไม่ใช่ 30 เม.ย. แบบที่ JS default จะให้)
+
+ทดสอบครอบคลุมในชุด tests — `lib/utils.test.ts`, `lib/date-range.test.ts`, `lib/datetime-roundtrip.test.ts`
 
 ---
 
@@ -163,35 +250,39 @@
 
 ### What is this?
 
-**Jaitang** ("heart-pocket" in Thai) is a PWA expense tracker built for personal and household use. Track money in/out, view detailed history, set budgets, share ledgers with partners or roommates, and split bills — with AI receipt scanning and web-push notifications.
+**Jaitang** ("heart-pocket" in Thai) is a PWA expense tracker for personal and household use, with first-class support for overseas trips: log in JPY, store the FX-converted home amount, and the rest of the app keeps working in your home currency.
 
 ### Features at a glance
 
-- 📝 **Track**: add/edit/delete income & expenses with categories, notes, dates
-- 📊 **Reports**: monthly summaries with pie/bar charts, filters across time/kind/category
-- 💰 **Budgets**: per-category monthly budget with traffic-light progress bars
-- 🔁 **Recurring**: daily/weekly/monthly templates that auto-create when due
-- 👥 **Shared ledgers**: invite via link or QR, role-based access (owner/editor/viewer)
-- 💸 **Bill splitting**: equal split, net balance computation, settle-up flow
-- 📸 **AI receipt OCR**: Claude Vision parses photos into form fields (optional)
-- 🔔 **Web push**: per-device opt-in, fires on shared-ledger activity (optional)
-- 📥 **CSV export**: respects current filter, UTF-8 BOM for Excel
-- 🌗 **Theme**: light default + dark toggle
-- 📱 **PWA**: installable, offline shell, push notifications
+- 📝 **Track**: income/expenses with categories, notes, payment methods (cash/transfer), trip tags
+- 📊 **Reports**: dashboard + per-day heatmap calendar + month-over-month insights with AI summary
+- ✈️ **Trips + Multi-currency**: create trip with native currency, all entries auto-tag, live FX preview, snapshot rate at submit
+- 💰 **Budgets**: per-category monthly with traffic-light progress
+- 🔁 **Recurring**: daily/weekly/monthly with on-demand backfill
+- 👥 **Shared ledgers**: invite via link/QR, owner/editor/viewer roles
+- 💸 **Bill splitting**: equal-split with cent precision, settle-up flow
+- 📸 **AI receipt OCR**: receipts + bank/PromptPay slips parsed via Claude
+- ✨ **AI quick add**: type "coffee 65" → categorized + saved
+- 🔍 **Search + filters**: full-text on notes, range/category/trip/currency filters
+- 🔔 **Web push**: per-device opt-in for shared-ledger activity
+- 📥 **CSV + JSON**: export/import + full backup/restore
+- 🌗 **Theme + i18n**: dark mode, 4 languages (TH/EN/JA/ZH)
+- 🔒 **Danger zone**: wipe ledger transactions or delete all owned data
+- 📱 **PWA**: installable, offline shell, service worker
+
+### Multi-currency × Trip walkthrough
+
+1. Create a trip "Japan Trip" — pick currency JPY → trip activates
+2. A banner pins under the navbar: "🏖️ Japan Trip · JPY · new entries auto-tagged"
+3. Add a transaction: "ramen 1500" — currency dropdown auto = JPY
+4. Live preview below the input: `≈ ฿350.00 (rate 0.2333 / 1 JPY)`
+5. On submit, server re-fetches the rate (Frankfurter → exchangerate.host fallback) and stores all of: home amount, JPY amount, rate snapshot
+6. Dashboard/budgets/insights still in home currency. Trip detail page shows JPY native + ≈ THB.
+7. Toggle dashboard to "JPY" pills row to see the trip in native currency.
 
 ### Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 16 (App Router) + TypeScript |
-| Styling | Tailwind CSS v4 |
-| Auth | Auth.js v5 — Google OAuth |
-| Database | Supabase (PostgreSQL) |
-| Charts | Recharts |
-| Forms | Zod + React Hook Form |
-| AI Vision | Anthropic SDK (Claude Haiku 4.5) |
-| Push | web-push + service worker |
-| Deploy | Vercel |
+Same as Thai section above.
 
 ### Quick start
 
@@ -200,48 +291,54 @@ cd app
 cp .env.example .env.local        # fill in real values
 npm install
 npm run dev                       # http://localhost:3000
+npm test                          # 99 unit tests
 ```
 
 You'll need:
 - Google OAuth credentials (required)
-- Supabase project + run `supabase/schema.sql` (required)
-- `ANTHROPIC_API_KEY` (optional — receipt OCR)
-- VAPID keys: `npx web-push generate-vapid-keys` (optional — push notifications)
+- Supabase project + run `supabase/schema.sql` (required, idempotent)
+- `ANTHROPIC_API_KEY` (optional — AI OCR + quick parse + insights summary)
+- VAPID keys: `npx web-push generate-vapid-keys` (optional — push)
 
 Full guide: [`app/SETUP.md`](./app/SETUP.md)
 
 ### Architecture notes
 
-- **Auth**: Auth.js v5 with JWT sessions; on sign-in, user upserted to `public.users`; `users.id` stashed in token.
-- **Active ledger**: cookie-backed (`jt_active_ledger`); always re-validated against ownership/membership before serving any request.
-- **Permissions**: `requireSession()` returns `{userId, ledgerId, role}` and helpers `assertWritable()` / `assertOwner()`.
-- **Splits**: stored only for non-payer users; payer carries their share implicitly. Net balances computed on read; reciprocal debts cancel out.
-- **Push**: VAPID-based, per-device subscriptions; dead 404/410 endpoints cleaned up automatically.
-- **Recurring**: backfill on demand (no background worker required); capped at 12 iterations per rule per call.
+- **Auth**: Auth.js v5 with JWT sessions; on sign-in, user upserted to `public.users`; `users.id` stashed in token
+- **Active context**: cookie-backed for ledger (`jt_active_ledger`) and trip (`jt_active_trip`), each validated against ownership/membership before serving any request
+- **Permissions**: `requireSession()` returns `{userId, ledgerId, role, ledger, activeTripId}` and helpers `assertWritable()` / `assertOwner()`
+- **Splits**: stored only for non-payer users; payer carries their share implicitly. Net balances computed on read; reciprocal debts cancel out
+- **Push**: VAPID-based, per-device subscriptions; dead 404/410 endpoints cleaned up automatically
+- **Recurring**: backfill on demand (no background worker required); capped at 12 iterations per rule per call
+- **FX**: Snapshot at submit time. `amount` is always home currency; `fx_currency`/`fx_amount`/`fx_rate` are an all-or-none triple enforced by a Postgres CHECK constraint
+- **Timezone**: server uses `Asia/Bangkok` for date bucketing; client `<TransactionList>` uses browser TZ for grouping. All datetime-local inputs SSR with empty value, populated client-side via ref to avoid UTC server-time leaking into the form
 
 ### Multi-language support ✅
 
-Ships with **Thai** (default) and **English**, switchable in `/settings` → "Language".
+Ships with **Thai** (default), **English**, **Japanese**, **Chinese** — switchable in `/settings` → "Language".
 
 **Stack:**
 - [`next-intl`](https://next-intl-docs.vercel.app/) for messages and ICU formatting
 - Locale stored in `jt_locale` cookie
-- Message catalogs in `src/messages/{th,en}.json` (~250 strings)
+- Message catalogs in `src/messages/{th,en,ja,zh}.json`
 - All currency/date formatters take a locale argument
 
 **Adding another language:**
-1. Append the new locale to `src/i18n/locales.ts` (e.g. `"ja"`)
-2. Create `src/messages/ja.json` (start from `en.json` and translate)
+1. Append the new locale to `src/i18n/locales.ts` (e.g. `"vi"`)
+2. Create `src/messages/vi.json` (start from `en.json` and translate)
 3. Optionally extend `src/lib/locale-format.ts` for a special Intl tag
 
 The language switcher picks up the new option automatically.
 
 ### Project Status
 
-- **3 phases** delivered: MVP → Sharing → Polish & Advanced
-- **17 routes**, build clean, TypeScript clean
-- **8 commits** on `main`
-- 🦐 Built with [Claude Code](https://claude.com/claude-code) over a single late-night session
+- **99 unit tests** passing
+- **Timezone-correct** server-side date math (Asia/Bangkok)
+- **Multi-currency × Trip** end-to-end (32 currencies, 2-source FX fallback)
+- **AI-assisted** OCR / quick parse / monthly insights summary
+- **4 languages** localized
+- TypeScript clean, ESLint clean
+- 🦐 Built with [Claude Code](https://claude.com/claude-code) over many sessions
 
 ### License
 

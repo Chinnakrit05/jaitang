@@ -101,36 +101,41 @@ export default async function TripDetailPage({
         {t("trips.backToList")}
       </Link>
 
-      {/* Header */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-5">
+      {/* Header. The edit button is positioned absolutely in the corner
+          so it stays visible regardless of how the title + badges wrap on
+          narrow screens — previously it sat after the h1 in flex-wrap and
+          got pushed below the fold on mobile. */}
+      <div className="rounded-2xl border border-(--border) bg-(--card) p-5 relative">
+        {canManage && (
+          <div className="absolute top-3 right-3 z-10">
+            <EditTripModal trip={trip} ledgerCurrency={ledger.currency} />
+          </div>
+        )}
         <div className="flex items-start gap-4">
-          <span className="text-5xl">{trip.icon ?? "✈️"}</span>
+          <span className="text-5xl shrink-0">{trip.icon ?? "✈️"}</span>
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold flex items-center gap-2 flex-wrap">
-                {trip.name}
-                {trip.currency && trip.currency !== ledger.currency && (
-                  <span className="inline-flex items-center text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5 tabular-nums">
-                    {trip.currency}
-                  </span>
-                )}
-                {trip.archived && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                    <Archive size={12} />
-                    {t("trips.archivedBadge")}
-                  </span>
-                )}
-                {isActive && !trip.archived && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-(--accent-foreground) bg-(--accent) rounded-full px-2 py-0.5">
-                    <Plane size={12} />
-                    {t("trips.activeBadge")}
-                  </span>
-                )}
-              </h1>
-              {canManage && (
-                <EditTripModal trip={trip} ledgerCurrency={ledger.currency} />
+            {/* Reserve room on the right for the absolute-positioned edit
+                button so the title doesn't run under it. */}
+            <h1 className={`text-2xl font-bold flex items-center gap-2 flex-wrap ${canManage ? "pr-12 sm:pr-28" : ""}`}>
+              {trip.name}
+              {trip.currency && trip.currency !== ledger.currency && (
+                <span className="inline-flex items-center text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5 tabular-nums">
+                  {trip.currency}
+                </span>
               )}
-            </div>
+              {trip.archived && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
+                  <Archive size={12} />
+                  {t("trips.archivedBadge")}
+                </span>
+              )}
+              {isActive && !trip.archived && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-(--accent-foreground) bg-(--accent) rounded-full px-2 py-0.5">
+                  <Plane size={12} />
+                  {t("trips.activeBadge")}
+                </span>
+              )}
+            </h1>
             {(trip.starts_at || trip.ends_at) && (
               <p className="text-sm text-(--muted) mt-1">
                 {formatTripRange(trip.starts_at, trip.ends_at, fmtLocale)}

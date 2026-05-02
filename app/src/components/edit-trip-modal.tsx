@@ -90,10 +90,16 @@ export function EditTripModal({
       <button
         type="button"
         onClick={openModal}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
+        // Square icon-only on mobile, icon+label from sm: up. Always
+        // visible because of `shrink-0` — without it the badge-laden
+        // h1 next to it would push the button to the next line and
+        // (on cramped mobile screens) below the fold.
+        aria-label={t("trips.editTrip")}
+        title={t("trips.editTrip")}
+        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
       >
         <Pencil size={14} />
-        {t("trips.editTrip")}
+        <span className="hidden sm:inline">{t("trips.editTrip")}</span>
       </button>
 
       {open && (
