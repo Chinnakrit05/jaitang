@@ -80,3 +80,18 @@ export function dayKeyInTz(iso: string | Date, tz?: string): string {
     day: "2-digit",
   }).format(d);
 }
+
+/**
+ * Like `dayKeyInTz` but returns the year/month parts the row falls on in
+ * the given TZ. Used by the import wizard's "rows per month" summary so
+ * that "1 พ.ค. 03:00 Bangkok" doesn't split off into an April bucket
+ * (which is what `Date.getUTCMonth()` would produce).
+ */
+export function yearMonthInTz(
+  iso: string | Date,
+  tz?: string
+): { year: number; month: number } {
+  const ymd = dayKeyInTz(iso, tz);
+  const [y, m] = ymd.split("-").map(Number);
+  return { year: y, month: m };
+}

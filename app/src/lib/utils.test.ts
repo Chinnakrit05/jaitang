@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayKeyInTz, toLocalDateTimeInput } from "./utils";
+import { dayKeyInTz, toLocalDateTimeInput, yearMonthInTz } from "./utils";
 
 describe("toLocalDateTimeInput", () => {
   // The test runner sets process.env.TZ before any Date is constructed (see
@@ -87,5 +87,42 @@ describe("dayKeyInTz", () => {
     expect(dayKeyInTz("2026-09-01T05:00:00Z", "Asia/Bangkok")).toBe(
       "2026-09-01"
     );
+  });
+});
+
+describe("yearMonthInTz — used by import wizard's per-month aggregation", () => {
+  it("returns Bangkok year/month for a late-UTC instant", () => {
+    // 2026-04-30T20:35Z = 2026-05-01 03:35 Bangkok — should resolve to
+    // May 2026, NOT April 2026 (this is the import-preview-shows-2-months
+    // bug, in test form).
+    expect(yearMonthInTz("2026-04-30T20:35:00Z", "Asia/Bangkok")).toEqual({
+      year: 2026,
+      month: 5,
+    });
+  });
+
+  it("returns the UTC year/month when tz=UTC", () => {
+    expect(yearMonthInTz("2026-04-30T20:35:00Z", "UTC")).toEqual({
+      year: 2026,
+      month: 4,
+    });
+  });
+
+  it("regression: a one-month export that contains an early-Bangkok-morning row stays in one bucket", () => {
+    // Hand-built fixture mimicking what `parseJaitangCsv` produces from
+    // an export of "May 2026 only" data on a Bangkok ledger.
+    const rows = [
+      { occurredAt: "2026-05-01T07:59:00Z" }, // 14:59 Bangkok, May 1
+      { occurredAt: "2026-05-01T14:00:00Z" }, // 21:00 Bangkok, May 1
+      { occurredAt: "2026-04-30T20:46:00Z" }, // 03:46 Bangkok, May 2
+      { occurredAt: "2026-04-30T20:35:00Z" }, // 03:35 Bangkok, May 1
+    ];
+    const buckets = new Set<string>();
+    for (const r of rows) {
+      const { year, month } = yearMonthInTz(r.occurredAt, "Asia/Bangkok");
+      buckets.add(`${year}-${month}`);
+    }
+    // All four rows are May 2026 in Bangkok → one bucket only.
+    expect(Array.from(buckets)).toEqual(["2026-5"]);
   });
 });

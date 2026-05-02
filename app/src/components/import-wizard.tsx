@@ -16,7 +16,7 @@ import {
   type ImportPreview,
   type PreviewRow,
 } from "@/app/(app)/import/actions";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, yearMonthInTz } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 
 type Step = "upload" | "preview" | "done";
@@ -201,19 +201,19 @@ function PreviewStep({
 }) {
   const t = useTranslations();
 
-  // Group rows by month for the summary
+  // Group rows by month for the summary. Use the BROWSER's TZ (no `tz`
+  // arg) so the bucket label matches the per-row date label below — both
+  // run on the client and should agree. Previously this used UTC, which
+  // split late-night rows into the wrong month.
   const monthSummary = useMemo(() => {
-    const map = new Map<string, { year: number; month: number; income: number; expense: number; count: number }>();
+    const map = new Map<
+      string,
+      { year: number; month: number; income: number; expense: number; count: number }
+    >();
     for (const r of rows) {
-      const d = new Date(r.occurredAt);
-      const key = `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}`;
-      const cur = map.get(key) ?? {
-        year: d.getUTCFullYear(),
-        month: d.getUTCMonth() + 1,
-        income: 0,
-        expense: 0,
-        count: 0,
-      };
+      const { year, month } = yearMonthInTz(r.occurredAt);
+      const key = `${year}-${month}`;
+      const cur = map.get(key) ?? { year, month, income: 0, expense: 0, count: 0 };
       if (r.kind === "income") cur.income += r.amount;
       else cur.expense += r.amount;
       cur.count += 1;

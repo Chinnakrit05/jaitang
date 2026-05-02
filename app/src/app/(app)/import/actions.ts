@@ -13,6 +13,8 @@ import {
 } from "@/lib/numbers-parser";
 import { isJaitangCsv, parseJaitangCsv } from "@/lib/jaitang-csv";
 import { mapNotesToCategories } from "@/lib/import-mapper";
+import { yearMonthInTz } from "@/lib/utils";
+import { BUSINESS_TZ } from "@/lib/business-tz";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 
 export type PreviewRow = {
@@ -145,14 +147,13 @@ export async function parseImportAction(
       newCategoryName: null,
       newCategoryIcon: null,
     };
-    const d = new Date(r.occurredAt);
-    const ym = `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}`;
-    const cur = monthAgg.get(ym) ?? {
-      year: d.getUTCFullYear(),
-      month: d.getUTCMonth() + 1,
-      count: 0,
-      total: 0,
-    };
+    // Bucket by Bangkok month, not UTC. Without this, an import of a
+    // single Bangkok-May ledger that contains rows at 02:00–07:00 Bangkok
+    // would split the preview into "April" + "May" because those rows
+    // land on April 30 in UTC.
+    const { year, month } = yearMonthInTz(r.occurredAt, BUSINESS_TZ);
+    const ym = `${year}-${month}`;
+    const cur = monthAgg.get(ym) ?? { year, month, count: 0, total: 0 };
     cur.count += 1;
     cur.total += r.amount;
     monthAgg.set(ym, cur);
@@ -230,15 +231,11 @@ async function previewJaitangCsv({
       ? byKindName.get(`${r.kind}|${r.categoryName}`)
       : undefined;
 
-    // Aggregate by month for the summary card
-    const d = new Date(r.occurredAt);
-    const ym = `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}`;
-    const cur = monthAgg.get(ym) ?? {
-      year: d.getUTCFullYear(),
-      month: d.getUTCMonth() + 1,
-      count: 0,
-      total: 0,
-    };
+    // Aggregate by Bangkok month — see comment in parseImportAction's
+    // monthAgg loop for why UTC is wrong here.
+    const { year, month } = yearMonthInTz(r.occurredAt, BUSINESS_TZ);
+    const ym = `${year}-${month}`;
+    const cur = monthAgg.get(ym) ?? { year, month, count: 0, total: 0 };
     cur.count += 1;
     cur.total += r.amount;
     monthAgg.set(ym, cur);
