@@ -95,3 +95,26 @@ export function yearMonthInTz(
   const [y, m] = ymd.split("-").map(Number);
   return { year: y, month: m };
 }
+
+/**
+ * Split a string into runs that match `query` (case-insensitive) and
+ * runs that don't, so the caller can wrap matches in a <mark>. Returns
+ * an array of `{ text, match }` segments. Empty `query` returns the
+ * whole string as a single non-match segment.
+ *
+ * The regex escape is critical — without it, a query like "10 (or)" would
+ * blow up. The function is locale-naive: matching is byte-for-byte after
+ * lowercasing both sides, which is fine for Thai (no case) and ASCII.
+ */
+export function highlightSegments(
+  source: string,
+  query: string
+): Array<{ text: string; match: boolean }> {
+  if (!query.trim()) return [{ text: source, match: false }];
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(${escaped})`, "ig");
+  const parts = source.split(re);
+  return parts
+    .filter((p) => p.length > 0)
+    .map((p) => ({ text: p, match: p.toLowerCase() === query.toLowerCase() }));
+}

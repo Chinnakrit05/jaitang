@@ -40,6 +40,8 @@
     "home": "Home",
     "quick": "Quick add",
     "transactions": "Transactions",
+    "calendar": "Calendar",
+    "insights": "Insights",
     "budgets": "Budgets",
     "recurring": "Recurring",
     "balances": "Balances",
@@ -130,6 +132,7 @@
       "allCategories": "All categories",
       "allTrips": "All trips",
       "noTrip": "No trip",
+      "searchPlaceholder": "Search notes…",
       "clearFilters": "Clear filters"
     },
     "rangeLabels": {
@@ -289,6 +292,40 @@
     "invalidHint": "This link may have been deleted or the code is wrong — ask the owner for a new one.",
     "backHome": "Back home",
     "validity": "{used}/{max} uses"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "See a heatmap of how much you spent each day — darker = more.",
+    "prev": "Prev",
+    "next": "Next",
+    "legendLess": "less",
+    "legendMore": "more",
+    "dayEmpty": "Nothing logged on this day",
+    "seeRows": "View transactions for this day",
+    "dow": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
+  },
+  "insights": {
+    "title": "Insights",
+    "subtitle": "How this month compares to the last — totals, top movers, and a quick AI take.",
+    "aiHeading": "AI summary",
+    "aiDisabled": "AI summary needs ANTHROPIC_API_KEY — set it in env and reload.",
+    "expenseLabel": "Expense this month",
+    "incomeLabel": "Income this month",
+    "deltaPct": "({pct}%)",
+    "deltaNoBaseline": "(no baseline — last month was 0)",
+    "upHeading": "Categories trending up",
+    "upEmpty": "Nothing went up this month.",
+    "downHeading": "Categories trending down",
+    "downEmpty": "Nothing went down this month.",
+    "newThisMonth": "new this month"
   },
   "ocr": {
     "title": "Scan receipt or transfer slip with AI",

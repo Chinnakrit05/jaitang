@@ -5,6 +5,7 @@ import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { Category, TxKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { SearchInput } from "@/components/search-input";
 
 type TripOption = {
   id: string;
@@ -70,6 +71,8 @@ export function TransactionFilters({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
+        <SearchInput placeholder={t("transactions.filters.searchPlaceholder")} />
+
         <select
           value={kind}
           onChange={(e) => update({ kind: e.target.value || null })}
@@ -111,11 +114,11 @@ export function TransactionFilters({
           </select>
         )}
 
-        {(kind || categoryId || tripFilter) && (
+        {(kind || categoryId || tripFilter || params.get("q")) && (
           <button
             type="button"
             onClick={() =>
-              update({ kind: null, category: null, trip: null })
+              update({ kind: null, category: null, trip: null, q: null })
             }
             className="text-(--muted) hover:text-(--foreground) underline text-xs ml-1"
           >

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { dayKeyInTz, toLocalDateTimeInput, yearMonthInTz } from "./utils";
+import {
+  dayKeyInTz,
+  highlightSegments,
+  toLocalDateTimeInput,
+  yearMonthInTz,
+} from "./utils";
 
 describe("toLocalDateTimeInput", () => {
   // The test runner sets process.env.TZ before any Date is constructed (see
@@ -87,6 +92,49 @@ describe("dayKeyInTz", () => {
     expect(dayKeyInTz("2026-09-01T05:00:00Z", "Asia/Bangkok")).toBe(
       "2026-09-01"
     );
+  });
+});
+
+describe("highlightSegments — drives <mark> in TransactionList search", () => {
+  it("returns the whole string as one non-match segment when query is empty", () => {
+    expect(highlightSegments("hello world", "")).toEqual([
+      { text: "hello world", match: false },
+    ]);
+  });
+
+  it("splits a single match into 3 segments (before / match / after)", () => {
+    const out = highlightSegments("morning coffee", "coffee");
+    expect(out).toEqual([
+      { text: "morning ", match: false },
+      { text: "coffee", match: true },
+    ]);
+  });
+
+  it("matches case-insensitively", () => {
+    const out = highlightSegments("Watson Mall", "watson");
+    expect(out).toEqual([
+      { text: "Watson", match: true },
+      { text: " Mall", match: false },
+    ]);
+  });
+
+  it("escapes regex special characters in the query (no ReDoS / no false splits)", () => {
+    // The query contains parens — without escape this would compile to a
+    // capture group and behave very differently.
+    const out = highlightSegments("price (10) ฿", "(10)");
+    expect(out).toEqual([
+      { text: "price ", match: false },
+      { text: "(10)", match: true },
+      { text: " ฿", match: false },
+    ]);
+  });
+
+  it("handles Thai text (no case folding needed)", () => {
+    const out = highlightSegments("กาแฟตอนเช้า", "กาแฟ");
+    expect(out).toEqual([
+      { text: "กาแฟ", match: true },
+      { text: "ตอนเช้า", match: false },
+    ]);
   });
 });
 

@@ -40,6 +40,8 @@
     "home": "首页",
     "quick": "快速记账",
     "transactions": "记录",
+    "calendar": "日历",
+    "insights": "分析",
     "budgets": "预算",
     "recurring": "定期",
     "balances": "结算",
@@ -130,6 +132,7 @@
       "allCategories": "全部分类",
       "allTrips": "全部旅行",
       "noTrip": "无旅行",
+      "searchPlaceholder": "搜索备注…",
       "clearFilters": "清除筛选"
     },
     "rangeLabels": {
@@ -289,6 +292,40 @@
     "invalidHint": "此链接可能已被删除或代码错误 — 请向所有者索取新链接。",
     "backHome": "返回首页",
     "validity": "{used}/{max} 次使用"
+  },
+  "calendar": {
+    "title": "日历",
+    "subtitle": "查看每日支出热力图 — 颜色越深表示花费越多",
+    "prev": "上月",
+    "next": "下月",
+    "legendLess": "少",
+    "legendMore": "多",
+    "dayEmpty": "这一天没有记录",
+    "seeRows": "查看当天记录",
+    "dow": {
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六",
+      "sun": "日"
+    }
+  },
+  "insights": {
+    "title": "分析",
+    "subtitle": "本月与上月对比 — 总额、上升/下降分类、以及 AI 简要分析。",
+    "aiHeading": "AI 摘要",
+    "aiDisabled": "AI 摘要需要 ANTHROPIC_API_KEY — 在 env 中配置后刷新。",
+    "expenseLabel": "本月支出",
+    "incomeLabel": "本月收入",
+    "deltaPct": "({pct}%)",
+    "deltaNoBaseline": "(无法对比 — 上月为 0)",
+    "upHeading": "上升的分类",
+    "upEmpty": "本月没有上升的分类。",
+    "downHeading": "下降的分类",
+    "downEmpty": "本月没有下降的分类。",
+    "newThisMonth": "本月新增"
   },
   "ocr": {
     "title": "用 AI 扫描收据或转账凭证",

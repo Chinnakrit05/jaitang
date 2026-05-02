@@ -20,6 +20,8 @@ export type ListOptions = {
   categoryId?: string;
   /** Filter to rows tagged with this trip. Pass `null` for "no trip". */
   tripId?: string | null;
+  /** Free-text search against the note column (case-insensitive substring). */
+  search?: string;
   limit?: number;
   offset?: number;
 };
@@ -43,6 +45,13 @@ export async function listTransactions(
   if (opts.categoryId) q = q.eq("category_id", opts.categoryId);
   if (opts.tripId === null) q = q.is("trip_id", null);
   else if (typeof opts.tripId === "string") q = q.eq("trip_id", opts.tripId);
+  // Note search: PostgREST `ilike` does case-insensitive substring. We don't
+  // try to search joined category names — those are already filterable via
+  // the category dropdown and joining-with-or has surprising behaviour
+  // around row visibility.
+  if (opts.search && opts.search.trim()) {
+    q = q.ilike("note", `%${opts.search.trim()}%`);
+  }
   if (typeof opts.limit === "number") q = q.limit(opts.limit);
   if (typeof opts.offset === "number" && opts.limit)
     q = q.range(opts.offset, opts.offset + opts.limit - 1);

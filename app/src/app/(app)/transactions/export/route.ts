@@ -27,6 +27,7 @@ export async function GET(req: Request) {
   const tripParam = url.searchParams.get("trip");
   const tripFilter =
     tripParam === "none" ? null : tripParam || undefined;
+  const searchQ = url.searchParams.get("q")?.trim() || undefined;
 
   const items = await listTransactions({
     ledgerId,
@@ -35,6 +36,7 @@ export async function GET(req: Request) {
     kind,
     categoryId,
     tripId: tripFilter as string | null | undefined,
+    search: searchQ,
     limit: 50000,
   });
 

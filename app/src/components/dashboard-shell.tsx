@@ -8,7 +8,9 @@ import { ActiveTripBanner } from "@/components/active-trip-banner";
 import { sumPeriod } from "@/lib/transactions";
 import { getNavbarPeriod, periodRange } from "@/lib/period";
 import {
+  CalendarDays,
   LayoutDashboard,
+  LineChart,
   ListOrdered,
   FolderTree,
   LogOut,
@@ -76,6 +78,8 @@ export async function DashboardShell({
     { href: "/dashboard",   label: t("nav.home"),         icon: "home",         iconComponent: LayoutDashboard },
     { href: "/quick",       label: t("nav.quick"),        icon: "quick",        iconComponent: Sparkles },
     { href: "/transactions",label: t("nav.transactions"), icon: "transactions", iconComponent: ListOrdered },
+    { href: "/calendar",    label: t("nav.calendar"),     icon: "calendar",     iconComponent: CalendarDays },
+    { href: "/insights",    label: t("nav.insights"),     icon: "insights",     iconComponent: LineChart },
     { href: "/budgets",     label: t("nav.budgets"),      icon: "budgets",      iconComponent: PiggyBank },
     { href: "/recurring",   label: t("nav.recurring"),    icon: "recurring",    iconComponent: Repeat },
     { href: "/balances",    label: t("nav.balances"),     icon: "balances",     iconComponent: Scale },

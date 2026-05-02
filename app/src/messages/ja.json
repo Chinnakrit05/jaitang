@@ -40,6 +40,8 @@
     "home": "ホーム",
     "quick": "クイック追加",
     "transactions": "取引",
+    "calendar": "カレンダー",
+    "insights": "分析",
     "budgets": "予算",
     "recurring": "定期",
     "balances": "精算",
@@ -130,6 +132,7 @@
       "allCategories": "全カテゴリ",
       "allTrips": "全旅行",
       "noTrip": "旅行なし",
+      "searchPlaceholder": "メモを検索…",
       "clearFilters": "フィルタをクリア"
     },
     "rangeLabels": {
@@ -289,6 +292,40 @@
     "invalidHint": "このリンクは削除されたかコードが間違っています — オーナーに新しいリンクを依頼してください。",
     "backHome": "ホームに戻る",
     "validity": "{used}/{max} 回使用"
+  },
+  "calendar": {
+    "title": "カレンダー",
+    "subtitle": "日々の支出ヒートマップ — 濃い色 = 多く使った日",
+    "prev": "前月",
+    "next": "次月",
+    "legendLess": "少",
+    "legendMore": "多",
+    "dayEmpty": "この日は記録なし",
+    "seeRows": "この日の取引を見る",
+    "dow": {
+      "mon": "月",
+      "tue": "火",
+      "wed": "水",
+      "thu": "木",
+      "fri": "金",
+      "sat": "土",
+      "sun": "日"
+    }
+  },
+  "insights": {
+    "title": "分析",
+    "subtitle": "今月と先月を比較 — 合計、上昇/下降カテゴリ、AI による短いサマリー。",
+    "aiHeading": "AI サマリー",
+    "aiDisabled": "AI サマリーには ANTHROPIC_API_KEY が必要 — env に設定してリロード。",
+    "expenseLabel": "今月の支出",
+    "incomeLabel": "今月の収入",
+    "deltaPct": "({pct}%)",
+    "deltaNoBaseline": "(比較不可 — 先月は 0)",
+    "upHeading": "支出が増えたカテゴリ",
+    "upEmpty": "今月増えたカテゴリはなし。",
+    "downHeading": "支出が減ったカテゴリ",
+    "downEmpty": "今月減ったカテゴリはなし。",
+    "newThisMonth": "今月から"
   },
   "ocr": {
     "title": "AI でレシート・送金スリップをスキャン",

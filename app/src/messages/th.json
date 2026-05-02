@@ -40,6 +40,8 @@
     "home": "หน้าหลัก",
     "quick": "พิมพ์เร็ว",
     "transactions": "รายการ",
+    "calendar": "ปฏิทิน",
+    "insights": "วิเคราะห์",
     "budgets": "งบประมาณ",
     "recurring": "รายการประจำ",
     "balances": "หารบิล",
@@ -130,6 +132,7 @@
       "allCategories": "ทุกหมวด",
       "allTrips": "ทุกทริป",
       "noTrip": "ไม่อยู่ในทริป",
+      "searchPlaceholder": "ค้นหา note...",
       "clearFilters": "ล้าง filter"
     },
     "rangeLabels": {
@@ -289,6 +292,40 @@
     "invalidHint": "ลิงก์นี้อาจถูกลบ หรือรหัสผิด — ลองขอลิงก์ใหม่จากเจ้าของสมุด",
     "backHome": "กลับหน้าหลัก",
     "validity": "ใช้ได้ {used}/{max} ครั้ง"
+  },
+  "calendar": {
+    "title": "ปฏิทิน",
+    "subtitle": "ดูแผนที่ความเข้มของการใช้จ่ายแต่ละวัน — สีเข้ม = ใช้เยอะ",
+    "prev": "ก่อนหน้า",
+    "next": "ถัดไป",
+    "legendLess": "น้อย",
+    "legendMore": "มาก",
+    "dayEmpty": "วันนี้ไม่มีรายการ",
+    "seeRows": "ดูรายการของวันนี้",
+    "dow": {
+      "mon": "จ.",
+      "tue": "อ.",
+      "wed": "พ.",
+      "thu": "พฤ.",
+      "fri": "ศ.",
+      "sat": "ส.",
+      "sun": "อา."
+    }
+  },
+  "insights": {
+    "title": "วิเคราะห์",
+    "subtitle": "เทียบเดือนนี้กับเดือนก่อน เห็นความเปลี่ยนแปลงและไฮไลต์ที่น่าสนใจ",
+    "aiHeading": "สรุปย่อด้วย AI",
+    "aiDisabled": "ฟีเจอร์ AI ต้องการ ANTHROPIC_API_KEY — ตั้งค่าใน env แล้ว reload",
+    "expenseLabel": "รายจ่ายเดือนนี้",
+    "incomeLabel": "รายรับเดือนนี้",
+    "deltaPct": "({pct}%)",
+    "deltaNoBaseline": "(เทียบไม่ได้ — เดือนก่อนเป็น 0)",
+    "upHeading": "หมวดที่ใช้เพิ่มขึ้น",
+    "upEmpty": "ไม่มีหมวดไหนใช้เพิ่มขึ้น",
+    "downHeading": "หมวดที่ใช้ลดลง",
+    "downEmpty": "ไม่มีหมวดไหนใช้ลดลง",
+    "newThisMonth": "ใหม่เดือนนี้"
   },
   "ocr": {
     "title": "สแกนใบเสร็จ / สลิปโอนเงิน ด้วย AI",

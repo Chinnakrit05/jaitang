@@ -5,7 +5,12 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Banknote, Landmark, Pencil, Trash2, X } from "lucide-react";
 import type { TransactionWithCategory } from "@/lib/types";
-import { formatDate, formatCurrency, dayKeyInTz } from "@/lib/utils";
+import {
+  formatDate,
+  formatCurrency,
+  dayKeyInTz,
+  highlightSegments,
+} from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import { removeTransactionFromTripAction } from "@/app/(app)/trips/actions";
@@ -17,6 +22,7 @@ export function TransactionList({
   currency = "THB",
   showTrip = true,
   showRemoveFromTrip = false,
+  highlight,
 }: {
   items: TransactionWithCategory[];
   showAttribution?: boolean;
@@ -26,6 +32,9 @@ export function TransactionList({
   showTrip?: boolean;
   /** Show a small "remove from trip" button per row. Trip detail page only. */
   showRemoveFromTrip?: boolean;
+  /** When the parent page is in search mode, pass the query string here so
+   *  the note column can wrap matches in <mark>. */
+  highlight?: string;
 }) {
   const t = useTranslations();
   const locale = useLocale();
@@ -118,7 +127,23 @@ export function TransactionList({
                       {tx.category?.name ?? t("common.uncategorizedFull")}
                     </div>
                     {tx.note && (
-                      <div className="text-sm text-(--muted) truncate">{tx.note}</div>
+                      <div className="text-sm text-(--muted) truncate">
+                        {highlight
+                          ? highlightSegments(tx.note, highlight).map(
+                              (seg, i) =>
+                                seg.match ? (
+                                  <mark
+                                    key={i}
+                                    className="bg-(--accent)/20 text-(--foreground) rounded px-0.5"
+                                  >
+                                    {seg.text}
+                                  </mark>
+                                ) : (
+                                  <span key={i}>{seg.text}</span>
+                                )
+                            )
+                          : tx.note}
+                      </div>
                     )}
                     <div className="text-xs text-(--muted) flex items-center gap-1.5 flex-wrap">
                       <span>{formatDate(tx.occurred_at, fmtLocale)}</span>

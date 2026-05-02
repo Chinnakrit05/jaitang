@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import {
   MoreHorizontal,
   X,
+  CalendarDays,
   LayoutDashboard,
+  LineChart,
   ListOrdered,
   FolderTree,
   BookOpen,
@@ -27,6 +29,8 @@ import {
 export type IconName =
   | "home"
   | "transactions"
+  | "calendar"
+  | "insights"
   | "categories"
   | "ledgers"
   | "budgets"
@@ -40,6 +44,8 @@ export type IconName =
 const ICONS: Record<IconName, LucideIcon> = {
   home: LayoutDashboard,
   transactions: ListOrdered,
+  calendar: CalendarDays,
+  insights: LineChart,
   categories: FolderTree,
   ledgers: BookOpen,
   budgets: PiggyBank,

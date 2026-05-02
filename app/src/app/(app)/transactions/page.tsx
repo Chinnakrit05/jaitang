@@ -36,6 +36,8 @@ export default async function TransactionsPage({
   const tripFilter =
     tripParam === "none" ? null : tripParam || undefined;
 
+  const searchQ = sp.q?.trim() || undefined;
+
   const [items, categories, allTrips] = await Promise.all([
     listTransactions({
       ledgerId,
@@ -44,6 +46,7 @@ export default async function TransactionsPage({
       kind: kindParam,
       categoryId: sp.category || undefined,
       tripId: tripFilter as string | null | undefined,
+      search: searchQ,
       limit: 500,
     }),
     listCategories(ledgerId),
@@ -62,6 +65,7 @@ export default async function TransactionsPage({
   if (kindParam) exportParams.set("kind", kindParam);
   if (sp.category) exportParams.set("category", sp.category);
   if (tripParam) exportParams.set("trip", tripParam);
+  if (searchQ) exportParams.set("q", searchQ);
   const exportHref = `/transactions/export${
     exportParams.toString() ? `?${exportParams.toString()}` : ""
   }`;
@@ -128,7 +132,12 @@ export default async function TransactionsPage({
         />
       </div>
 
-      <TransactionList items={items} showAttribution={isShared} currency={currency} />
+      <TransactionList
+        items={items}
+        showAttribution={isShared}
+        currency={currency}
+        highlight={searchQ}
+      />
     </div>
   );
 }
