@@ -236,6 +236,27 @@ function PreviewStep({
     return set.size;
   }, [rows]);
 
+  // Trip stats — how many incoming rows referenced a trip and how many of
+  // those landed on a real trip in the destination. Surfacing the gap
+  // helps users notice "I forgot to recreate ทริปทะเล first".
+  const tripStats = useMemo(() => {
+    let withTripName = 0;
+    let matched = 0;
+    const unmatchedNames = new Set<string>();
+    for (const r of rows) {
+      if (!r.tripName) continue;
+      withTripName++;
+      if (r.tripId) matched++;
+      else unmatchedNames.add(r.tripName);
+    }
+    return {
+      withTripName,
+      matched,
+      unmatched: withTripName - matched,
+      unmatchedNames: Array.from(unmatchedNames),
+    };
+  }, [rows]);
+
   return (
     <div className="space-y-4">
       {/* Stats */}
@@ -250,6 +271,33 @@ function PreviewStep({
           value={String(newCategories)}
         />
       </div>
+
+      {tripStats.withTripName > 0 && (
+        <div className="rounded-2xl border border-(--border) bg-(--card) p-3 text-sm space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="font-medium">
+              {t("import.tripsTitle")}
+            </span>
+            <span className="text-xs text-(--muted) tabular-nums">
+              {t("import.tripsMatched", {
+                matched: tripStats.matched,
+                total: tripStats.withTripName,
+              })}
+            </span>
+          </div>
+          {tripStats.unmatched > 0 && (
+            <div className="text-xs text-(--muted)">
+              {t("import.tripsUnmatched")}{" "}
+              <span className="text-(--foreground)">
+                {tripStats.unmatchedNames.join(", ")}
+              </span>{" "}
+              <span className="text-(--muted)">
+                — {t("import.tripsUnmatchedHint")}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Month breakdown */}
       <div className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-2">
@@ -395,7 +443,25 @@ function RowEditor({
         {formatCurrency(row.amount, currency, fmtLocale)}
       </span>
 
-      <span className="flex-1 min-w-0 truncate">{row.note}</span>
+      <span className="flex-1 min-w-0 truncate flex items-center gap-1.5">
+        <span className="truncate">{row.note}</span>
+        {row.tripName && (
+          <span
+            className={
+              row.tripId
+                ? "shrink-0 inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full border border-(--accent)/40 bg-(--accent)/10 text-(--foreground)"
+                : "shrink-0 inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full border border-(--muted)/30 bg-(--muted)/10 text-(--muted)"
+            }
+            title={
+              row.tripId
+                ? t("import.tripBadgeMatched")
+                : t("import.tripBadgeUnmatched")
+            }
+          >
+            ✈️ {row.tripName}
+          </span>
+        )}
+      </span>
 
       <select
         value={selectValue}

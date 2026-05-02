@@ -20,6 +20,13 @@ export async function GET(req: Request) {
   const kind =
     kindParam === "income" || kindParam === "expense" ? (kindParam as TxKind) : undefined;
   const categoryId = url.searchParams.get("category") || undefined;
+  // Trip filter mirrors the transactions page filter contract:
+  //   ?trip=<uuid>  → only rows tagged with that trip
+  //   ?trip=none    → only rows with NO trip
+  //   absent        → no filter
+  const tripParam = url.searchParams.get("trip");
+  const tripFilter =
+    tripParam === "none" ? null : tripParam || undefined;
 
   const items = await listTransactions({
     ledgerId,
@@ -27,6 +34,7 @@ export async function GET(req: Request) {
     to: range.to,
     kind,
     categoryId,
+    tripId: tripFilter as string | null | undefined,
     limit: 50000,
   });
 

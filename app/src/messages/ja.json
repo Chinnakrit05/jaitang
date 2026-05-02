@@ -372,7 +372,13 @@
     "doneTitle": "インポート完了!",
     "doneBody": "{count} 件の取引を保存しました。",
     "uploadAnother": "別のファイルをインポート",
-    "viewTransactions": "取引を見る"
+    "viewTransactions": "取引を見る",
+    "tripsTitle": "ファイル内の旅行",
+    "tripsMatched": "{matched}/{total} 一致",
+    "tripsUnmatched": "未一致:",
+    "tripsUnmatchedHint": "宛先帳簿で同名の旅行を先に作成してから再アップロードすると、自動的にリンクされます。そうでなければタグなしでインポートされます。",
+    "tripBadgeMatched": "この旅行にリンクされます",
+    "tripBadgeUnmatched": "宛先帳簿に一致する旅行がありません — タグなしでインポートされます"
   },
   "quick": {
     "title": "クイック追加 ✨",

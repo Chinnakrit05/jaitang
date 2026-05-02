@@ -273,11 +273,14 @@ export function TransactionForm({
         </div>
       )}
 
-      {/* Trip toggle / picker.
-          - New tx with active trip in session → simple toggle "เพิ่มเข้าทริป {name}"
-          - Edit existing tx with a trip → dropdown to switch / detach
-          - Otherwise hide the section entirely (don't clutter the form). */}
-      {(activeTrip || initial?.tripId) && (
+      {/* Trip toggle / picker. Visible whenever:
+          - the ledger has at least one non-archived trip, OR
+          - this row is currently tagged to a (possibly archived) trip,
+            so the user can detach or change it explicitly.
+          New tx with an active trip gets a friendly toggle; everything
+          else gets a dropdown so old rows can be tagged or retagged
+          freely. */}
+      {((trips && trips.length > 0) || initial?.tripId) && (
         <div className="rounded-xl border border-(--border) bg-(--card) p-3">
           <input type="hidden" name="tripId" value={tripId ?? ""} />
           {!initial && activeTrip ? (
@@ -309,16 +312,15 @@ export function TransactionForm({
                 className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background) text-sm"
               >
                 <option value="">{t("trips.noTrip")}</option>
-                {/* Existing trip even if archived stays selectable so the
-                    picker can show the current value; new picks are limited
-                    to active trips passed in from the parent. */}
+                {/* Active trips — what the user can newly assign to. */}
                 {trips?.map((tr) => (
                   <option key={tr.id} value={tr.id}>
                     {(tr.icon ?? "✈️") + " " + tr.name}
                   </option>
                 ))}
-                {/* If the row's current trip isn't in the active list (e.g.
-                    archived), surface it so the user can detach explicitly. */}
+                {/* If the row's current trip isn't in the active list
+                    (e.g. archived after the fact), surface it so the
+                    selection stays correct + the user can detach. */}
                 {initial?.tripId &&
                   !trips?.some((tr) => tr.id === initial.tripId) && (
                     <option value={initial.tripId}>

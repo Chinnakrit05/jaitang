@@ -13,6 +13,7 @@ import {
 } from "@/lib/numbers-parser";
 import { isJaitangCsv, parseJaitangCsv } from "@/lib/jaitang-csv";
 import { mapNotesToCategories } from "@/lib/import-mapper";
+import { listTrips } from "@/lib/trips";
 import { yearMonthInTz } from "@/lib/utils";
 import { BUSINESS_TZ } from "@/lib/business-tz";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
@@ -30,6 +31,14 @@ export type PreviewRow = {
   newCategoryIcon: string | null;
   /** preserved through the round-trip — only set by the Jaitang CSV path */
   paymentMethod: PaymentMethod | null;
+  /** id of the trip in the DESTINATION ledger that this row matched to,
+   *  by exact-name lookup. Null if no match (or the source row had no trip). */
+  tripId: string | null;
+  /** Display-only trip name from the source CSV, surfaced in the wizard
+   *  so the user can see which row is going to be tagged. Set even when
+   *  tripId is null (= source had a trip but destination doesn't have a
+   *  matching one — user can pre-create the trip and re-upload). */
+  tripName: string | null;
 };
 
 export type ImportPreview = {
@@ -169,6 +178,8 @@ export async function parseImportAction(
       newCategoryName: sug.newCategoryName,
       newCategoryIcon: sug.newCategoryIcon,
       paymentMethod: null, // Numbers app source has no payment-method column
+      tripId: null,        // Numbers app source has no trip column
+      tripName: null,
     };
   });
 
@@ -213,13 +224,23 @@ async function previewJaitangCsv({
     };
   }
 
-  const categories = await listCategories(ledgerId);
+  const [categories, destTrips] = await Promise.all([
+    listCategories(ledgerId),
+    listTrips(ledgerId, { includeArchived: true }),
+  ]);
   // Build a lookup table keyed by `kind|name` so an "อาหาร" expense in the
   // source matches an "อาหาร" expense in the destination — but does NOT
   // match an income category that happens to share the name.
   const byKindName = new Map<string, Category>();
   for (const c of categories) {
     byKindName.set(`${c.kind}|${c.name}`, c);
+  }
+  // Trips don't have a kind, so a plain name → id map is enough. We
+  // INCLUDE archived trips intentionally: re-importing into the same
+  // ledger after archiving a trip should still re-link cleanly.
+  const tripByName = new Map<string, string>();
+  for (const tr of destTrips) {
+    tripByName.set(tr.name, tr.id);
   }
 
   const monthAgg = new Map<
@@ -240,6 +261,8 @@ async function previewJaitangCsv({
     cur.total += r.amount;
     monthAgg.set(ym, cur);
 
+    const tripId = r.tripName ? tripByName.get(r.tripName) ?? null : null;
+
     return {
       id: `r${i}`,
       occurredAt: r.occurredAt,
@@ -251,6 +274,8 @@ async function previewJaitangCsv({
       newCategoryName: match ? null : r.categoryName,
       newCategoryIcon: match ? null : null, // user can edit icon in preview
       paymentMethod: r.paymentMethod,
+      tripId,
+      tripName: r.tripName,
     };
   });
 
@@ -281,6 +306,7 @@ const ApplyRow = z.object({
   newCategoryName: z.string().min(1).max(50).nullable(),
   newCategoryIcon: z.string().min(1).max(8).nullable(),
   paymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
+  tripId: z.string().uuid().nullable().optional(),
 });
 
 const ApplySchema = z.object({
@@ -315,6 +341,15 @@ export async function applyImportAction(
     newCategoryCache.set(cacheKey, cat.id);
   }
 
+  // Build a whitelist of trip ids that actually belong to THIS ledger.
+  // We trust the preview to have already done the matching, but a stale
+  // browser session or tampered payload could submit a uuid for a trip
+  // in someone else's ledger. The FK alone wouldn't catch that — it
+  // only enforces "trip exists somewhere".
+  const allowedTripIds = new Set(
+    (await listTrips(ledgerId, { includeArchived: true })).map((t) => t.id)
+  );
+
   // 2) bulk insert transactions, resolving categoryId from cache where needed
   let created = 0;
   for (const r of parsed.data.rows) {
@@ -322,10 +357,14 @@ export async function applyImportAction(
     if (!categoryId && r.newCategoryName) {
       categoryId = newCategoryCache.get(`${r.kind}:${r.newCategoryName}`) ?? null;
     }
+    const safeTripId =
+      r.tripId && allowedTripIds.has(r.tripId) ? r.tripId : null;
+
     await createTransaction({
       ledgerId,
       userId,
       categoryId,
+      tripId: safeTripId,
       kind: r.kind,
       amount: r.amount,
       note: r.note,

@@ -372,7 +372,13 @@
     "doneTitle": "นำเข้าสำเร็จ!",
     "doneBody": "บันทึก {count} รายการเรียบร้อย",
     "uploadAnother": "นำเข้าอีกไฟล์",
-    "viewTransactions": "ดูรายการ"
+    "viewTransactions": "ดูรายการ",
+    "tripsTitle": "ทริปจากไฟล์",
+    "tripsMatched": "match แล้ว {matched}/{total}",
+    "tripsUnmatched": "ยังไม่ match:",
+    "tripsUnmatchedHint": "สร้างทริปชื่อนี้ในสมุดปลายทางก่อน แล้วอัปโหลดอีกครั้ง รายการจะถูก link อัตโนมัติ (ถ้าไม่ก็ import เป็นรายการธรรมดา)",
+    "tripBadgeMatched": "จะถูก link เข้าทริปนี้",
+    "tripBadgeUnmatched": "ทริปนี้ไม่มีในสมุดปลายทาง — รายการจะ import เป็นรายการธรรมดา"
   },
   "quick": {
     "title": "พิมพ์เร็ว ✨",

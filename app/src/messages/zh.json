@@ -372,7 +372,13 @@
     "doneTitle": "导入完成!",
     "doneBody": "已保存 {count} 条交易。",
     "uploadAnother": "再导入一个",
-    "viewTransactions": "查看交易"
+    "viewTransactions": "查看交易",
+    "tripsTitle": "文件中的旅行",
+    "tripsMatched": "已匹配 {matched}/{total}",
+    "tripsUnmatched": "未匹配:",
+    "tripsUnmatchedHint": "请先在目标账本创建同名旅行后重新上传 — 系统会自动关联。否则将以无标签记录导入。",
+    "tripBadgeMatched": "将关联到此旅行",
+    "tripBadgeUnmatched": "目标账本中没有匹配的旅行 — 记录将以无标签方式导入"
   },
   "quick": {
     "title": "快速记账 ✨",

@@ -222,4 +222,99 @@ describe("export → parse round trip", () => {
       note: 'lunch, with "x"',
     });
   });
+
+  it("a row with no trip in source still parses with tripName=null", () => {
+    const csv = BOM + [
+      HEADER,
+      exportLine({
+        occurredAt: "2026-05-02T03:30:00.000Z",
+        kind: "expense",
+        category: "อาหาร",
+        amount: 50,
+        paymentMethod: "cash",
+        tripName: null,
+        note: "lunch",
+      }),
+    ].join("\n");
+    const { rows } = parseJaitangCsv(csv);
+    expect(rows[0].tripName).toBeNull();
+  });
+
+  it("preserves trip names that contain commas (RFC-4180 quoted)", () => {
+    const csv = BOM + [
+      HEADER,
+      exportLine({
+        occurredAt: "2026-05-02T03:30:00.000Z",
+        kind: "expense",
+        category: "อาหาร",
+        amount: 100,
+        paymentMethod: "cash",
+        tripName: "Trip, with comma",
+        note: "test",
+      }),
+    ].join("\n");
+    const { rows } = parseJaitangCsv(csv);
+    expect(rows[0].tripName).toBe("Trip, with comma");
+  });
+});
+
+describe("import — destination-side trip matching simulation", () => {
+  // Simulates the matching step inside `previewJaitangCsv` without
+  // reaching for Supabase. The logic under test: take parsed rows with
+  // `tripName`, build a `Map<name → id>` from destination trips, link
+  // matches, leave unmatched names null but preserved for the wizard.
+  type ParsedRow = { tripName: string | null };
+  type DestTrip = { id: string; name: string };
+
+  function matchTrips(rows: ParsedRow[], destTrips: DestTrip[]) {
+    const byName = new Map<string, string>();
+    for (const t of destTrips) byName.set(t.name, t.id);
+    return rows.map((r) => ({
+      tripName: r.tripName,
+      tripId: r.tripName ? byName.get(r.tripName) ?? null : null,
+    }));
+  }
+
+  it("matches by exact name and leaves unknown trip names as null tripId", () => {
+    const result = matchTrips(
+      [
+        { tripName: "ทริปทะเล" },
+        { tripName: "ทริปภูเขา" }, // not in destination
+        { tripName: null },
+      ],
+      [{ id: "trip-uuid-1", name: "ทริปทะเล" }]
+    );
+    expect(result[0].tripId).toBe("trip-uuid-1");
+    expect(result[1].tripId).toBeNull();
+    expect(result[1].tripName).toBe("ทริปภูเขา");
+    expect(result[2].tripId).toBeNull();
+    expect(result[2].tripName).toBeNull();
+  });
+
+  it("doesn't link by trim/case — name match must be exact", () => {
+    const result = matchTrips(
+      [
+        { tripName: " ทริปทะเล" }, // leading space
+        { tripName: "ทริปทะเล " }, // trailing space
+        { tripName: "TRIP" }, // case
+      ],
+      [
+        { id: "1", name: "ทริปทะเล" },
+        { id: "2", name: "trip" },
+      ]
+    );
+    expect(result.every((r) => r.tripId === null)).toBe(true);
+  });
+
+  it("preserves the destination-trip id even if multiple source rows share the name", () => {
+    const result = matchTrips(
+      [
+        { tripName: "ทริปทะเล" },
+        { tripName: "ทริปทะเล" },
+        { tripName: "ทริปทะเล" },
+      ],
+      [{ id: "trip-1", name: "ทริปทะเล" }]
+    );
+    expect(result.map((r) => r.tripId)).toEqual(["trip-1", "trip-1", "trip-1"]);
+  });
 });

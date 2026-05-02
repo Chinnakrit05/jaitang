@@ -372,7 +372,13 @@
     "doneTitle": "Import complete!",
     "doneBody": "Saved {count} transactions.",
     "uploadAnother": "Import another",
-    "viewTransactions": "View transactions"
+    "viewTransactions": "View transactions",
+    "tripsTitle": "Trips in this file",
+    "tripsMatched": "{matched}/{total} matched",
+    "tripsUnmatched": "Unmatched:",
+    "tripsUnmatchedHint": "Create a trip with this name in the destination ledger and re-upload to auto-link these rows. Otherwise they'll import as un-tagged transactions.",
+    "tripBadgeMatched": "Will be linked to this trip",
+    "tripBadgeUnmatched": "No matching trip in this ledger — row will import without a trip tag"
   },
   "quick": {
     "title": "Quick add ✨",

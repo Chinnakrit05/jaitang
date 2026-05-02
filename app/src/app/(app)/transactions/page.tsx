@@ -61,6 +61,7 @@ export default async function TransactionsPage({
   if (sp.range) exportParams.set("range", sp.range);
   if (kindParam) exportParams.set("kind", kindParam);
   if (sp.category) exportParams.set("category", sp.category);
+  if (tripParam) exportParams.set("trip", tripParam);
   const exportHref = `/transactions/export${
     exportParams.toString() ? `?${exportParams.toString()}` : ""
   }`;
