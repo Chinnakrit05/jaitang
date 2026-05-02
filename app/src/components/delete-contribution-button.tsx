@@ -33,7 +33,7 @@ export function DeleteContributionButton({
           router.refresh();
         });
       }}
-      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense) transition disabled:opacity-50"
+      className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense) transition disabled:opacity-50"
       aria-label={aria}
       title={aria}
     >
