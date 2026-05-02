@@ -3,21 +3,29 @@
 import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Banknote, Landmark, Pencil, Trash2 } from "lucide-react";
+import { Banknote, Landmark, Pencil, Trash2, X } from "lucide-react";
 import type { TransactionWithCategory } from "@/lib/types";
 import { formatDate, formatCurrency, dayKeyInTz } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
+import { removeTransactionFromTripAction } from "@/app/(app)/trips/actions";
 import { useRouter } from "next/navigation";
 
 export function TransactionList({
   items,
   showAttribution = false,
   currency = "THB",
+  showTrip = true,
+  showRemoveFromTrip = false,
 }: {
   items: TransactionWithCategory[];
   showAttribution?: boolean;
   currency?: string;
+  /** Show "🏖️ ทริปทะเล" badge on rows that belong to a trip. Hide it on
+   *  the trip detail page where the badge is redundant context. */
+  showTrip?: boolean;
+  /** Show a small "remove from trip" button per row. Trip detail page only. */
+  showRemoveFromTrip?: boolean;
 }) {
   const t = useTranslations();
   const locale = useLocale();
@@ -147,6 +155,26 @@ export function TransactionList({
                           </span>
                         </>
                       )}
+                      {showTrip && tx.trip && (
+                        <>
+                          <span>•</span>
+                          <Link
+                            href={`/trips/${tx.trip.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-(--border) bg-(--background) hover:bg-(--card) transition"
+                            style={
+                              tx.trip.color
+                                ? { borderColor: `${tx.trip.color}40` }
+                                : undefined
+                            }
+                          >
+                            <span className="text-[10px]">
+                              {tx.trip.icon ?? "✈️"}
+                            </span>
+                            <span>{tx.trip.name}</span>
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div
@@ -158,6 +186,24 @@ export function TransactionList({
                     {formatCurrency(tx.amount, currency, fmtLocale)}
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                    {showRemoveFromTrip && tx.trip && (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => {
+                          if (!confirm(t("trips.removeFromTripConfirm"))) return;
+                          startTransition(async () => {
+                            await removeTransactionFromTripAction(tx.id);
+                            router.refresh();
+                          });
+                        }}
+                        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
+                        aria-label={t("trips.removeFromTrip")}
+                        title={t("trips.removeFromTrip")}
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
                     <Link
                       href={`/transactions/${tx.id}/edit`}
                       className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"

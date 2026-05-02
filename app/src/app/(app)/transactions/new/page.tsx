@@ -3,7 +3,8 @@ import { listCategories } from "@/lib/categories";
 import { NewTransactionPage } from "@/components/new-transaction-page";
 import { createTransactionAction } from "../actions";
 import { listMembers } from "@/lib/members";
-import type { SplitMember } from "@/components/transaction-form";
+import { getTrip, listTrips } from "@/lib/trips";
+import type { SplitMember, TripChoice } from "@/components/transaction-form";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -11,15 +12,17 @@ import { ArrowLeft } from "lucide-react";
 export default async function NewTransaction() {
   const ocrEnabled = !!process.env.ANTHROPIC_API_KEY;
 
-  const [{ ledgerId, ledger, userId }, t] = await Promise.all([
+  const [{ ledgerId, ledger, userId, activeTripId }, t] = await Promise.all([
     requireSession(),
     getTranslations(),
   ]);
 
-  // Fetch categories + members in parallel; members only for shared ledgers
-  const [categories, members] = await Promise.all([
+  // Fetch categories + members + trip data in parallel
+  const [categories, members, activeTripRow, allTripStats] = await Promise.all([
     listCategories(ledgerId),
     ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
+    activeTripId ? getTrip(activeTripId, ledgerId) : Promise.resolve(null),
+    listTrips(ledgerId),
   ]);
 
   const splitMembers: SplitMember[] | undefined = members
@@ -31,6 +34,20 @@ export default async function NewTransaction() {
         isYou: m.user_id === userId,
       }))
     : undefined;
+
+  const activeTrip: TripChoice | null =
+    activeTripRow && !activeTripRow.archived
+      ? {
+          id: activeTripRow.id,
+          name: activeTripRow.name,
+          icon: activeTripRow.icon,
+        }
+      : null;
+
+  // Trip picker shouldn't show archived trips for new selection.
+  const trips: TripChoice[] = allTripStats
+    .filter((tr) => !tr.archived)
+    .map((tr) => ({ id: tr.id, name: tr.name, icon: tr.icon }));
 
   return (
     <div className="max-w-xl mx-auto">
@@ -47,6 +64,8 @@ export default async function NewTransaction() {
         action={createTransactionAction}
         ocrEnabled={ocrEnabled}
         splitMembers={splitMembers}
+        activeTrip={activeTrip}
+        trips={trips}
       />
     </div>
   );

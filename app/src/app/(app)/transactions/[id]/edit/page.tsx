@@ -1,10 +1,14 @@
 import { requireSession } from "@/lib/session";
 import { listCategories } from "@/lib/categories";
-import { TransactionForm, type SplitMember } from "@/components/transaction-form";
+import {
+  TransactionForm,
+  type SplitMember,
+} from "@/components/transaction-form";
 import { updateTransactionAction, deleteTransactionAction } from "../../actions";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { listMembers } from "@/lib/members";
 import { listSplits } from "@/lib/splits";
+import { listTrips } from "@/lib/trips";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -24,12 +28,12 @@ export default async function EditTransactionPage({
 
   const sb = getServerSupabase();
 
-  // Fetch transaction + categories + (members/splits if shared) in parallel
-  const [txRes, categories, members, existingSplits] = await Promise.all([
+  // Fetch transaction + categories + (members/splits if shared) + trips in parallel
+  const [txRes, categories, members, existingSplits, allTrips] = await Promise.all([
     sb
       .from("transactions")
       .select(
-        "id, ledger_id, kind, amount, category_id, note, payment_method, occurred_at, user_id"
+        "id, ledger_id, kind, amount, category_id, trip_id, note, payment_method, occurred_at, user_id"
       )
       .eq("id", id)
       .eq("ledger_id", ledgerId)
@@ -37,6 +41,7 @@ export default async function EditTransactionPage({
     listCategories(ledgerId),
     ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
     ledger.is_personal ? Promise.resolve([]) : listSplits(id),
+    listTrips(ledgerId),
   ]);
 
   if (txRes.error) throw txRes.error;
@@ -73,6 +78,9 @@ export default async function EditTransactionPage({
       <TransactionForm
         categories={categories}
         splitMembers={splitMembers}
+        trips={allTrips
+          .filter((tr) => !tr.archived)
+          .map((tr) => ({ id: tr.id, name: tr.name, icon: tr.icon }))}
         initial={{
           id: tx.id,
           kind: tx.kind,
@@ -80,6 +88,7 @@ export default async function EditTransactionPage({
           categoryId: tx.category_id,
           note: tx.note,
           paymentMethod: tx.payment_method ?? null,
+          tripId: tx.trip_id ?? null,
           occurredAt: tx.occurred_at,
           splitWith,
         }}

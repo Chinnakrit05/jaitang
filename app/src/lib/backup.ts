@@ -21,8 +21,20 @@ export type BackupTransaction = {
   note: string | null;
   // Optional: pre-payment-method backups don't include this field.
   payment_method?: "cash" | "transfer" | null;
+  // Optional: pre-trip backups don't include this field.
+  trip_id?: string | null;
   occurred_at: string;
   created_at: string;
+};
+
+export type BackupTrip = {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  archived: boolean;
 };
 
 export type BackupBudget = {
@@ -66,6 +78,8 @@ export type BackupLedger = {
   budgets: BackupBudget[];
   recurring: BackupRecurring[];
   splits: BackupSplit[];
+  // Optional: pre-trip backups don't include this field.
+  trips?: BackupTrip[];
 };
 
 export type BackupFile = {
@@ -93,7 +107,7 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
   const out: BackupLedger[] = [];
 
   for (const l of ledgers) {
-    const [catsRes, txRes, budgetsRes, recurRes] = await Promise.all([
+    const [catsRes, txRes, budgetsRes, recurRes, tripsRes] = await Promise.all([
       sb
         .from("categories")
         .select("id, name, icon, color, kind, sort_order")
@@ -103,7 +117,7 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
       sb
         .from("transactions")
         .select(
-          "id, category_id, kind, amount, note, payment_method, occurred_at, created_at"
+          "id, category_id, trip_id, kind, amount, note, payment_method, occurred_at, created_at"
         )
         .eq("ledger_id", l.id)
         .order("occurred_at"),
@@ -117,12 +131,17 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
           "id, category_id, kind, amount, note, period, day_of_month, day_of_week, next_run_at, active"
         )
         .eq("ledger_id", l.id),
+      sb
+        .from("trips")
+        .select("id, name, icon, color, starts_at, ends_at, archived")
+        .eq("ledger_id", l.id),
     ]);
 
     if (catsRes.error) throw catsRes.error;
     if (txRes.error) throw txRes.error;
     if (budgetsRes.error) throw budgetsRes.error;
     if (recurRes.error) throw recurRes.error;
+    if (tripsRes.error) throw tripsRes.error;
 
     // Splits: pull all splits whose parent tx belongs to this ledger.
     // We embed user_email so cross-user restores have a chance of routing.
@@ -175,6 +194,7 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
         amount: Number(r.amount),
       })) as BackupRecurring[],
       splits,
+      trips: (tripsRes.data ?? []) as BackupTrip[],
     });
   }
 
@@ -216,6 +236,7 @@ const BackupSchema = z.object({
         z.object({
           id: z.string(),
           category_id: z.string().nullable(),
+          trip_id: z.string().nullable().optional(),
           kind: z.enum(["income", "expense"]),
           amount: z.number().positive(),
           note: z.string().nullable(),
@@ -224,6 +245,19 @@ const BackupSchema = z.object({
           created_at: z.string().optional(),
         })
       ),
+      trips: z
+        .array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            icon: z.string().nullable(),
+            color: z.string().nullable(),
+            starts_at: z.string().nullable(),
+            ends_at: z.string().nullable(),
+            archived: z.boolean(),
+          })
+        )
+        .optional(),
       budgets: z.array(
         z.object({
           category_id: z.string(),
@@ -267,6 +301,7 @@ export type RestoreSummary = {
   budgetsCreated: number;
   recurringCreated: number;
   splitsCreated: number;
+  tripsCreated: number;
   ledgersSkipped: number; // shared ledgers we couldn't recreate
 };
 
@@ -298,6 +333,7 @@ export async function restoreBackup(
     budgetsCreated: 0,
     recurringCreated: 0,
     splitsCreated: 0,
+    tripsCreated: 0,
     ledgersSkipped: 0,
   };
 
@@ -342,6 +378,30 @@ export async function restoreBackup(
       summary.ledgersCreated++;
     }
 
+    // Trips — map oldId → newId so transactions can re-link to them.
+    // Done before transactions for that reason.
+    const tripMap = new Map<string, string>();
+    if (lb.trips && lb.trips.length > 0) {
+      for (const tr of lb.trips) {
+        const { data: nt, error: terr } = await sb
+          .from("trips")
+          .insert({
+            ledger_id: createdLedgerId!,
+            name: tr.name,
+            icon: tr.icon,
+            color: tr.color,
+            starts_at: tr.starts_at,
+            ends_at: tr.ends_at,
+            archived: tr.archived,
+          })
+          .select("id")
+          .single();
+        if (terr) throw terr;
+        tripMap.set(tr.id, nt!.id);
+        summary.tripsCreated++;
+      }
+    }
+
     // Categories — map oldId → newId
     const catMap = new Map<string, string>();
     if (lb.categories.length > 0) {
@@ -380,6 +440,7 @@ export async function restoreBackup(
               ledger_id: createdLedgerId!,
               user_id: userId,
               category_id: t.category_id ? catMap.get(t.category_id) ?? null : null,
+              trip_id: t.trip_id ? tripMap.get(t.trip_id) ?? null : null,
               kind: t.kind,
               amount: t.amount,
               note: t.note,
@@ -397,6 +458,7 @@ export async function restoreBackup(
           ledger_id: createdLedgerId!,
           user_id: userId,
           category_id: t.category_id ? catMap.get(t.category_id) ?? null : null,
+          trip_id: t.trip_id ? tripMap.get(t.trip_id) ?? null : null,
           kind: t.kind,
           amount: t.amount,
           note: t.note,

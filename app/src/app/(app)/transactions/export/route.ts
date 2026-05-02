@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     limit: 50000,
   });
 
-  const header = ["วันที่", "ประเภท", "หมวด", "จำนวน", "ช่องทาง", "โน้ต"];
+  const header = ["วันที่", "ประเภท", "หมวด", "จำนวน", "ช่องทาง", "ทริป", "โน้ต"];
   const lines = [header.join(",")];
   for (const tx of items) {
     const method =
@@ -46,6 +46,7 @@ export async function GET(req: Request) {
         tx.category?.name ?? "ไม่ระบุ",
         tx.amount.toFixed(2),
         method,
+        tx.trip?.name ?? "",
         tx.note ?? "",
       ]
         .map(csvEscape)

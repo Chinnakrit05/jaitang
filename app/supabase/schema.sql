@@ -73,6 +73,24 @@ create table if not exists public.categories (
 create index if not exists idx_categories_ledger on public.categories(ledger_id);
 
 -- ============================================================
+-- Trips (ทริป — container ชั่วคราว tag รายการ เช่น "ทริปทะเล")
+-- ============================================================
+create table if not exists public.trips (
+  id uuid primary key default uuid_generate_v4(),
+  ledger_id uuid not null references public.ledgers(id) on delete cascade,
+  name text not null,
+  icon text default '✈️',
+  color text default '#3b82f6',
+  starts_at timestamptz,
+  ends_at timestamptz,
+  archived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_trips_ledger on public.trips(ledger_id);
+create index if not exists idx_trips_active on public.trips(ledger_id) where archived = false;
+
+-- ============================================================
 -- Transactions (รายการเงินเข้า-ออก)
 -- ============================================================
 create table if not exists public.transactions (
@@ -80,6 +98,10 @@ create table if not exists public.transactions (
   ledger_id uuid not null references public.ledgers(id) on delete cascade,
   user_id uuid not null references public.users(id) on delete restrict,
   category_id uuid references public.categories(id) on delete set null,
+  -- Optional trip association. SET NULL on trip deletion so the user's
+  -- transactions survive when they delete a trip — the trip-tag is the
+  -- only thing that disappears.
+  trip_id uuid references public.trips(id) on delete set null,
   kind tx_kind not null,
   amount numeric(14, 2) not null check (amount > 0),
   note text,
@@ -90,13 +112,16 @@ create table if not exists public.transactions (
   updated_at timestamptz not null default now()
 );
 
--- Idempotent migration for existing deployments where the column did not exist.
+-- Idempotent migration for existing deployments where the columns did not exist.
 alter table public.transactions
   add column if not exists payment_method text
   check (payment_method in ('cash', 'transfer'));
+alter table public.transactions
+  add column if not exists trip_id uuid references public.trips(id) on delete set null;
 
 create index if not exists idx_tx_ledger_occurred on public.transactions(ledger_id, occurred_at desc);
 create index if not exists idx_tx_user on public.transactions(user_id);
+create index if not exists idx_tx_trip on public.transactions(trip_id) where trip_id is not null;
 
 -- updated_at trigger
 create or replace function set_updated_at()
@@ -260,6 +285,7 @@ alter table public.ledger_members enable row level security;
 alter table public.categories enable row level security;
 alter table public.transactions enable row level security;
 alter table public.invites enable row level security;
+alter table public.trips enable row level security;
 
 -- For MVP: deny all by default; service-role bypasses RLS,
 -- so anon/authenticated clients see nothing unless we add

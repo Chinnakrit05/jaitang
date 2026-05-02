@@ -18,6 +18,8 @@ export type ListOptions = {
   to?: string; // ISO date
   kind?: TxKind;
   categoryId?: string;
+  /** Filter to rows tagged with this trip. Pass `null` for "no trip". */
+  tripId?: string | null;
   limit?: number;
   offset?: number;
 };
@@ -29,7 +31,7 @@ export async function listTransactions(
   let q = sb
     .from("transactions")
     .select(
-      "id, ledger_id, user_id, category_id, kind, amount, note, payment_method, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), user:users(id, name, email, image)"
+      "id, ledger_id, user_id, category_id, trip_id, kind, amount, note, payment_method, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), trip:trips(id, name, icon, color), user:users(id, name, email, image)"
     )
     .eq("ledger_id", opts.ledgerId)
     .order("occurred_at", { ascending: false })
@@ -39,6 +41,8 @@ export async function listTransactions(
   if (opts.to) q = q.lt("occurred_at", opts.to);
   if (opts.kind) q = q.eq("kind", opts.kind);
   if (opts.categoryId) q = q.eq("category_id", opts.categoryId);
+  if (opts.tripId === null) q = q.is("trip_id", null);
+  else if (typeof opts.tripId === "string") q = q.eq("trip_id", opts.tripId);
   if (typeof opts.limit === "number") q = q.limit(opts.limit);
   if (typeof opts.offset === "number" && opts.limit)
     q = q.range(opts.offset, opts.offset + opts.limit - 1);
@@ -48,12 +52,14 @@ export async function listTransactions(
 
   return (data ?? []).map((row) => {
     const cat = (Array.isArray(row.category) ? row.category[0] : row.category) ?? null;
+    const trp = (Array.isArray(row.trip) ? row.trip[0] : row.trip) ?? null;
     const usr = (Array.isArray(row.user) ? row.user[0] : row.user) ?? null;
     return {
       id: row.id,
       ledger_id: row.ledger_id,
       user_id: row.user_id,
       category_id: row.category_id,
+      trip_id: row.trip_id ?? null,
       kind: row.kind as TxKind,
       amount: Number(row.amount),
       note: row.note,
@@ -62,6 +68,7 @@ export async function listTransactions(
       created_at: row.created_at,
       updated_at: row.updated_at,
       category: cat,
+      trip: trp,
       user: usr,
     };
   });
@@ -71,6 +78,8 @@ export type CreateTxInput = {
   ledgerId: string;
   userId: string;
   categoryId: string | null;
+  /** Optional trip association — null = no trip */
+  tripId?: string | null;
   kind: TxKind;
   amount: number;
   note?: string;
@@ -86,6 +95,7 @@ export async function createTransaction(input: CreateTxInput) {
       ledger_id: input.ledgerId,
       user_id: input.userId,
       category_id: input.categoryId,
+      trip_id: input.tripId ?? null,
       kind: input.kind,
       amount: input.amount,
       note: input.note ?? null,
@@ -102,6 +112,7 @@ export async function updateTransaction(
   id: string,
   input: Partial<{
     categoryId: string | null;
+    tripId: string | null;
     kind: TxKind;
     amount: number;
     note: string | null;
@@ -112,6 +123,7 @@ export async function updateTransaction(
   const sb = getServerSupabase();
   const patch: Record<string, unknown> = {};
   if (input.categoryId !== undefined) patch.category_id = input.categoryId;
+  if (input.tripId !== undefined) patch.trip_id = input.tripId;
   if (input.kind !== undefined) patch.kind = input.kind;
   if (input.amount !== undefined) patch.amount = input.amount;
   if (input.note !== undefined) patch.note = input.note;

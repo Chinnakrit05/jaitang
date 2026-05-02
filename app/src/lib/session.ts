@@ -2,6 +2,7 @@ import { cache } from "react";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { resolveActiveLedger } from "@/lib/active-ledger";
+import { resolveActiveTrip } from "@/lib/active-trip";
 import { getServerSupabase } from "@/lib/supabase/server";
 import type { LedgerRole } from "@/lib/role";
 
@@ -29,6 +30,8 @@ export type SessionContext = {
   role: LedgerRole;
   user: SessionUser;
   ledger: ActiveLedgerInfo;
+  /** id of the active trip in the current ledger, or null if none */
+  activeTripId: string | null;
 };
 
 /**
@@ -74,6 +77,11 @@ export const requireSession = cache(async (): Promise<SessionContext> => {
     role = (member?.role as LedgerRole) ?? "viewer";
   }
 
+  // Active trip is scoped to the active ledger; resolve it after we know
+  // which ledger we're in. The helper validates the cookie, so a stale
+  // value (deleted/archived/cross-ledger) is silently dropped.
+  const activeTripId = await resolveActiveTrip(ledgerId);
+
   return {
     userId,
     ledgerId,
@@ -86,6 +94,7 @@ export const requireSession = cache(async (): Promise<SessionContext> => {
       is_personal: ledgerRow.is_personal,
       currency: ledgerRow.currency ?? "THB",
     },
+    activeTripId,
   };
 });
 

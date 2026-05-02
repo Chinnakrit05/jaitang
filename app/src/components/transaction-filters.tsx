@@ -6,6 +6,13 @@ import { useTranslations } from "next-intl";
 import type { Category, TxKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+type TripOption = {
+  id: string;
+  name: string;
+  icon: string | null;
+  archived: boolean;
+};
+
 const RANGES = [
   { key: "today", label: "today" },
   { key: "month", label: "thisMonth" },
@@ -15,7 +22,13 @@ const RANGES = [
   { key: "all", label: "all" },
 ] as const;
 
-export function TransactionFilters({ categories }: { categories: Category[] }) {
+export function TransactionFilters({
+  categories,
+  trips = [],
+}: {
+  categories: Category[];
+  trips?: TripOption[];
+}) {
   const router = useRouter();
   const params = useSearchParams();
   const t = useTranslations();
@@ -24,6 +37,7 @@ export function TransactionFilters({ categories }: { categories: Category[] }) {
   const range = params.get("range") ?? "month";
   const kind = (params.get("kind") ?? "") as TxKind | "";
   const categoryId = params.get("category") ?? "";
+  const tripFilter = params.get("trip") ?? "";
 
   function update(updates: Record<string, string | null>) {
     const sp = new URLSearchParams(params.toString());
@@ -80,10 +94,29 @@ export function TransactionFilters({ categories }: { categories: Category[] }) {
           ))}
         </select>
 
-        {(kind || categoryId) && (
+        {trips.length > 0 && (
+          <select
+            value={tripFilter}
+            onChange={(e) => update({ trip: e.target.value || null })}
+            className="px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) text-sm"
+          >
+            <option value="">{t("transactions.filters.allTrips")}</option>
+            <option value="none">{t("transactions.filters.noTrip")}</option>
+            {trips.map((tr) => (
+              <option key={tr.id} value={tr.id}>
+                {(tr.icon ?? "✈️") + " " + tr.name}
+                {tr.archived ? " ·archived" : ""}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {(kind || categoryId || tripFilter) && (
           <button
             type="button"
-            onClick={() => update({ kind: null, category: null })}
+            onClick={() =>
+              update({ kind: null, category: null, trip: null })
+            }
             className="text-(--muted) hover:text-(--foreground) underline text-xs ml-1"
           >
             {t("transactions.filters.clearFilters")}

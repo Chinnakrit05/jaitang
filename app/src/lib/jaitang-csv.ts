@@ -16,10 +16,25 @@ export type JaitangCsvRow = {
   categoryName: string | null; // null = uncategorized in source
   amount: number;
   paymentMethod: PaymentMethod | null;
+  /** Trip name from the source ledger. Free text, may match an existing
+   *  trip in the destination ledger or not. v1: ignored on import — see
+   *  comment in actions.ts for the rationale. */
+  tripName: string | null;
   note: string;
 };
 
-const HEADER_FIELDS = ["วันที่", "ประเภท", "หมวด", "จำนวน", "ช่องทาง", "โน้ต"];
+// Header field order matters only for the row parser; the detector below
+// just checks the FIRST FOUR columns so older exports without ช่องทาง / ทริป
+// are still recognized.
+const HEADER_FIELDS = [
+  "วันที่",
+  "ประเภท",
+  "หมวด",
+  "จำนวน",
+  "ช่องทาง",
+  "ทริป",
+  "โน้ต",
+];
 
 /**
  * Returns true if the given text looks like a Jaitang export. We read just
@@ -101,6 +116,10 @@ function parseAmount(raw: string): number | null {
  * Parse Jaitang CSV text. Skips rows with missing essential fields (date,
  * kind, amount) instead of throwing, so a corrupted line doesn't sink the
  * whole import — but caller should warn the user about skipped rows.
+ *
+ * Adapts to old / new export shapes by reading the header and locating
+ * each known column by name. That way an old export (6 cols, no ทริป)
+ * and a new one (7 cols, with ทริป) both parse correctly.
  */
 export function parseJaitangCsv(text: string): {
   rows: JaitangCsvRow[];
@@ -110,32 +129,48 @@ export function parseJaitangCsv(text: string): {
   const lines = stripped.split(/\r?\n/);
   if (lines.length < 2) return { rows: [], skipped: 0 };
 
+  // Find the header (first non-empty line) and build a field-name → index map.
+  let headerIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim()) {
+      headerIdx = i;
+      break;
+    }
+  }
+  if (headerIdx === -1) return { rows: [], skipped: 0 };
+
+  const header = parseCsvLine(lines[headerIdx]).map((s) => s.trim());
+  const idx = (name: string) => header.indexOf(name);
+  const dateCol = idx("วันที่") >= 0 ? idx("วันที่") : 0;
+  const kindCol = idx("ประเภท") >= 0 ? idx("ประเภท") : 1;
+  const catCol = idx("หมวด") >= 0 ? idx("หมวด") : 2;
+  const amountCol = idx("จำนวน") >= 0 ? idx("จำนวน") : 3;
+  const methodCol = idx("ช่องทาง"); // -1 in legacy 6-col exports (OK)
+  const tripCol = idx("ทริป"); // -1 in pre-trip exports (OK)
+  const noteCol = idx("โน้ต") >= 0 ? idx("โน้ต") : header.length - 1;
+
   const rows: JaitangCsvRow[] = [];
   let skipped = 0;
 
-  // Skip header (first non-empty line)
-  let started = false;
-  for (const raw of lines) {
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const raw = lines[i];
     if (!raw.trim()) continue;
-    if (!started) {
-      started = true;
-      continue;
-    }
     const fields = parseCsvLine(raw);
-    const dateStr = fields[0]?.trim() ?? "";
-    const kind = parseKind(fields[1] ?? "");
-    const categoryRaw = (fields[2] ?? "").trim();
-    const amount = parseAmount(fields[3] ?? "");
-    const paymentMethod = parsePaymentMethod(fields[4] ?? "");
-    const note = (fields[5] ?? "").trim();
+
+    const dateStr = (fields[dateCol] ?? "").trim();
+    const kind = parseKind(fields[kindCol] ?? "");
+    const categoryRaw = (fields[catCol] ?? "").trim();
+    const amount = parseAmount(fields[amountCol] ?? "");
+    const paymentMethod =
+      methodCol >= 0 ? parsePaymentMethod(fields[methodCol] ?? "") : null;
+    const tripRaw = tripCol >= 0 ? (fields[tripCol] ?? "").trim() : "";
+    const note = (fields[noteCol] ?? "").trim();
 
     if (!dateStr || !kind || amount === null) {
       skipped++;
       continue;
     }
 
-    // Sanity-check the date — if it's TZ-naive or unparseable, drop the row
-    // rather than smear the import with bad timestamps.
     const inst = new Date(dateStr);
     if (Number.isNaN(inst.getTime())) {
       skipped++;
@@ -146,12 +181,10 @@ export function parseJaitangCsv(text: string): {
     rows.push({
       occurredAt,
       kind,
-      // "ไม่ระบุ" is what the export writes for uncategorized rows; treat
-      // that the same as missing so we don't recreate an "uncategorized"
-      // category in the destination ledger.
       categoryName: categoryRaw && categoryRaw !== "ไม่ระบุ" ? categoryRaw : null,
       amount,
       paymentMethod,
+      tripName: tripRaw || null,
       note,
     });
   }

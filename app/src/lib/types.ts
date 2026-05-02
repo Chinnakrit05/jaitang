@@ -12,11 +12,24 @@ export type Category = {
   sort_order: number;
 };
 
+export type Trip = {
+  id: string;
+  ledger_id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  archived: boolean;
+  created_at: string;
+};
+
 export type Transaction = {
   id: string;
   ledger_id: string;
   user_id: string;
   category_id: string | null;
+  trip_id: string | null;
   kind: TxKind;
   amount: number;
   note: string | null;
@@ -28,6 +41,7 @@ export type Transaction = {
 
 export type TransactionWithCategory = Transaction & {
   category: Pick<Category, "id" | "name" | "icon" | "color"> | null;
+  trip?: Pick<Trip, "id" | "name" | "icon" | "color"> | null;
   user?: {
     id: string;
     name: string | null;

@@ -22,6 +22,7 @@ function tx(opts: {
     ledger_id: "ledger-1",
     user_id: "user-1",
     category_id: opts.categoryId ?? null,
+    trip_id: null,
     kind: opts.kind,
     amount: opts.amount,
     note: null,

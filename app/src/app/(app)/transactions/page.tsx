@@ -1,6 +1,7 @@
 import { requireSession } from "@/lib/session";
 import { listTransactions } from "@/lib/transactions";
 import { listCategories } from "@/lib/categories";
+import { listTrips } from "@/lib/trips";
 import { TransactionList } from "@/components/transaction-list";
 import { TransactionFilters } from "@/components/transaction-filters";
 import { resolveRange } from "@/lib/date-range";
@@ -30,16 +31,23 @@ export default async function TransactionsPage({
   const kindParam =
     sp.kind === "income" || sp.kind === "expense" ? (sp.kind as TxKind) : undefined;
 
-  const [items, categories] = await Promise.all([
+  // Trip filter URL: ?trip=<id> | "none" (no trip) | absent (any)
+  const tripParam = sp.trip;
+  const tripFilter =
+    tripParam === "none" ? null : tripParam || undefined;
+
+  const [items, categories, allTrips] = await Promise.all([
     listTransactions({
       ledgerId,
       from: range.from,
       to: range.to,
       kind: kindParam,
       categoryId: sp.category || undefined,
+      tripId: tripFilter as string | null | undefined,
       limit: 500,
     }),
     listCategories(ledgerId),
+    listTrips(ledgerId, { includeArchived: true }),
   ]);
 
   const totalIncome = items
@@ -84,7 +92,15 @@ export default async function TransactionsPage({
         </div>
       </div>
 
-      <TransactionFilters categories={categories} />
+      <TransactionFilters
+        categories={categories}
+        trips={allTrips.map((tr) => ({
+          id: tr.id,
+          name: tr.name,
+          icon: tr.icon,
+          archived: tr.archived,
+        }))}
+      />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
         <Stat

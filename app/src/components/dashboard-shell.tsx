@@ -4,6 +4,7 @@ import { signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
 import { NavbarStat } from "@/components/navbar-stat";
+import { ActiveTripBanner } from "@/components/active-trip-banner";
 import { sumPeriod } from "@/lib/transactions";
 import { getNavbarPeriod, periodRange } from "@/lib/period";
 import {
@@ -13,6 +14,7 @@ import {
   LogOut,
   BookOpen,
   PiggyBank,
+  Plane,
   Repeat,
   Scale,
   Settings,
@@ -37,12 +39,20 @@ export async function DashboardShell({
   userImage,
   activeLedger,
   ledgerCurrency = "THB",
+  activeTripBanner,
 }: {
   children: React.ReactNode;
   userName?: string | null;
   userImage?: string | null;
   activeLedger?: ActiveLedger | null;
   ledgerCurrency?: string;
+  activeTripBanner?: {
+    id: string;
+    name: string;
+    icon: string | null;
+    color: string | null;
+    txCount: number;
+  } | null;
 }) {
   const t = await getTranslations();
 
@@ -69,6 +79,7 @@ export async function DashboardShell({
     { href: "/budgets",     label: t("nav.budgets"),      icon: "budgets",      iconComponent: PiggyBank },
     { href: "/recurring",   label: t("nav.recurring"),    icon: "recurring",    iconComponent: Repeat },
     { href: "/balances",    label: t("nav.balances"),     icon: "balances",     iconComponent: Scale },
+    { href: "/trips",       label: t("nav.trips"),        icon: "trips",        iconComponent: Plane },
     { href: "/categories",  label: t("nav.categories"),   icon: "categories",   iconComponent: FolderTree },
     { href: "/ledgers",     label: t("nav.ledgers"),      icon: "ledgers",      iconComponent: BookOpen },
     { href: "/import",      label: t("nav.import"),       icon: "import",       iconComponent: Upload },
@@ -163,6 +174,16 @@ export async function DashboardShell({
           </form>
         </div>
       </header>
+
+      {activeTripBanner && (
+        <ActiveTripBanner
+          tripId={activeTripBanner.id}
+          tripName={activeTripBanner.name}
+          tripIcon={activeTripBanner.icon}
+          tripColor={activeTripBanner.color}
+          txCount={activeTripBanner.txCount}
+        />
+      )}
 
       <div className="flex flex-1">
         <aside className="hidden md:flex flex-col w-56 border-r border-(--border) bg-(--card)/50 px-3 py-6 gap-1">

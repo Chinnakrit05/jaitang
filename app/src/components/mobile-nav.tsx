@@ -10,6 +10,7 @@ import {
   FolderTree,
   BookOpen,
   PiggyBank,
+  Plane,
   Repeat,
   Scale,
   Settings,
@@ -31,6 +32,7 @@ export type IconName =
   | "budgets"
   | "recurring"
   | "balances"
+  | "trips"
   | "settings"
   | "quick"
   | "import";
@@ -43,6 +45,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   budgets: PiggyBank,
   recurring: Repeat,
   balances: Scale,
+  trips: Plane,
   settings: Settings,
   quick: Sparkles,
   import: Upload,

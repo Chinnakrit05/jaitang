@@ -6,26 +6,30 @@
 import { describe, expect, it } from "vitest";
 import { isJaitangCsv, parseJaitangCsv } from "./jaitang-csv";
 
-const HEADER = "วันที่,ประเภท,หมวด,จำนวน,ช่องทาง,โน้ต";
+const HEADER = "วันที่,ประเภท,หมวด,จำนวน,ช่องทาง,ทริป,โน้ต";
+const LEGACY_HEADER = "วันที่,ประเภท,หมวด,จำนวน,ช่องทาง,โน้ต";
 const BOM = "﻿";
 
 function build(lines: string[]): string {
   return BOM + [HEADER, ...lines].join("\n");
 }
+function buildLegacy(lines: string[]): string {
+  return BOM + [LEGACY_HEADER, ...lines].join("\n");
+}
 
 describe("isJaitangCsv", () => {
   it("recognizes a freshly-exported file (with BOM)", () => {
-    const csv = build(["2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,กาแฟ"]);
+    const csv = build(["2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,,กาแฟ"]);
     expect(isJaitangCsv(csv)).toBe(true);
   });
 
   it("recognizes a header without BOM", () => {
-    const csv = HEADER + "\n2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,กาแฟ";
+    const csv = HEADER + "\n2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,,กาแฟ";
     expect(isJaitangCsv(csv)).toBe(true);
   });
 
-  it("recognizes older exports that lacked the ช่องทาง column", () => {
-    // pre-payment-method export — first 4 columns must still match
+  it("recognizes older exports that lacked the ช่องทาง / ทริป columns", () => {
+    // Pre-payment-method export — first 4 columns must still match.
     const csv = "วันที่,ประเภท,หมวด,จำนวน,โน้ต\n2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,กาแฟ";
     expect(isJaitangCsv(csv)).toBe(true);
   });
@@ -41,9 +45,9 @@ describe("isJaitangCsv", () => {
 });
 
 describe("parseJaitangCsv", () => {
-  it("parses a single typical row", () => {
+  it("parses a single typical row (new 7-col format with trip)", () => {
     const csv = build([
-      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,กาแฟ",
+      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,ทริปทะเล,กาแฟ",
     ]);
     const { rows, skipped } = parseJaitangCsv(csv);
     expect(skipped).toBe(0);
@@ -54,13 +58,38 @@ describe("parseJaitangCsv", () => {
       categoryName: "อาหาร",
       amount: 100,
       paymentMethod: "cash",
+      tripName: "ทริปทะเล",
+      note: "กาแฟ",
+    });
+  });
+
+  it("treats blank trip column as null", () => {
+    const csv = build([
+      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,,กาแฟ",
+    ]);
+    const { rows } = parseJaitangCsv(csv);
+    expect(rows[0].tripName).toBeNull();
+  });
+
+  it("parses a legacy 6-col export and leaves tripName null", () => {
+    const csv = buildLegacy([
+      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,กาแฟ",
+    ]);
+    const { rows } = parseJaitangCsv(csv);
+    expect(rows[0]).toEqual({
+      occurredAt: "2026-05-02T03:30:00.000Z",
+      kind: "expense",
+      categoryName: "อาหาร",
+      amount: 100,
+      paymentMethod: "cash",
+      tripName: null,
       note: "กาแฟ",
     });
   });
 
   it("handles income, transfer, and quoted notes", () => {
     const csv = build([
-      `2026-05-01T01:00:00.000Z,รายรับ,เงินเดือน,30000.00,เงินโอน,"เดือน พ.ค."`,
+      `2026-05-01T01:00:00.000Z,รายรับ,เงินเดือน,30000.00,เงินโอน,,"เดือน พ.ค."`,
     ]);
     const { rows } = parseJaitangCsv(csv);
     expect(rows[0].kind).toBe("income");
@@ -70,15 +99,15 @@ describe("parseJaitangCsv", () => {
 
   it("treats 'ไม่ระบุ' category as null (not a real category to recreate)", () => {
     const csv = build([
-      "2026-05-02T03:30:00.000Z,รายจ่าย,ไม่ระบุ,50.00,เงินสด,ค่ารถ",
+      "2026-05-02T03:30:00.000Z,รายจ่าย,ไม่ระบุ,50.00,เงินสด,,ค่ารถ",
     ]);
     const { rows } = parseJaitangCsv(csv);
     expect(rows[0].categoryName).toBeNull();
   });
 
-  it("treats empty payment-method column as null (legacy rows)", () => {
+  it("treats empty payment-method column as null", () => {
     const csv = build([
-      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,,กาแฟ",
+      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,,,กาแฟ",
     ]);
     const { rows } = parseJaitangCsv(csv);
     expect(rows[0].paymentMethod).toBeNull();
@@ -86,7 +115,7 @@ describe("parseJaitangCsv", () => {
 
   it("preserves notes that contain commas (RFC-4180 quoted)", () => {
     const csv = build([
-      `2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,150.00,เงินสด,"ข้าวมันไก่, ชาเย็น"`,
+      `2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,150.00,เงินสด,,"ข้าวมันไก่, ชาเย็น"`,
     ]);
     const { rows } = parseJaitangCsv(csv);
     expect(rows[0].note).toBe("ข้าวมันไก่, ชาเย็น");
@@ -94,7 +123,7 @@ describe("parseJaitangCsv", () => {
 
   it("preserves notes with embedded double-quotes (escaped as \"\")", () => {
     const csv = build([
-      `2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,150.00,เงินสด,"แท้ ""organic"""`,
+      `2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,150.00,เงินสด,,"แท้ ""organic"""`,
     ]);
     const { rows } = parseJaitangCsv(csv);
     expect(rows[0].note).toBe(`แท้ "organic"`);
@@ -102,11 +131,11 @@ describe("parseJaitangCsv", () => {
 
   it("skips rows with missing essential fields and reports the count", () => {
     const csv = build([
-      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,กาแฟ",
-      ",,,,,",                        // entirely blank
-      "not-a-date,รายจ่าย,อาหาร,99,เงินสด,หาย", // bad date
-      "2026-05-02T03:30:00.000Z,???,อาหาร,99,เงินสด,kind", // bad kind
-      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,0,เงินสด,zero", // amount must be positive
+      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,100.00,เงินสด,,กาแฟ",
+      ",,,,,,",                          // entirely blank
+      "not-a-date,รายจ่าย,อาหาร,99,เงินสด,,หาย",     // bad date
+      "2026-05-02T03:30:00.000Z,???,อาหาร,99,เงินสด,,kind", // bad kind
+      "2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,0,เงินสด,,zero", // amount must be positive
     ]);
     const { rows, skipped } = parseJaitangCsv(csv);
     expect(rows).toHaveLength(1);
@@ -116,7 +145,7 @@ describe("parseJaitangCsv", () => {
   it("normalises ISO dates with explicit offset to a UTC ISO instant", () => {
     const csv = build([
       // 10:30 +07:00 = 03:30 UTC
-      "2026-05-02T10:30:00+07:00,รายจ่าย,อาหาร,100.00,เงินสด,brunch",
+      "2026-05-02T10:30:00+07:00,รายจ่าย,อาหาร,100.00,เงินสด,,brunch",
     ]);
     const { rows } = parseJaitangCsv(csv);
     expect(rows[0].occurredAt).toBe("2026-05-02T03:30:00.000Z");
@@ -148,6 +177,7 @@ describe("export → parse round trip", () => {
     category: string | null;
     amount: number;
     paymentMethod: "cash" | "transfer" | null;
+    tripName: string | null;
     note: string | null;
   }): string {
     const method =
@@ -162,6 +192,7 @@ describe("export → parse round trip", () => {
       tx.category ?? "ไม่ระบุ",
       tx.amount.toFixed(2),
       method,
+      tx.tripName ?? "",
       tx.note ?? "",
     ]
       .map(csvEscape)
@@ -175,6 +206,7 @@ describe("export → parse round trip", () => {
       category: "อาหาร",
       amount: 123.45,
       paymentMethod: "cash" as const,
+      tripName: "ทริปทะเล",
       note: 'lunch, with "x"',
     };
     const csv = BOM + [HEADER, exportLine(original)].join("\n");
@@ -186,6 +218,7 @@ describe("export → parse round trip", () => {
       categoryName: "อาหาร",
       amount: 123.45,
       paymentMethod: "cash",
+      tripName: "ทริปทะเล",
       note: 'lunch, with "x"',
     });
   });

@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
-import { Banknote, Landmark, Users } from "lucide-react";
+import { Banknote, Landmark, Plane, Users } from "lucide-react";
 
 export type SplitMember = {
   userId: string;
@@ -14,6 +14,12 @@ export type SplitMember = {
   email: string | null;
   image: string | null;
   isYou: boolean;
+};
+
+export type TripChoice = {
+  id: string;
+  name: string;
+  icon: string | null;
 };
 
 type Props = {
@@ -27,8 +33,14 @@ type Props = {
     occurredAt: string;
     paymentMethod?: PaymentMethod | null;
     splitWith?: string[];
+    /** Existing trip association on the row being edited (or null) */
+    tripId?: string | null;
   };
   splitMembers?: SplitMember[];
+  /** Active trip in the current session — drives the auto-tag toggle for new tx */
+  activeTrip?: TripChoice | null;
+  /** All non-archived trips in the current ledger (for the "change trip" picker on edit) */
+  trips?: TripChoice[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   submitLabel?: string;
   currency?: string;
@@ -38,6 +50,8 @@ export function TransactionForm({
   categories,
   initial,
   splitMembers,
+  activeTrip,
+  trips,
   action,
   submitLabel,
   currency = "THB",
@@ -68,6 +82,15 @@ export function TransactionForm({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
     initial?.paymentMethod ?? "cash"
   );
+
+  // Trip handling. Three states the form has to express:
+  //  - Edit mode for an existing tx with a trip → tripId = that trip's id
+  //  - Edit mode without a trip but the user wants to add it → tripId = picked
+  //  - New tx with an active trip → default-tagged, user can opt out via toggle
+  // We use one piece of state for everything and let the UI branch.
+  const initialTripId =
+    initial?.tripId ?? (initial ? null : activeTrip?.id ?? null);
+  const [tripId, setTripId] = useState<string | null>(initialTripId);
 
   // datetime-local must be initialized on the client.
   //
@@ -245,6 +268,64 @@ export function TransactionForm({
                   })}
                 </p>
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Trip toggle / picker.
+          - New tx with active trip in session → simple toggle "เพิ่มเข้าทริป {name}"
+          - Edit existing tx with a trip → dropdown to switch / detach
+          - Otherwise hide the section entirely (don't clutter the form). */}
+      {(activeTrip || initial?.tripId) && (
+        <div className="rounded-xl border border-(--border) bg-(--card) p-3">
+          <input type="hidden" name="tripId" value={tripId ?? ""} />
+          {!initial && activeTrip ? (
+            <label className="flex items-center justify-between gap-3 cursor-pointer">
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <Plane size={16} className="text-(--accent)" />
+                {t("trips.addToTripLabel", {
+                  name: `${activeTrip.icon ?? "✈️"} ${activeTrip.name}`,
+                })}
+              </span>
+              <input
+                type="checkbox"
+                checked={tripId === activeTrip.id}
+                onChange={(e) =>
+                  setTripId(e.target.checked ? activeTrip.id : null)
+                }
+                className="h-4 w-4 accent-[var(--accent)]"
+              />
+            </label>
+          ) : (
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium flex items-center gap-2">
+                <Plane size={16} className="text-(--accent)" />
+                {t("trips.tripField")}
+              </label>
+              <select
+                value={tripId ?? ""}
+                onChange={(e) => setTripId(e.target.value || null)}
+                className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background) text-sm"
+              >
+                <option value="">{t("trips.noTrip")}</option>
+                {/* Existing trip even if archived stays selectable so the
+                    picker can show the current value; new picks are limited
+                    to active trips passed in from the parent. */}
+                {trips?.map((tr) => (
+                  <option key={tr.id} value={tr.id}>
+                    {(tr.icon ?? "✈️") + " " + tr.name}
+                  </option>
+                ))}
+                {/* If the row's current trip isn't in the active list (e.g.
+                    archived), surface it so the user can detach explicitly. */}
+                {initial?.tripId &&
+                  !trips?.some((tr) => tr.id === initial.tripId) && (
+                    <option value={initial.tripId}>
+                      {t("trips.archivedTripOption")}
+                    </option>
+                  )}
+              </select>
             </div>
           )}
         </div>

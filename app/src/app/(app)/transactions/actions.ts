@@ -17,12 +17,32 @@ import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { getLocale, getTranslations } from "next-intl/server";
 
+/**
+ * Confirm a tripId actually belongs to the active ledger. Without this
+ * a malicious form submission could attach a transaction to someone
+ * else's trip across ledgers.
+ */
+async function validateTripBelongsToLedger(
+  tripId: string,
+  ledgerId: string
+): Promise<boolean> {
+  const sb = getServerSupabase();
+  const { data } = await sb
+    .from("trips")
+    .select("id")
+    .eq("id", tripId)
+    .eq("ledger_id", ledgerId)
+    .maybeSingle();
+  return !!data;
+}
+
 const TxSchema = z.object({
   kind: z.enum(["income", "expense"]),
   amount: z.coerce.number().positive("จำนวนต้องมากกว่า 0").max(1e12),
   categoryId: z.string().uuid().nullable().optional(),
   note: z.string().max(500).optional(),
   paymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
+  tripId: z.string().uuid().nullable().optional(),
   // Must include a TZ designator (`Z` or `±HH:MM`). Without one, the server
   // would reinterpret the string in UTC and store an instant N hours off
   // from what the user actually typed. The form converts before submitting;
@@ -62,16 +82,26 @@ export async function createTransactionAction(formData: FormData) {
     categoryId: formData.get("categoryId") || null,
     note: formData.get("note") || undefined,
     paymentMethod: formData.get("paymentMethod") || null,
+    tripId: formData.get("tripId") || null,
     occurredAt: formData.get("occurredAt"),
   });
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
+  // Cross-ledger trip linkage check. If the form was tampered with to
+  // attach this row to another ledger's trip, drop the trip silently
+  // rather than 500. Defense-in-depth on top of UI gating.
+  let tripId = parsed.data.tripId ?? null;
+  if (tripId && !(await validateTripBelongsToLedger(tripId, ledgerId))) {
+    tripId = null;
+  }
+
   const tx = await createTransaction({
     ledgerId,
     userId,
     categoryId: parsed.data.categoryId ?? null,
+    tripId,
     kind: parsed.data.kind,
     amount: parsed.data.amount,
     note: parsed.data.note,
@@ -141,7 +171,9 @@ export async function createTransactionAction(formData: FormData) {
 }
 
 export async function updateTransactionAction(id: string, formData: FormData) {
-  const { userId } = await requireSession();
+  // requireSession() is React-cached so calling it twice in this function
+  // (once for userId, once for ledgerId) is free — we just consolidate.
+  const { userId, ledgerId } = await requireSession();
 
   const parsed = TxSchema.safeParse({
     kind: formData.get("kind"),
@@ -149,10 +181,16 @@ export async function updateTransactionAction(id: string, formData: FormData) {
     categoryId: formData.get("categoryId") || null,
     note: formData.get("note") || undefined,
     paymentMethod: formData.get("paymentMethod") || null,
+    tripId: formData.get("tripId") || null,
     occurredAt: formData.get("occurredAt"),
   });
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  let tripId = parsed.data.tripId ?? null;
+  if (tripId && !(await validateTripBelongsToLedger(tripId, ledgerId))) {
+    tripId = null;
   }
 
   await updateTransaction(id, {
@@ -161,6 +199,7 @@ export async function updateTransactionAction(id: string, formData: FormData) {
     categoryId: parsed.data.categoryId ?? null,
     note: parsed.data.note ?? null,
     paymentMethod: parsed.data.paymentMethod ?? null,
+    tripId,
     occurredAt: new Date(parsed.data.occurredAt).toISOString(),
   });
 
