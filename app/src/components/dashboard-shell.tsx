@@ -128,7 +128,12 @@ export async function DashboardShell({
               currency={ledgerCurrency}
             />
           )}
-          <ThemeToggle />
+          {/* Hide on mobile: header gets too crowded with the period stat
+              already taking up width. Theme can still be toggled from the
+              Settings page on small screens. */}
+          <div className="hidden sm:inline-flex">
+            <ThemeToggle />
+          </div>
           {userImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img

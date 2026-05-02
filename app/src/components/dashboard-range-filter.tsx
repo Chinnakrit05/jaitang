@@ -44,17 +44,25 @@ export function DashboardRangeFilter({ activeKey }: { activeKey: RangeKey }) {
   }
 
   return (
-    <div className={cn("flex flex-wrap gap-2", pending && "opacity-60")}>
+    <div
+      className={cn(
+        // Horizontal scroll on mobile so 8 pills don't wrap into 3 rows.
+        // `-mx-4 px-4` lets the row bleed to the screen edge while keeping
+        // content padding consistent with the rest of the page.
+        "flex gap-2 overflow-x-auto scrollbar-thin pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap",
+        pending && "opacity-60"
+      )}
+    >
       {RANGES.map((r) => (
         <button
           key={r.key}
           type="button"
           onClick={() => setRange(r.key)}
           className={cn(
-            "px-3 py-1.5 rounded-full text-sm font-medium transition border",
+            "shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition border",
             activeKey === r.key
-              ? "bg-(--foreground) text-(--background) border-transparent"
-              : "border-(--border) bg-(--card) text-(--muted) hover:text-(--foreground)"
+              ? "bg-(--foreground) text-(--background) border-transparent shadow-sm"
+              : "border-(--border) bg-(--card) text-(--muted) hover:text-(--foreground) hover:border-(--muted)/40"
           )}
         >
           {t(`transactions.filters.${r.label}`)}

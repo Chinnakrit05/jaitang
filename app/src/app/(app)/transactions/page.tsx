@@ -134,9 +134,11 @@ function Stat({
   const cls = tone === "income" ? "text-(--income)" : "text-(--expense)";
   const sign = showSign ? (value >= 0 ? "+" : "−") : "";
   return (
-    <div className="rounded-xl border border-(--border) bg-(--card) px-4 py-3">
-      <div className="text-xs text-(--muted) mb-0.5">{label}</div>
-      <div className={`font-semibold tabular-nums ${cls}`}>
+    <div className="rounded-xl border border-(--border) bg-(--card) px-4 py-3 transition hover:border-(--muted)/40">
+      <div className="text-[11px] uppercase tracking-wide text-(--muted) font-medium mb-1">
+        {label}
+      </div>
+      <div className={`text-base sm:text-lg font-semibold tabular-nums ${cls}`}>
         {sign}
         {formatCurrency(Math.abs(value), currency, fmtLocale)}
       </div>

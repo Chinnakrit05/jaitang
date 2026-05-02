@@ -197,12 +197,14 @@ function SummaryCard({
   const sign = showSign ? (value >= 0 ? "+" : "−") : "";
 
   return (
-    <div className="rounded-2xl border border-(--border) bg-(--card) p-5">
-      <div className="flex items-center justify-between text-sm text-(--muted) mb-2">
-        <span>{label}</span>
-        <span className={toneClass}>{icon}</span>
+    <div className="group rounded-2xl border border-(--border) bg-(--card) p-5 transition hover:border-(--muted)/40">
+      <div className="flex items-center justify-between text-xs uppercase tracking-wide text-(--muted) mb-3">
+        <span className="font-medium">{label}</span>
+        <span className={`${toneClass} opacity-70 group-hover:opacity-100 transition`}>
+          {icon}
+        </span>
       </div>
-      <div className={`text-2xl font-semibold tabular-nums ${toneClass}`}>
+      <div className={`text-2xl sm:text-3xl font-semibold tabular-nums ${toneClass}`}>
         {value === 0 ? "—" : `${sign}${formatCurrency(Math.abs(value), currency, fmtLocale)}`}
       </div>
     </div>

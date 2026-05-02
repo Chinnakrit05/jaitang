@@ -37,17 +37,17 @@ export function TransactionFilters({ categories }: { categories: Category[] }) {
 
   return (
     <div className={cn("space-y-3", pending && "opacity-60")}>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
         {RANGES.map((r) => (
           <button
             key={r.key}
             type="button"
             onClick={() => update({ range: r.key })}
             className={cn(
-              "px-3 py-1.5 rounded-full text-sm font-medium transition border",
+              "shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition border",
               range === r.key
-                ? "bg-(--foreground) text-(--background) border-transparent"
-                : "border-(--border) bg-(--card) text-(--muted) hover:text-(--foreground)"
+                ? "bg-(--foreground) text-(--background) border-transparent shadow-sm"
+                : "border-(--border) bg-(--card) text-(--muted) hover:text-(--foreground) hover:border-(--muted)/40"
             )}
           >
             {t(`transactions.filters.${r.label}`)}
