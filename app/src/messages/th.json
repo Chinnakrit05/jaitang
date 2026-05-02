@@ -117,6 +117,7 @@
     "paymentCash": "เงินสด",
     "paymentTransfer": "เงินโอน",
     "filters": {
+      "today": "วันนี้",
       "thisMonth": "เดือนนี้",
       "lastMonth": "เดือนก่อน",
       "last30Days": "30 วัน",
@@ -127,6 +128,7 @@
       "clearFilters": "ล้าง filter"
     },
     "rangeLabels": {
+      "today": "วันนี้",
       "month": "เดือนนี้",
       "prev": "เดือนก่อน",
       "30d": "30 วันล่าสุด",

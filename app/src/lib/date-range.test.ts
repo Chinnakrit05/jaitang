@@ -54,6 +54,35 @@ describe("resolveRange — month boundaries in Asia/Bangkok", () => {
     expect(r.to).toBe(fakeNow.toISOString());
   });
 
+  it("'today' window covers Bangkok midnight today → tomorrow", () => {
+    const r = resolveRange("today", fakeNow);
+    // fakeNow = 2026-05-01T05:00:00Z = 12:00 Bangkok May 1
+    // Bangkok midnight May 1 = April 30 17:00 UTC
+    // Bangkok midnight May 2 = May 1 17:00 UTC
+    expect(r.from).toBe("2026-04-30T17:00:00.000Z");
+    expect(r.to).toBe("2026-05-01T17:00:00.000Z");
+    expect(r.key).toBe("today");
+  });
+
+  it("'today' includes the early-morning Bangkok rows that the bug previously stranded", () => {
+    const r = resolveRange("today", fakeNow);
+    // 03:46 Bangkok May 1 = 20:46 UTC April 30 — same row that used to
+    // fall into "เดือนก่อน" because of the UTC-month bug.
+    const earlyBangkokRow = "2026-04-30T20:46:00.000Z";
+    expect(earlyBangkokRow >= r.from!).toBe(true);
+    expect(earlyBangkokRow < r.to!).toBe(true);
+  });
+
+  it("'today' rolls month/year cleanly when 'today' is the last day", () => {
+    // 2026-12-31 22:00 Bangkok = 2026-12-31 15:00 UTC
+    const dec31Bangkok = new Date("2026-12-31T15:00:00.000Z");
+    const r = resolveRange("today", dec31Bangkok);
+    // Bangkok midnight Dec 31 = Dec 30 17:00 UTC
+    expect(r.from).toBe("2026-12-30T17:00:00.000Z");
+    // Bangkok midnight Jan 1 = Dec 31 17:00 UTC
+    expect(r.to).toBe("2026-12-31T17:00:00.000Z");
+  });
+
   it("'all' returns no bounds", () => {
     const r = resolveRange("all", fakeNow);
     expect(r.from).toBeUndefined();

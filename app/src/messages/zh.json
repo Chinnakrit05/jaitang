@@ -117,6 +117,7 @@
     "paymentCash": "现金",
     "paymentTransfer": "转账",
     "filters": {
+      "today": "今天",
       "thisMonth": "本月",
       "lastMonth": "上月",
       "last30Days": "30 天",
@@ -127,6 +128,7 @@
       "clearFilters": "清除筛选"
     },
     "rangeLabels": {
+      "today": "今天",
       "month": "本月",
       "prev": "上月",
       "30d": "近 30 天",

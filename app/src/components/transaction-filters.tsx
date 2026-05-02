@@ -7,6 +7,7 @@ import type { Category, TxKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const RANGES = [
+  { key: "today", label: "today" },
   { key: "month", label: "thisMonth" },
   { key: "prev", label: "lastMonth" },
   { key: "30d", label: "last30Days" },

@@ -117,6 +117,7 @@
     "paymentCash": "現金",
     "paymentTransfer": "振込",
     "filters": {
+      "today": "今日",
       "thisMonth": "今月",
       "lastMonth": "先月",
       "last30Days": "30日間",
@@ -127,6 +128,7 @@
       "clearFilters": "フィルタをクリア"
     },
     "rangeLabels": {
+      "today": "今日",
       "month": "今月",
       "prev": "先月",
       "30d": "直近30日",

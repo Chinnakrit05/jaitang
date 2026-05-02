@@ -1,6 +1,6 @@
 import { businessTzMidnightUtc, nowInBusinessTz } from "@/lib/business-tz";
 
-export type RangeKey = "month" | "prev" | "30d" | "ytd" | "all";
+export type RangeKey = "today" | "month" | "prev" | "30d" | "ytd" | "all";
 
 /**
  * Resolve a UI range key into ISO date bounds. Returns the key alongside so
@@ -29,8 +29,17 @@ export function resolveRange(
   const year = tzNow.getUTCFullYear();
   const month = tzNow.getUTCMonth();
   const k = (key ?? "month") as RangeKey;
+  const day = tzNow.getUTCDate();
 
   switch (k) {
+    case "today": {
+      // Bangkok midnight of today → Bangkok midnight of tomorrow.
+      // `businessTzMidnightUtc` lets us pass `day + 1` and trusts JS Date
+      // overflow to roll to the next month/year cleanly.
+      const from = businessTzMidnightUtc(year, month, day);
+      const to = businessTzMidnightUtc(year, month, day + 1);
+      return { from: from.toISOString(), to: to.toISOString(), key: "today" };
+    }
     case "month": {
       const from = businessTzMidnightUtc(year, month, 1);
       const to = businessTzMidnightUtc(year, month + 1, 1);

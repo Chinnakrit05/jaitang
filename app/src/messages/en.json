@@ -117,6 +117,7 @@
     "paymentCash": "Cash",
     "paymentTransfer": "Transfer",
     "filters": {
+      "today": "Today",
       "thisMonth": "This month",
       "lastMonth": "Last month",
       "last30Days": "30 days",
@@ -127,6 +128,7 @@
       "clearFilters": "Clear filters"
     },
     "rangeLabels": {
+      "today": "Today",
       "month": "This month",
       "prev": "Last month",
       "30d": "Last 30 days",
