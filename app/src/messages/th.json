@@ -118,6 +118,8 @@
     "paymentTransfer": "เงินโอน",
     "filters": {
       "today": "วันนี้",
+      "yesterday": "เมื่อวาน",
+      "day_before": "เมื่อวันก่อน",
       "thisMonth": "เดือนนี้",
       "lastMonth": "เดือนก่อน",
       "last30Days": "30 วัน",
@@ -129,6 +131,8 @@
     },
     "rangeLabels": {
       "today": "วันนี้",
+      "yesterday": "เมื่อวาน",
+      "day_before": "เมื่อวันก่อน",
       "month": "เดือนนี้",
       "prev": "เดือนก่อน",
       "30d": "30 วันล่าสุด",

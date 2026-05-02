@@ -118,6 +118,8 @@
     "paymentTransfer": "Transfer",
     "filters": {
       "today": "Today",
+      "yesterday": "Yesterday",
+      "day_before": "2 days ago",
       "thisMonth": "This month",
       "lastMonth": "Last month",
       "last30Days": "30 days",
@@ -129,6 +131,8 @@
     },
     "rangeLabels": {
       "today": "Today",
+      "yesterday": "Yesterday",
+      "day_before": "2 days ago",
       "month": "This month",
       "prev": "Last month",
       "30d": "Last 30 days",

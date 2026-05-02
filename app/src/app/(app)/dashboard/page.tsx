@@ -2,15 +2,22 @@ import { TrendingDown, TrendingUp, Wallet, Plus } from "lucide-react";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
-import { getMonthSummary, listTransactions } from "@/lib/transactions";
+import { aggregateMonthSummary, listTransactions } from "@/lib/transactions";
+import { resolveRange, type RangeKey } from "@/lib/date-range";
 import { TransactionList } from "@/components/transaction-list";
 import { ExpenseByCategoryChart, DailyTrendChart } from "@/components/dashboard-charts";
 import { PaymentMethodBreakdown } from "@/components/payment-method-breakdown";
+import { DashboardRangeFilter } from "@/components/dashboard-range-filter";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 
-export default async function DashboardPage() {
-  const [{ ledgerId, ledger, user }, t, locale] = await Promise.all([
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const [sp, { ledgerId, ledger, user }, t, locale] = await Promise.all([
+    searchParams,
     requireSession(),
     getTranslations(),
     getLocale(),
@@ -19,25 +26,36 @@ export default async function DashboardPage() {
   const name = user.name?.split(" ")[0] ?? "you";
   const currency = ledger.currency;
 
-  const now = new Date();
-  const [summary, recent] = await Promise.all([
-    getMonthSummary(ledgerId, now.getFullYear(), now.getMonth() + 1),
+  // Default to "month" so the home screen still feels like the monthly
+  // overview new users expect; any other range comes from a click on the
+  // pills below the greeting.
+  const range = resolveRange(sp.range);
+  const rangeKey = range.key;
+
+  // Pull the rows in this window + the last 5 (separate query — recent
+  // transactions on the home page should not be limited by the filter).
+  const [items, recent] = await Promise.all([
+    listTransactions({
+      ledgerId,
+      from: range.from,
+      to: range.to,
+      limit: 5000,
+    }),
     listTransactions({ ledgerId, limit: 5 }),
   ]);
+  const summary = aggregateMonthSummary(items);
 
-  const monthLabel = new Intl.DateTimeFormat(fmtLocale, {
-    month: "long",
-    year: "numeric",
-  }).format(now);
+  // Range-specific subtitle. For single-day windows we show the date so the
+  // user can confirm "เมื่อวาน" wasn't the wrong day; for month windows we
+  // keep the original "ภาพรวม{month}" phrasing.
+  const subtitle = buildSubtitle(rangeKey, range.from, fmtLocale, t);
 
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">{t("dashboard.greeting", { name })}</h1>
-          <p className="text-sm text-(--muted) mt-1">
-            {t("dashboard.monthOverview", { month: monthLabel })}
-          </p>
+          <p className="text-sm text-(--muted) mt-1">{subtitle}</p>
         </div>
         <Link
           href="/transactions/new"
@@ -47,6 +65,8 @@ export default async function DashboardPage() {
           {t("dashboard.addTransaction")}
         </Link>
       </div>
+
+      <DashboardRangeFilter activeKey={rangeKey} />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <SummaryCard
@@ -109,6 +129,45 @@ export default async function DashboardPage() {
       </section>
     </div>
   );
+}
+
+/**
+ * Build the dashboard subtitle. For single-day ranges we render the actual
+ * date so users can sanity-check that "เมื่อวาน" really means yesterday in
+ * their timezone. For everything else we fall back to the static
+ * `transactions.rangeLabels.<key>` string.
+ */
+function buildSubtitle(
+  rangeKey: RangeKey,
+  rangeFrom: string | undefined,
+  fmtLocale: string,
+  t: (key: string, vars?: Record<string, string>) => string
+): string {
+  // Month overview fallback — preserves the original copy for the default view.
+  if (rangeKey === "month") {
+    const monthLabel = new Intl.DateTimeFormat(fmtLocale, {
+      month: "long",
+      year: "numeric",
+    }).format(new Date());
+    return t("dashboard.monthOverview", { month: monthLabel });
+  }
+
+  if (
+    (rangeKey === "today" ||
+      rangeKey === "yesterday" ||
+      rangeKey === "day_before") &&
+    rangeFrom
+  ) {
+    const dayLabel = new Intl.DateTimeFormat(fmtLocale, {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      weekday: "long",
+    }).format(new Date(rangeFrom));
+    return `${t(`transactions.rangeLabels.${rangeKey}`)} • ${dayLabel}`;
+  }
+
+  return t(`transactions.rangeLabels.${rangeKey}`);
 }
 
 function SummaryCard({

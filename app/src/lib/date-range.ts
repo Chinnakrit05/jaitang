@@ -1,6 +1,14 @@
 import { businessTzMidnightUtc, nowInBusinessTz } from "@/lib/business-tz";
 
-export type RangeKey = "today" | "month" | "prev" | "30d" | "ytd" | "all";
+export type RangeKey =
+  | "today"
+  | "yesterday"
+  | "day_before"
+  | "month"
+  | "prev"
+  | "30d"
+  | "ytd"
+  | "all";
 
 /**
  * Resolve a UI range key into ISO date bounds. Returns the key alongside so
@@ -39,6 +47,21 @@ export function resolveRange(
       const from = businessTzMidnightUtc(year, month, day);
       const to = businessTzMidnightUtc(year, month, day + 1);
       return { from: from.toISOString(), to: to.toISOString(), key: "today" };
+    }
+    case "yesterday": {
+      const from = businessTzMidnightUtc(year, month, day - 1);
+      const to = businessTzMidnightUtc(year, month, day);
+      return { from: from.toISOString(), to: to.toISOString(), key: "yesterday" };
+    }
+    case "day_before": {
+      // "เมื่อวันก่อน" — two days ago, single-day window.
+      const from = businessTzMidnightUtc(year, month, day - 2);
+      const to = businessTzMidnightUtc(year, month, day - 1);
+      return {
+        from: from.toISOString(),
+        to: to.toISOString(),
+        key: "day_before",
+      };
     }
     case "month": {
       const from = businessTzMidnightUtc(year, month, 1);

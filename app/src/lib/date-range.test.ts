@@ -73,6 +73,46 @@ describe("resolveRange — month boundaries in Asia/Bangkok", () => {
     expect(earlyBangkokRow < r.to!).toBe(true);
   });
 
+  it("'yesterday' window is the previous Bangkok calendar day", () => {
+    const r = resolveRange("yesterday", fakeNow);
+    // fakeNow = 12:00 Bangkok May 1 → yesterday = April 30
+    // Bangkok midnight April 30 = April 29 17:00 UTC
+    // Bangkok midnight May 1 = April 30 17:00 UTC
+    expect(r.from).toBe("2026-04-29T17:00:00.000Z");
+    expect(r.to).toBe("2026-04-30T17:00:00.000Z");
+    expect(r.key).toBe("yesterday");
+  });
+
+  it("'day_before' window is two Bangkok days back", () => {
+    const r = resolveRange("day_before", fakeNow);
+    // fakeNow = May 1 → day_before = April 29
+    // Bangkok midnight April 29 = April 28 17:00 UTC
+    // Bangkok midnight April 30 = April 29 17:00 UTC
+    expect(r.from).toBe("2026-04-28T17:00:00.000Z");
+    expect(r.to).toBe("2026-04-29T17:00:00.000Z");
+    expect(r.key).toBe("day_before");
+  });
+
+  it("'yesterday' rolls back across a month boundary", () => {
+    // Bangkok 02:00 May 1 — when "yesterday" is April 30 (prev month)
+    const may1Bangkok02 = new Date("2026-04-30T19:00:00.000Z");
+    const r = resolveRange("yesterday", may1Bangkok02);
+    // Bangkok midnight April 30 = April 29 17:00 UTC
+    expect(r.from).toBe("2026-04-29T17:00:00.000Z");
+    // Bangkok midnight May 1 = April 30 17:00 UTC
+    expect(r.to).toBe("2026-04-30T17:00:00.000Z");
+  });
+
+  it("'day_before' rolls across a year boundary", () => {
+    // Bangkok 12:00 Jan 1 2027 — day_before = Dec 30 2026
+    const jan1_2027Bangkok12 = new Date("2027-01-01T05:00:00.000Z");
+    const r = resolveRange("day_before", jan1_2027Bangkok12);
+    // Bangkok midnight Dec 30 2026 = Dec 29 2026 17:00 UTC
+    expect(r.from).toBe("2026-12-29T17:00:00.000Z");
+    // Bangkok midnight Dec 31 2026 = Dec 30 2026 17:00 UTC
+    expect(r.to).toBe("2026-12-30T17:00:00.000Z");
+  });
+
   it("'today' rolls month/year cleanly when 'today' is the last day", () => {
     // 2026-12-31 22:00 Bangkok = 2026-12-31 15:00 UTC
     const dec31Bangkok = new Date("2026-12-31T15:00:00.000Z");

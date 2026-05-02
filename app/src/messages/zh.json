@@ -118,6 +118,8 @@
     "paymentTransfer": "转账",
     "filters": {
       "today": "今天",
+      "yesterday": "昨天",
+      "day_before": "前天",
       "thisMonth": "本月",
       "lastMonth": "上月",
       "last30Days": "30 天",
@@ -129,6 +131,8 @@
     },
     "rangeLabels": {
       "today": "今天",
+      "yesterday": "昨天",
+      "day_before": "前天",
       "month": "本月",
       "prev": "上月",
       "30d": "近 30 天",
