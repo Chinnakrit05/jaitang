@@ -427,7 +427,7 @@ export function TransactionForm({
         <button
           type="submit"
           disabled={pending}
-          className="flex-[2] px-4 py-3 rounded-xl bg-(--accent) text-(--accent-foreground) font-semibold hover:opacity-90 transition disabled:opacity-50"
+          className="flex-[2] px-4 py-3 rounded-xl bg-(--accent) text-(--accent-foreground) font-semibold disabled:opacity-50 cta-primary"
         >
           {pending ? t("common.saving") : submit}
         </button>

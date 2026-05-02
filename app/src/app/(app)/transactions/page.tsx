@@ -89,7 +89,7 @@ export default async function TransactionsPage({
           </a>
           <Link
             href="/transactions/new"
-            className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm hover:opacity-90 transition"
+            className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm cta-primary"
           >
             <Plus size={18} />
             {t("transactions.addNew")}

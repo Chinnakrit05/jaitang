@@ -36,8 +36,11 @@ export default async function TripsPage() {
           {t("trips.activeSection", { count: active.length })}
         </h2>
         {active.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/50 p-6 text-center text-sm text-(--muted)">
-            {t("trips.activeEmpty")}
+          <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-8 text-center">
+            <div className="mx-auto mb-3 inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-(--background) border border-(--border)">
+              <span className="text-2xl" aria-hidden>✈️</span>
+            </div>
+            <p className="text-sm text-(--muted)">{t("trips.activeEmpty")}</p>
           </div>
         ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">

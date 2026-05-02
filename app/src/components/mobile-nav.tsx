@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import {
   MoreHorizontal,
   X,
@@ -73,6 +75,12 @@ export function MobileNav({
   moreLabel: string;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  // Path-prefix match handles `/transactions/123/edit` highlighting the
+  // Transactions tab. Exact match would feel wrong (the tab would dim
+  // mid-flow). The "/" guard avoids matching everything when href is "/".
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   useEffect(() => {
     if (!open) return;
@@ -93,12 +101,28 @@ export function MobileNav({
         <div className="flex justify-around py-2">
           {primary.map(({ href, label, icon }) => {
             const Icon = ICONS[icon];
+            const active = isActive(href);
             return (
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-center gap-0.5 px-3 py-1 text-xs text-(--muted) hover:text-(--foreground)"
+                className={cn(
+                  "relative flex flex-col items-center gap-0.5 px-3 py-1 text-xs transition",
+                  active
+                    ? "text-(--accent)"
+                    : "text-(--muted) hover:text-(--foreground)"
+                )}
               >
+                {/* Top accent bar — visible only on the active route. The
+                    `-mt-2` lifts it flush against the nav border so it
+                    reads as "this tab is selected" rather than "underline
+                    floating mid-icon". */}
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 -mt-2 rounded-full bg-(--accent)"
+                  />
+                )}
                 <Icon size={20} />
                 {label}
               </Link>

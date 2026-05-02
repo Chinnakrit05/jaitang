@@ -44,13 +44,17 @@ export function TransactionList({
 
   if (!items.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/50 p-10 text-center">
-        <span className="text-4xl mb-3 block">📭</span>
-        <p className="font-medium mb-1">{t("transactions.emptyTitle")}</p>
-        <p className="text-sm text-(--muted) mb-4">{t("transactions.emptyHint")}</p>
+      <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-12 text-center">
+        <div className="mx-auto mb-4 inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-(--background) border border-(--border)">
+          <span className="text-3xl" aria-hidden>📭</span>
+        </div>
+        <p className="font-semibold mb-1.5">{t("transactions.emptyTitle")}</p>
+        <p className="text-sm text-(--muted) mb-5 max-w-xs mx-auto">
+          {t("transactions.emptyHint")}
+        </p>
         <Link
           href="/transactions/new"
-          className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm hover:opacity-90 transition"
+          className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm cta-primary"
         >
           + {t("transactions.addNew")}
         </Link>

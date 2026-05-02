@@ -53,13 +53,18 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{t("dashboard.greeting", { name })}</h1>
-          <p className="text-sm text-(--muted) mt-1">{subtitle}</p>
+        <div className="space-y-1.5">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            {t("dashboard.greeting", { name })}
+          </h1>
+          <p className="text-sm text-(--muted) flex items-center gap-2">
+            <span className="inline-block h-1 w-6 rounded-full bg-(--accent) shrink-0" />
+            {subtitle}
+          </p>
         </div>
         <Link
           href="/transactions/new"
-          className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm hover:opacity-90 transition"
+          className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm cta-primary"
         >
           <Plus size={18} />
           {t("dashboard.addTransaction")}
@@ -197,7 +202,7 @@ function SummaryCard({
   const sign = showSign ? (value >= 0 ? "+" : "−") : "";
 
   return (
-    <div className="group rounded-2xl border border-(--border) bg-(--card) p-5 transition hover:border-(--muted)/40">
+    <div className="group card-hover rounded-2xl border border-(--border) bg-(--card) p-5 hover:border-(--muted)/40">
       <div className="flex items-center justify-between text-xs uppercase tracking-wide text-(--muted) mb-3">
         <span className="font-medium">{label}</span>
         <span className={`${toneClass} opacity-70 group-hover:opacity-100 transition`}>

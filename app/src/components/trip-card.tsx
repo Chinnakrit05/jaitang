@@ -37,12 +37,12 @@ export function TripCard({
   return (
     <li
       className={cn(
-        "rounded-2xl border p-4 transition relative",
+        "rounded-2xl border p-4 relative",
         trip.archived
           ? "border-(--border) bg-(--card)/50 opacity-75"
           : isActive
-          ? "border-(--accent) bg-(--accent)/5 ring-2 ring-(--accent)/30"
-          : "border-(--border) bg-(--card) hover:bg-(--background) cursor-pointer",
+          ? "border-(--accent) bg-(--accent)/5 ring-2 ring-(--accent)/30 card-hover"
+          : "border-(--border) bg-(--card) hover:border-(--muted)/40 cursor-pointer card-hover",
         pending && "opacity-50"
       )}
       onClick={activate}
