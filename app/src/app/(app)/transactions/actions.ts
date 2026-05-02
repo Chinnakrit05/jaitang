@@ -38,6 +38,26 @@ async function validateTripBelongsToLedger(
   return !!data;
 }
 
+/**
+ * Same shape as the trip check — confirm the account belongs to the
+ * caller's ledger. Returns the account currency on success so we can
+ * also validate the tx currency matches the account currency (which is
+ * a soft requirement: balance math skips mismatched rows).
+ */
+async function getAccountForLedger(
+  accountId: string,
+  ledgerId: string
+): Promise<{ id: string; currency: string | null } | null> {
+  const sb = getServerSupabase();
+  const { data } = await sb
+    .from("accounts")
+    .select("id, currency")
+    .eq("id", accountId)
+    .eq("ledger_id", ledgerId)
+    .maybeSingle();
+  return data;
+}
+
 const TxSchema = z.object({
   kind: z.enum(["income", "expense"]),
   amount: z.coerce.number().positive("จำนวนต้องมากกว่า 0").max(1e12),
@@ -45,6 +65,7 @@ const TxSchema = z.object({
   note: z.string().max(500).optional(),
   paymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
   tripId: z.string().uuid().nullable().optional(),
+  accountId: z.string().uuid().nullable().optional(),
   /**
    * The currency the user typed `amount` in. When != ledger.currency we
    * convert + store fx_currency / fx_amount / fx_rate. When equal (or
@@ -104,6 +125,7 @@ function refreshAll() {
   revalidatePath("/dashboard");
   revalidatePath("/transactions");
   revalidatePath("/balances");
+  revalidatePath("/accounts");
 }
 
 /**
@@ -133,6 +155,7 @@ export async function createTransactionAction(formData: FormData) {
     note: formData.get("note") || undefined,
     paymentMethod: formData.get("paymentMethod") || null,
     tripId: formData.get("tripId") || null,
+    accountId: formData.get("accountId") || null,
     fxCurrency: formData.get("fxCurrency") || undefined,
     occurredAt: formData.get("occurredAt"),
   });
@@ -146,6 +169,13 @@ export async function createTransactionAction(formData: FormData) {
   let tripId = parsed.data.tripId ?? null;
   if (tripId && !(await validateTripBelongsToLedger(tripId, ledgerId))) {
     tripId = null;
+  }
+
+  // Same defense for account linkage. Drop on cross-ledger or unknown id.
+  let accountId = parsed.data.accountId ?? null;
+  if (accountId) {
+    const acc = await getAccountForLedger(accountId, ledgerId);
+    if (!acc) accountId = null;
   }
 
   // Resolve home-currency amount + fx fields. We always re-fetch the rate
@@ -166,6 +196,7 @@ export async function createTransactionAction(formData: FormData) {
     userId,
     categoryId: parsed.data.categoryId ?? null,
     tripId,
+    accountId,
     kind: parsed.data.kind,
     amount: fxResult.amount,
     note: parsed.data.note,
@@ -249,6 +280,7 @@ export async function updateTransactionAction(id: string, formData: FormData) {
     note: formData.get("note") || undefined,
     paymentMethod: formData.get("paymentMethod") || null,
     tripId: formData.get("tripId") || null,
+    accountId: formData.get("accountId") || null,
     fxCurrency: formData.get("fxCurrency") || undefined,
     occurredAt: formData.get("occurredAt"),
   });
@@ -259,6 +291,12 @@ export async function updateTransactionAction(id: string, formData: FormData) {
   let tripId = parsed.data.tripId ?? null;
   if (tripId && !(await validateTripBelongsToLedger(tripId, ledgerId))) {
     tripId = null;
+  }
+
+  let accountId = parsed.data.accountId ?? null;
+  if (accountId) {
+    const acc = await getAccountForLedger(accountId, ledgerId);
+    if (!acc) accountId = null;
   }
 
   // Same FX resolution as create — keep amount in home currency, store
@@ -279,6 +317,7 @@ export async function updateTransactionAction(id: string, formData: FormData) {
     note: parsed.data.note ?? null,
     paymentMethod: parsed.data.paymentMethod ?? null,
     tripId,
+    accountId,
     fxCurrency: fxResult.fx?.currency ?? null,
     fxAmount: fxResult.fx?.amount ?? null,
     fxRate: fxResult.fx?.rate ?? null,

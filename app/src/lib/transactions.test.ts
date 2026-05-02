@@ -23,6 +23,7 @@ function tx(opts: {
     user_id: "user-1",
     category_id: opts.categoryId ?? null,
     trip_id: null,
+    account_id: null,
     kind: opts.kind,
     amount: opts.amount,
     note: null,

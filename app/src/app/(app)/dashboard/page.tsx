@@ -3,12 +3,14 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { aggregateMonthSummary, listTransactions } from "@/lib/transactions";
+import { listAccounts } from "@/lib/accounts";
 import { resolveRange, type RangeKey } from "@/lib/date-range";
 import { TransactionList } from "@/components/transaction-list";
 import { ExpenseByCategoryChart, DailyTrendChart } from "@/components/dashboard-charts";
 import { PaymentMethodBreakdown } from "@/components/payment-method-breakdown";
 import { DashboardRangeFilter } from "@/components/dashboard-range-filter";
 import { DashboardCurrencyToggle } from "@/components/dashboard-currency-toggle";
+import { DashboardAccountBalances } from "@/components/dashboard-account-balances";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { SUPPORTED_CODES } from "@/lib/currencies";
@@ -47,7 +49,8 @@ export default async function DashboardPage({
 
   // Pull the rows in this window + the last 5 (separate query — recent
   // transactions on the home page should not be limited by the filter).
-  const [items, recent] = await Promise.all([
+  // Account balances ride alongside since the widget is always visible.
+  const [items, recent, accountBalances] = await Promise.all([
     listTransactions({
       ledgerId,
       from: range.from,
@@ -55,6 +58,7 @@ export default async function DashboardPage({
       limit: 5000,
     }),
     listTransactions({ ledgerId, limit: 5 }),
+    listAccounts(ledgerId, { includeArchived: false }),
   ]);
   const summary = aggregateMonthSummary(items, filterCurrency);
   // Distinct foreign currencies present in this period — drives whether
@@ -151,6 +155,12 @@ export default async function DashboardPage({
           />
         </section>
       </div>
+
+      <DashboardAccountBalances
+        accounts={accountBalances}
+        homeCurrency={ledger.currency}
+        fmtLocale={fmtLocale}
+      />
 
       <PaymentMethodBreakdown
         summary={summary}

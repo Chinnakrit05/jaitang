@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   TransactionForm,
+  type AccountChoice,
   type SplitMember,
   type TripChoice,
 } from "@/components/transaction-form";
@@ -26,6 +27,7 @@ export function NewTransactionPage({
   splitMembers,
   activeTrip,
   trips,
+  accounts,
   currency,
 }: {
   categories: Category[];
@@ -34,6 +36,7 @@ export function NewTransactionPage({
   splitMembers?: SplitMember[];
   activeTrip?: TripChoice | null;
   trips?: TripChoice[];
+  accounts?: AccountChoice[];
   currency?: string;
 }) {
   // Use a key to force-remount the form when OCR fills it
@@ -64,6 +67,7 @@ export function NewTransactionPage({
         splitMembers={splitMembers}
         activeTrip={activeTrip}
         trips={trips}
+        accounts={accounts}
         action={action}
         submitLabel="บันทึก"
         currency={currency}

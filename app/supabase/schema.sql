@@ -99,6 +99,32 @@ create index if not exists idx_trips_ledger on public.trips(ledger_id);
 create index if not exists idx_trips_active on public.trips(ledger_id) where archived = false;
 
 -- ============================================================
+-- Accounts / Wallets (บัญชี — เงินสด, ธนาคาร, บัตรเครดิต, e-wallet)
+-- Each transaction can optionally link to one account; balance is
+-- computed dynamically as initial_balance + Σ(income) - Σ(expense)
+-- + Σ(transfers IN) - Σ(transfers OUT) — never persisted, always
+-- recomputed from rows.
+-- ============================================================
+create table if not exists public.accounts (
+  id uuid primary key default uuid_generate_v4(),
+  ledger_id uuid not null references public.ledgers(id) on delete cascade,
+  name text not null,
+  type text not null check (type in ('cash', 'bank', 'credit_card', 'e_wallet')),
+  icon text default '💵',
+  color text default '#10b981',
+  -- Starting balance (e.g. ATM has ฿2,000 cash when you create the account).
+  -- Editable later via update.
+  initial_balance numeric(14, 2) not null default 0,
+  -- ISO 4217 (e.g. 'JPY'). null = inherit ledger.currency.
+  currency text,
+  archived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_accounts_ledger on public.accounts(ledger_id);
+create index if not exists idx_accounts_active on public.accounts(ledger_id) where archived = false;
+
+-- ============================================================
 -- Transactions (รายการเงินเข้า-ออก)
 -- ============================================================
 create table if not exists public.transactions (
@@ -145,6 +171,11 @@ alter table public.transactions
   add column if not exists fx_amount numeric(14, 2);
 alter table public.transactions
   add column if not exists fx_rate numeric(18, 8);
+-- Optional account link. SET NULL on account delete so transactions
+-- survive an account being removed (matches how trip_id behaves).
+alter table public.transactions
+  add column if not exists account_id uuid references public.accounts(id) on delete set null;
+create index if not exists idx_tx_account on public.transactions(account_id) where account_id is not null;
 
 -- Add the consistency check separately so it doesn't fail on re-runs.
 do $$
@@ -266,6 +297,35 @@ create index if not exists idx_splits_tx on public.transaction_splits(transactio
 create index if not exists idx_splits_user on public.transaction_splits(user_id);
 
 -- ============================================================
+-- Transfers (โอนระหว่างบัญชีตัวเอง — ไม่ใช่ income/expense)
+-- Cross-currency support: from/to amounts + currencies stored
+-- separately so a Wise-style THB→JPY transfer keeps both legs.
+-- For same-currency transfers, from_amount == to_amount and
+-- fx_rate == 1.
+-- ============================================================
+create table if not exists public.transfers (
+  id uuid primary key default uuid_generate_v4(),
+  ledger_id uuid not null references public.ledgers(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete restrict,
+  from_account_id uuid not null references public.accounts(id) on delete cascade,
+  to_account_id uuid not null references public.accounts(id) on delete cascade,
+  from_amount numeric(14, 2) not null check (from_amount > 0),
+  from_currency text not null,
+  to_amount numeric(14, 2) not null check (to_amount > 0),
+  to_currency text not null,
+  -- to_amount / from_amount at submit time. Stored for audit + display.
+  fx_rate numeric(18, 8) not null check (fx_rate > 0),
+  note text,
+  occurred_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  check (from_account_id != to_account_id)
+);
+
+create index if not exists idx_transfers_ledger on public.transfers(ledger_id);
+create index if not exists idx_transfers_from on public.transfers(from_account_id);
+create index if not exists idx_transfers_to on public.transfers(to_account_id);
+
+-- ============================================================
 -- Goals (เป้าหมายการออม — เช่น "ทริปเกาหลี 100k")
 -- ============================================================
 create table if not exists public.goals (
@@ -365,6 +425,8 @@ alter table public.invites enable row level security;
 alter table public.trips enable row level security;
 alter table public.goals enable row level security;
 alter table public.goal_contributions enable row level security;
+alter table public.accounts enable row level security;
+alter table public.transfers enable row level security;
 
 -- For MVP: deny all by default; service-role bypasses RLS,
 -- so anon/authenticated clients see nothing unless we add

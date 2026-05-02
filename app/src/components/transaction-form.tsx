@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
-import { Banknote, Landmark, Plane, Users } from "lucide-react";
+import { Banknote, Landmark, Plane, Users, Wallet } from "lucide-react";
 import { CurrencyPicker } from "@/components/currency-picker";
 import { getFxRateAction } from "@/app/(app)/transactions/fx-actions";
 
@@ -27,6 +27,15 @@ export type TripChoice = {
   currency: string | null;
 };
 
+export type AccountChoice = {
+  id: string;
+  name: string;
+  icon: string | null;
+  /** Account's currency, already resolved (null → ledger home). */
+  currency: string;
+  archived: boolean;
+};
+
 type Props = {
   categories: Category[];
   initial?: {
@@ -40,6 +49,8 @@ type Props = {
     splitWith?: string[];
     /** Existing trip association on the row being edited (or null) */
     tripId?: string | null;
+    /** Existing account association on the row being edited (or null) */
+    accountId?: string | null;
     /** Existing FX state on the row being edited */
     fxCurrency?: string | null;
     fxAmount?: number | null;
@@ -50,6 +61,9 @@ type Props = {
   activeTrip?: TripChoice | null;
   /** All non-archived trips in the current ledger (for the "change trip" picker on edit) */
   trips?: TripChoice[];
+  /** All accounts (incl. archived) in the current ledger. Filtered by tx
+   *  currency before display. */
+  accounts?: AccountChoice[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   submitLabel?: string;
   /** Ledger's home currency. Used for FX preview formatting. */
@@ -62,6 +76,7 @@ export function TransactionForm({
   splitMembers,
   activeTrip,
   trips,
+  accounts,
   action,
   submitLabel,
   currency = "THB",
@@ -102,6 +117,14 @@ export function TransactionForm({
     initial?.tripId ?? (initial ? null : activeTrip?.id ?? null);
   const [tripId, setTripId] = useState<string | null>(initialTripId);
 
+  // Account picker state. Defaults to whatever this row already has, or
+  // null. Auto-clear if the chosen account's currency stops matching
+  // the form's tx currency (otherwise the row would silently drop out
+  // of the account's balance computation).
+  const [accountId, setAccountId] = useState<string | null>(
+    initial?.accountId ?? null
+  );
+
   // FX state. Three sources for the default currency, in priority order:
   //   1. Existing row's fx_currency (edit mode preserving original)
   //   2. Active trip's currency (new-tx flow during a foreign trip)
@@ -130,6 +153,7 @@ export function TransactionForm({
   // renders.
   useEffect(() => {
     if (txCurrency === homeCurrency) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreviewRate(null);
       setPreviewError(null);
       return;
@@ -146,6 +170,20 @@ export function TransactionForm({
     }, 400);
     return () => clearTimeout(t);
   }, [txCurrency, homeCurrency]);
+
+  // Auto-detach account when its currency stops matching the form. The
+  // listAccounts balance math skips currency-mismatched rows, so silent
+  // mismatches would just hide the row from the headline number — better
+  // to surface it by detaching here.
+  useEffect(() => {
+    if (!accountId || !accounts) return;
+    const acc = accounts.find((a) => a.id === accountId);
+    if (!acc) return;
+    if (acc.currency !== txCurrency) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAccountId(null);
+    }
+  }, [txCurrency, accountId, accounts]);
 
   const numAmt = Number(amountInput) || 0;
   const previewHomeAmount =
@@ -439,6 +477,63 @@ export function TransactionForm({
           )}
         </div>
       )}
+
+      {/* Account picker. Only render when the ledger has any accounts;
+          options are filtered to those whose currency matches the form's
+          tx currency (since balance math only counts matching-currency
+          rows). The currently-tagged account is always surfaced even if
+          it doesn't match — so the user can detach explicitly. */}
+      {((accounts && accounts.length > 0) || initial?.accountId) && (() => {
+        const eligible = (accounts ?? []).filter(
+          (a) => a.currency === txCurrency && !a.archived
+        );
+        const taggedNotInList =
+          initial?.accountId &&
+          !(accounts ?? []).some((a) => a.id === initial.accountId);
+        return (
+          <div className="rounded-xl border border-(--border) bg-(--card) p-3">
+            <input type="hidden" name="accountId" value={accountId ?? ""} />
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium flex items-center gap-2">
+                <Wallet size={16} className="text-(--accent)" />
+                {t("accounts.accountField")}
+              </label>
+              <select
+                value={accountId ?? ""}
+                onChange={(e) => setAccountId(e.target.value || null)}
+                className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background) text-sm"
+              >
+                <option value="">{t("accounts.noAccount")}</option>
+                {eligible.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {(a.icon ?? "💰") + " " + a.name}
+                  </option>
+                ))}
+                {/* Surface a tagged-but-mismatched account so the user can
+                    detach it explicitly rather than have it silently dropped. */}
+                {accountId &&
+                  !eligible.some((a) => a.id === accountId) && (
+                    <option value={accountId}>
+                      {(accounts ?? []).find((a) => a.id === accountId)
+                        ?.name ?? t("accounts.unavailableAccountOption")}{" "}
+                      ({t("accounts.currencyMismatchOption")})
+                    </option>
+                  )}
+                {taggedNotInList && (
+                  <option value={initial.accountId!}>
+                    {t("accounts.unavailableAccountOption")}
+                  </option>
+                )}
+              </select>
+              {eligible.length === 0 && (
+                <p className="text-[11px] text-(--muted)">
+                  {t("accounts.noMatchingCurrency", { currency: txCurrency })}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       <div>
         <label className="block text-sm font-medium mb-1.5">{t("common.category")}</label>

@@ -47,6 +47,7 @@ export async function GET(req: Request) {
     "จำนวน",         // home currency
     "ช่องทาง",
     "ทริป",
+    "บัญชี",          // account name
     "สกุลต่างประเทศ", // fx_currency (blank = home)
     "จำนวนต่างประเทศ", // fx_amount (blank = home)
     "อัตรา",          // fx_rate (blank = home)
@@ -68,6 +69,7 @@ export async function GET(req: Request) {
         tx.amount.toFixed(2),
         method,
         tx.trip?.name ?? "",
+        tx.account?.name ?? "",
         tx.fx_currency ?? "",
         tx.fx_amount !== null && tx.fx_amount !== undefined
           ? tx.fx_amount.toFixed(2)

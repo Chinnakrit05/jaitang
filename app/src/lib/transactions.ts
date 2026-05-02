@@ -20,6 +20,8 @@ export type ListOptions = {
   categoryId?: string;
   /** Filter to rows tagged with this trip. Pass `null` for "no trip". */
   tripId?: string | null;
+  /** Filter to rows tagged with this account. Pass `null` for "no account". */
+  accountId?: string | null;
   /** Free-text search against the note column (case-insensitive substring). */
   search?: string;
   limit?: number;
@@ -33,7 +35,7 @@ export async function listTransactions(
   let q = sb
     .from("transactions")
     .select(
-      "id, ledger_id, user_id, category_id, trip_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), trip:trips(id, name, icon, color, currency), user:users(id, name, email, image)"
+      "id, ledger_id, user_id, category_id, trip_id, account_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), trip:trips(id, name, icon, color, currency), account:accounts(id, name, icon, color, currency), user:users(id, name, email, image)"
     )
     .eq("ledger_id", opts.ledgerId)
     .order("occurred_at", { ascending: false })
@@ -45,6 +47,9 @@ export async function listTransactions(
   if (opts.categoryId) q = q.eq("category_id", opts.categoryId);
   if (opts.tripId === null) q = q.is("trip_id", null);
   else if (typeof opts.tripId === "string") q = q.eq("trip_id", opts.tripId);
+  if (opts.accountId === null) q = q.is("account_id", null);
+  else if (typeof opts.accountId === "string")
+    q = q.eq("account_id", opts.accountId);
   // Note search: PostgREST `ilike` does case-insensitive substring. We don't
   // try to search joined category names — those are already filterable via
   // the category dropdown and joining-with-or has surprising behaviour
@@ -62,6 +67,7 @@ export async function listTransactions(
   return (data ?? []).map((row) => {
     const cat = (Array.isArray(row.category) ? row.category[0] : row.category) ?? null;
     const trp = (Array.isArray(row.trip) ? row.trip[0] : row.trip) ?? null;
+    const acc = (Array.isArray(row.account) ? row.account[0] : row.account) ?? null;
     const usr = (Array.isArray(row.user) ? row.user[0] : row.user) ?? null;
     return {
       id: row.id,
@@ -69,6 +75,7 @@ export async function listTransactions(
       user_id: row.user_id,
       category_id: row.category_id,
       trip_id: row.trip_id ?? null,
+      account_id: row.account_id ?? null,
       kind: row.kind as TxKind,
       amount: Number(row.amount),
       note: row.note,
@@ -81,6 +88,7 @@ export async function listTransactions(
       updated_at: row.updated_at,
       category: cat,
       trip: trp,
+      account: acc,
       user: usr,
     };
   });
@@ -92,6 +100,8 @@ export type CreateTxInput = {
   categoryId: string | null;
   /** Optional trip association — null = no trip */
   tripId?: string | null;
+  /** Optional account association — null = no account */
+  accountId?: string | null;
   kind: TxKind;
   /** Always home currency. Foreign-currency originals go in fx* fields. */
   amount: number;
@@ -116,6 +126,7 @@ export async function createTransaction(input: CreateTxInput) {
       user_id: input.userId,
       category_id: input.categoryId,
       trip_id: input.tripId ?? null,
+      account_id: input.accountId ?? null,
       kind: input.kind,
       amount: input.amount,
       note: input.note ?? null,
@@ -136,6 +147,7 @@ export async function updateTransaction(
   input: Partial<{
     categoryId: string | null;
     tripId: string | null;
+    accountId: string | null;
     kind: TxKind;
     amount: number;
     note: string | null;
@@ -150,6 +162,7 @@ export async function updateTransaction(
   const patch: Record<string, unknown> = {};
   if (input.categoryId !== undefined) patch.category_id = input.categoryId;
   if (input.tripId !== undefined) patch.trip_id = input.tripId;
+  if (input.accountId !== undefined) patch.account_id = input.accountId;
   if (input.kind !== undefined) patch.kind = input.kind;
   if (input.amount !== undefined) patch.amount = input.amount;
   if (input.note !== undefined) patch.note = input.note;

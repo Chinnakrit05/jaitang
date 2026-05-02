@@ -23,6 +23,7 @@ import {
   Sparkles,
   Target,
   Upload,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -84,6 +85,7 @@ export async function DashboardShell({
     { href: "/budgets",     label: t("nav.budgets"),      icon: "budgets",      iconComponent: PiggyBank },
     { href: "/recurring",   label: t("nav.recurring"),    icon: "recurring",    iconComponent: Repeat },
     { href: "/balances",    label: t("nav.balances"),     icon: "balances",     iconComponent: Scale },
+    { href: "/accounts",    label: t("nav.accounts"),     icon: "accounts",     iconComponent: Wallet },
     { href: "/trips",       label: t("nav.trips"),        icon: "trips",        iconComponent: Plane },
     { href: "/goals",       label: t("nav.goals"),        icon: "goals",        iconComponent: Target },
     { href: "/categories",  label: t("nav.categories"),   icon: "categories",   iconComponent: FolderTree },

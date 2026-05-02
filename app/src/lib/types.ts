@@ -26,6 +26,38 @@ export type Trip = {
   created_at: string;
 };
 
+export type AccountType = "cash" | "bank" | "credit_card" | "e_wallet";
+
+export type Account = {
+  id: string;
+  ledger_id: string;
+  name: string;
+  type: AccountType;
+  icon: string | null;
+  color: string | null;
+  initial_balance: number;
+  /** ISO 4217. null = inherit ledger.currency. */
+  currency: string | null;
+  archived: boolean;
+  created_at: string;
+};
+
+export type Transfer = {
+  id: string;
+  ledger_id: string;
+  user_id: string;
+  from_account_id: string;
+  to_account_id: string;
+  from_amount: number;
+  from_currency: string;
+  to_amount: number;
+  to_currency: string;
+  fx_rate: number;
+  note: string | null;
+  occurred_at: string;
+  created_at: string;
+};
+
 export type Goal = {
   id: string;
   ledger_id: string;
@@ -55,6 +87,7 @@ export type Transaction = {
   user_id: string;
   category_id: string | null;
   trip_id: string | null;
+  account_id: string | null;
   kind: TxKind;
   amount: number;
   note: string | null;
@@ -75,6 +108,7 @@ export type Transaction = {
 export type TransactionWithCategory = Transaction & {
   category: Pick<Category, "id" | "name" | "icon" | "color"> | null;
   trip?: Pick<Trip, "id" | "name" | "icon" | "color" | "currency"> | null;
+  account?: Pick<Account, "id" | "name" | "icon" | "color" | "currency"> | null;
   user?: {
     id: string;
     name: string | null;

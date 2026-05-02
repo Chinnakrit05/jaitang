@@ -23,6 +23,8 @@ export type BackupTransaction = {
   payment_method?: "cash" | "transfer" | null;
   // Optional: pre-trip backups don't include this field.
   trip_id?: string | null;
+  // Optional: pre-account backups don't include this field.
+  account_id?: string | null;
   // Optional: pre-FX backups don't include these. Set as a triple or all
   // unset; partial sets are rejected on restore (DB constraint).
   fx_currency?: string | null;
@@ -30,6 +32,30 @@ export type BackupTransaction = {
   fx_rate?: number | null;
   occurred_at: string;
   created_at: string;
+};
+
+export type BackupAccount = {
+  id: string;
+  name: string;
+  type: "cash" | "bank" | "credit_card" | "e_wallet";
+  icon: string | null;
+  color: string | null;
+  initial_balance: number;
+  currency: string | null;
+  archived: boolean;
+};
+
+export type BackupTransfer = {
+  id: string;
+  from_account_id: string;
+  to_account_id: string;
+  from_amount: number;
+  from_currency: string;
+  to_amount: number;
+  to_currency: string;
+  fx_rate: number;
+  note: string | null;
+  occurred_at: string;
 };
 
 export type BackupTrip = {
@@ -87,6 +113,9 @@ export type BackupLedger = {
   splits: BackupSplit[];
   // Optional: pre-trip backups don't include this field.
   trips?: BackupTrip[];
+  // Optional: pre-account backups don't include these.
+  accounts?: BackupAccount[];
+  transfers?: BackupTransfer[];
 };
 
 export type BackupFile = {
@@ -114,41 +143,57 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
   const out: BackupLedger[] = [];
 
   for (const l of ledgers) {
-    const [catsRes, txRes, budgetsRes, recurRes, tripsRes] = await Promise.all([
-      sb
-        .from("categories")
-        .select("id, name, icon, color, kind, sort_order")
-        .eq("ledger_id", l.id)
-        .order("kind")
-        .order("sort_order"),
-      sb
-        .from("transactions")
-        .select(
-          "id, category_id, trip_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at"
-        )
-        .eq("ledger_id", l.id)
-        .order("occurred_at"),
-      sb
-        .from("budgets")
-        .select("category_id, amount, period")
-        .eq("ledger_id", l.id),
-      sb
-        .from("recurring_transactions")
-        .select(
-          "id, category_id, kind, amount, note, period, day_of_month, day_of_week, next_run_at, active"
-        )
-        .eq("ledger_id", l.id),
-      sb
-        .from("trips")
-        .select("id, name, icon, color, starts_at, ends_at, archived, currency")
-        .eq("ledger_id", l.id),
-    ]);
+    const [catsRes, txRes, budgetsRes, recurRes, tripsRes, accountsRes, transfersRes] =
+      await Promise.all([
+        sb
+          .from("categories")
+          .select("id, name, icon, color, kind, sort_order")
+          .eq("ledger_id", l.id)
+          .order("kind")
+          .order("sort_order"),
+        sb
+          .from("transactions")
+          .select(
+            "id, category_id, trip_id, account_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at"
+          )
+          .eq("ledger_id", l.id)
+          .order("occurred_at"),
+        sb
+          .from("budgets")
+          .select("category_id, amount, period")
+          .eq("ledger_id", l.id),
+        sb
+          .from("recurring_transactions")
+          .select(
+            "id, category_id, kind, amount, note, period, day_of_month, day_of_week, next_run_at, active"
+          )
+          .eq("ledger_id", l.id),
+        sb
+          .from("trips")
+          .select("id, name, icon, color, starts_at, ends_at, archived, currency")
+          .eq("ledger_id", l.id),
+        sb
+          .from("accounts")
+          .select(
+            "id, name, type, icon, color, initial_balance, currency, archived"
+          )
+          .eq("ledger_id", l.id),
+        sb
+          .from("transfers")
+          .select(
+            "id, from_account_id, to_account_id, from_amount, from_currency, to_amount, to_currency, fx_rate, note, occurred_at"
+          )
+          .eq("ledger_id", l.id)
+          .order("occurred_at"),
+      ]);
 
     if (catsRes.error) throw catsRes.error;
     if (txRes.error) throw txRes.error;
     if (budgetsRes.error) throw budgetsRes.error;
     if (recurRes.error) throw recurRes.error;
     if (tripsRes.error) throw tripsRes.error;
+    if (accountsRes.error) throw accountsRes.error;
+    if (transfersRes.error) throw transfersRes.error;
 
     // Splits: pull all splits whose parent tx belongs to this ledger.
     // We embed user_email so cross-user restores have a chance of routing.
@@ -202,6 +247,16 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
       })) as BackupRecurring[],
       splits,
       trips: (tripsRes.data ?? []) as BackupTrip[],
+      accounts: (accountsRes.data ?? []).map((a) => ({
+        ...a,
+        initial_balance: Number(a.initial_balance),
+      })) as BackupAccount[],
+      transfers: (transfersRes.data ?? []).map((t) => ({
+        ...t,
+        from_amount: Number(t.from_amount),
+        to_amount: Number(t.to_amount),
+        fx_rate: Number(t.fx_rate),
+      })) as BackupTransfer[],
     });
   }
 
@@ -244,6 +299,7 @@ const BackupSchema = z.object({
           id: z.string(),
           category_id: z.string().nullable(),
           trip_id: z.string().nullable().optional(),
+          account_id: z.string().nullable().optional(),
           kind: z.enum(["income", "expense"]),
           amount: z.number().positive(),
           note: z.string().nullable(),
@@ -255,6 +311,36 @@ const BackupSchema = z.object({
           created_at: z.string().optional(),
         })
       ),
+      accounts: z
+        .array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            type: z.enum(["cash", "bank", "credit_card", "e_wallet"]),
+            icon: z.string().nullable(),
+            color: z.string().nullable(),
+            initial_balance: z.number(),
+            currency: z.string().min(3).max(3).nullable(),
+            archived: z.boolean(),
+          })
+        )
+        .optional(),
+      transfers: z
+        .array(
+          z.object({
+            id: z.string(),
+            from_account_id: z.string(),
+            to_account_id: z.string(),
+            from_amount: z.number().positive(),
+            from_currency: z.string().min(3).max(3),
+            to_amount: z.number().positive(),
+            to_currency: z.string().min(3).max(3),
+            fx_rate: z.number().positive(),
+            note: z.string().nullable(),
+            occurred_at: z.string(),
+          })
+        )
+        .optional(),
       trips: z
         .array(
           z.object({
@@ -313,6 +399,8 @@ export type RestoreSummary = {
   recurringCreated: number;
   splitsCreated: number;
   tripsCreated: number;
+  accountsCreated: number;
+  transfersCreated: number;
   ledgersSkipped: number; // shared ledgers we couldn't recreate
 };
 
@@ -345,6 +433,8 @@ export async function restoreBackup(
     recurringCreated: 0,
     splitsCreated: 0,
     tripsCreated: 0,
+    accountsCreated: 0,
+    transfersCreated: 0,
     ledgersSkipped: 0,
   };
 
@@ -414,6 +504,31 @@ export async function restoreBackup(
       }
     }
 
+    // Accounts — same oldId → newId pattern, also restored before
+    // transactions and transfers since both reference accounts.
+    const accountMap = new Map<string, string>();
+    if (lb.accounts && lb.accounts.length > 0) {
+      for (const a of lb.accounts) {
+        const { data: na, error: aerr } = await sb
+          .from("accounts")
+          .insert({
+            ledger_id: createdLedgerId!,
+            name: a.name,
+            type: a.type,
+            icon: a.icon,
+            color: a.color,
+            initial_balance: a.initial_balance,
+            currency: a.currency,
+            archived: a.archived,
+          })
+          .select("id")
+          .single();
+        if (aerr) throw aerr;
+        accountMap.set(a.id, na!.id);
+        summary.accountsCreated++;
+      }
+    }
+
     // Categories — map oldId → newId
     const catMap = new Map<string, string>();
     if (lb.categories.length > 0) {
@@ -474,6 +589,7 @@ export async function restoreBackup(
               user_id: userId,
               category_id: t.category_id ? catMap.get(t.category_id) ?? null : null,
               trip_id: t.trip_id ? tripMap.get(t.trip_id) ?? null : null,
+              account_id: t.account_id ? accountMap.get(t.account_id) ?? null : null,
               kind: t.kind,
               amount: t.amount,
               note: t.note,
@@ -493,6 +609,7 @@ export async function restoreBackup(
           user_id: userId,
           category_id: t.category_id ? catMap.get(t.category_id) ?? null : null,
           trip_id: t.trip_id ? tripMap.get(t.trip_id) ?? null : null,
+          account_id: t.account_id ? accountMap.get(t.account_id) ?? null : null,
           kind: t.kind,
           amount: t.amount,
           note: t.note,
@@ -589,6 +706,37 @@ export async function restoreBackup(
           .insert(splitRows);
         if (serr) throw serr;
         summary.splitsCreated += splitRows.length;
+      }
+    }
+
+    // Transfers — re-link both sides via the accountMap. Drop any row
+    // that references an account we couldn't recreate (best-effort, same
+    // policy as splits with unknown email).
+    if (lb.transfers && lb.transfers.length > 0) {
+      const rows = lb.transfers
+        .map((tr) => {
+          const newFrom = accountMap.get(tr.from_account_id);
+          const newTo = accountMap.get(tr.to_account_id);
+          if (!newFrom || !newTo) return null;
+          return {
+            ledger_id: createdLedgerId!,
+            user_id: userId,
+            from_account_id: newFrom,
+            to_account_id: newTo,
+            from_amount: tr.from_amount,
+            from_currency: tr.from_currency,
+            to_amount: tr.to_amount,
+            to_currency: tr.to_currency,
+            fx_rate: tr.fx_rate,
+            note: tr.note,
+            occurred_at: tr.occurred_at,
+          };
+        })
+        .filter((x): x is NonNullable<typeof x> => x !== null);
+      if (rows.length > 0) {
+        const { error: trerr } = await sb.from("transfers").insert(rows);
+        if (trerr) throw trerr;
+        summary.transfersCreated += rows.length;
       }
     }
   }

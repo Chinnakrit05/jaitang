@@ -4,7 +4,12 @@ import { NewTransactionPage } from "@/components/new-transaction-page";
 import { createTransactionAction } from "../actions";
 import { listMembers } from "@/lib/members";
 import { getTrip, listTrips } from "@/lib/trips";
-import type { SplitMember, TripChoice } from "@/components/transaction-form";
+import { listAccounts } from "@/lib/accounts";
+import type {
+  AccountChoice,
+  SplitMember,
+  TripChoice,
+} from "@/components/transaction-form";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -17,13 +22,15 @@ export default async function NewTransaction() {
     getTranslations(),
   ]);
 
-  // Fetch categories + members + trip data in parallel
-  const [categories, members, activeTripRow, allTripStats] = await Promise.all([
-    listCategories(ledgerId),
-    ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
-    activeTripId ? getTrip(activeTripId, ledgerId) : Promise.resolve(null),
-    listTrips(ledgerId),
-  ]);
+  // Fetch categories + members + trip data + accounts in parallel
+  const [categories, members, activeTripRow, allTripStats, accountRows] =
+    await Promise.all([
+      listCategories(ledgerId),
+      ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
+      activeTripId ? getTrip(activeTripId, ledgerId) : Promise.resolve(null),
+      listTrips(ledgerId),
+      listAccounts(ledgerId, { includeArchived: true }),
+    ]);
 
   const splitMembers: SplitMember[] | undefined = members
     ? members.map((m) => ({
@@ -55,6 +62,14 @@ export default async function NewTransaction() {
       currency: tr.currency,
     }));
 
+  const accounts: AccountChoice[] = accountRows.map((a) => ({
+    id: a.id,
+    name: a.name,
+    icon: a.icon,
+    currency: a.currency ?? ledger.currency,
+    archived: a.archived,
+  }));
+
   return (
     <div className="max-w-xl mx-auto">
       <Link
@@ -72,6 +87,7 @@ export default async function NewTransaction() {
         splitMembers={splitMembers}
         activeTrip={activeTrip}
         trips={trips}
+        accounts={accounts}
         currency={ledger.currency}
       />
     </div>

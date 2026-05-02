@@ -2,6 +2,7 @@ import { requireSession } from "@/lib/session";
 import { listCategories } from "@/lib/categories";
 import {
   TransactionForm,
+  type AccountChoice,
   type SplitMember,
 } from "@/components/transaction-form";
 import { updateTransactionAction, deleteTransactionAction } from "../../actions";
@@ -9,6 +10,7 @@ import { getServerSupabase } from "@/lib/supabase/server";
 import { listMembers } from "@/lib/members";
 import { listSplits } from "@/lib/splits";
 import { listTrips } from "@/lib/trips";
+import { listAccounts } from "@/lib/accounts";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -28,21 +30,23 @@ export default async function EditTransactionPage({
 
   const sb = getServerSupabase();
 
-  // Fetch transaction + categories + (members/splits if shared) + trips in parallel
-  const [txRes, categories, members, existingSplits, allTrips] = await Promise.all([
-    sb
-      .from("transactions")
-      .select(
-        "id, ledger_id, kind, amount, category_id, trip_id, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, user_id"
-      )
-      .eq("id", id)
-      .eq("ledger_id", ledgerId)
-      .maybeSingle(),
-    listCategories(ledgerId),
-    ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
-    ledger.is_personal ? Promise.resolve([]) : listSplits(id),
-    listTrips(ledgerId),
-  ]);
+  // Fetch transaction + categories + (members/splits if shared) + trips + accounts in parallel
+  const [txRes, categories, members, existingSplits, allTrips, accountRows] =
+    await Promise.all([
+      sb
+        .from("transactions")
+        .select(
+          "id, ledger_id, kind, amount, category_id, trip_id, account_id, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, user_id"
+        )
+        .eq("id", id)
+        .eq("ledger_id", ledgerId)
+        .maybeSingle(),
+      listCategories(ledgerId),
+      ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
+      ledger.is_personal ? Promise.resolve([]) : listSplits(id),
+      listTrips(ledgerId),
+      listAccounts(ledgerId, { includeArchived: true }),
+    ]);
 
   if (txRes.error) throw txRes.error;
   const tx = txRes.data;
@@ -65,6 +69,14 @@ export default async function EditTransactionPage({
       ? [tx.user_id, ...existingSplits.map((s) => s.user_id)]
       : undefined;
 
+  const accounts: AccountChoice[] = accountRows.map((a) => ({
+    id: a.id,
+    name: a.name,
+    icon: a.icon,
+    currency: a.currency ?? ledger.currency,
+    archived: a.archived,
+  }));
+
   return (
     <div className="max-w-xl mx-auto">
       <Link
@@ -86,6 +98,7 @@ export default async function EditTransactionPage({
             icon: tr.icon,
             currency: tr.currency,
           }))}
+        accounts={accounts}
         currency={ledger.currency}
         initial={{
           id: tx.id,
@@ -101,6 +114,7 @@ export default async function EditTransactionPage({
           note: tx.note,
           paymentMethod: tx.payment_method ?? null,
           tripId: tx.trip_id ?? null,
+          accountId: tx.account_id ?? null,
           fxCurrency: tx.fx_currency ?? null,
           fxAmount: tx.fx_amount ?? null,
           fxRate: tx.fx_rate ?? null,
