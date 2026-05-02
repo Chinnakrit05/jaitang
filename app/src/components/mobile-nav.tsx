@@ -19,6 +19,7 @@ import {
   Scale,
   Settings,
   Sparkles,
+  Target,
   Upload,
   type LucideIcon,
 } from "lucide-react";
@@ -39,6 +40,7 @@ export type IconName =
   | "recurring"
   | "balances"
   | "trips"
+  | "goals"
   | "settings"
   | "quick"
   | "import";
@@ -54,6 +56,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   recurring: Repeat,
   balances: Scale,
   trips: Plane,
+  goals: Target,
   settings: Settings,
   quick: Sparkles,
   import: Upload,

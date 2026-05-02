@@ -1,0 +1,43 @@
+"use client";
+
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
+import { deleteContributionAction } from "@/app/(app)/goals/actions";
+
+/**
+ * Tiny X-button per contribution row in the goal detail history.
+ * Lives in its own file because the parent (goal detail page) is a
+ * server component and can't house client handlers.
+ */
+export function DeleteContributionButton({
+  contributionId,
+  confirmLabel,
+  aria,
+}: {
+  contributionId: string;
+  confirmLabel: string;
+  aria: string;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <button
+      type="button"
+      disabled={pending}
+      onClick={() => {
+        if (!confirm(confirmLabel)) return;
+        startTransition(async () => {
+          await deleteContributionAction(contributionId);
+          router.refresh();
+        });
+      }}
+      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense) transition disabled:opacity-50"
+      aria-label={aria}
+      title={aria}
+    >
+      <Trash2 size={14} />
+    </button>
+  );
+}

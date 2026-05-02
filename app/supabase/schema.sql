@@ -266,6 +266,42 @@ create index if not exists idx_splits_tx on public.transaction_splits(transactio
 create index if not exists idx_splits_user on public.transaction_splits(user_id);
 
 -- ============================================================
+-- Goals (เป้าหมายการออม — เช่น "ทริปเกาหลี 100k")
+-- ============================================================
+create table if not exists public.goals (
+  id uuid primary key default uuid_generate_v4(),
+  ledger_id uuid not null references public.ledgers(id) on delete cascade,
+  name text not null,
+  icon text default '🎯',
+  color text default '#10b981',
+  target_amount numeric(14, 2) not null check (target_amount > 0),
+  deadline timestamptz,
+  archived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_goals_ledger on public.goals(ledger_id);
+create index if not exists idx_goals_active on public.goals(ledger_id) where archived = false;
+
+-- ============================================================
+-- Goal contributions (ออมเข้าเป้าหมาย — รายครั้ง)
+-- Stored separately from `transactions` so contributions don't
+-- pollute income/expense totals. Each contribution is one row;
+-- progress = sum(amount) per goal.
+-- ============================================================
+create table if not exists public.goal_contributions (
+  id uuid primary key default uuid_generate_v4(),
+  goal_id uuid not null references public.goals(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete restrict,
+  amount numeric(14, 2) not null check (amount > 0),
+  note text,
+  occurred_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_goal_contrib_goal on public.goal_contributions(goal_id);
+
+-- ============================================================
 -- Push subscriptions (Web Push API — per device/browser)
 -- ============================================================
 create table if not exists public.push_subscriptions (
@@ -327,6 +363,8 @@ alter table public.categories enable row level security;
 alter table public.transactions enable row level security;
 alter table public.invites enable row level security;
 alter table public.trips enable row level security;
+alter table public.goals enable row level security;
+alter table public.goal_contributions enable row level security;
 
 -- For MVP: deny all by default; service-role bypasses RLS,
 -- so anon/authenticated clients see nothing unless we add

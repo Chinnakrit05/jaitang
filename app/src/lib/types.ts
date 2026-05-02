@@ -26,6 +26,29 @@ export type Trip = {
   created_at: string;
 };
 
+export type Goal = {
+  id: string;
+  ledger_id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  /** Always in ledger.currency. v1 doesn't support multi-currency goals. */
+  target_amount: number;
+  deadline: string | null;
+  archived: boolean;
+  created_at: string;
+};
+
+export type GoalContribution = {
+  id: string;
+  goal_id: string;
+  user_id: string;
+  amount: number;
+  note: string | null;
+  occurred_at: string;
+  created_at: string;
+};
+
 export type Transaction = {
   id: string;
   ledger_id: string;

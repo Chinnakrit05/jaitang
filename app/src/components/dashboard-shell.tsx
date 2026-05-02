@@ -21,6 +21,7 @@ import {
   Scale,
   Settings,
   Sparkles,
+  Target,
   Upload,
   type LucideIcon,
 } from "lucide-react";
@@ -84,6 +85,7 @@ export async function DashboardShell({
     { href: "/recurring",   label: t("nav.recurring"),    icon: "recurring",    iconComponent: Repeat },
     { href: "/balances",    label: t("nav.balances"),     icon: "balances",     iconComponent: Scale },
     { href: "/trips",       label: t("nav.trips"),        icon: "trips",        iconComponent: Plane },
+    { href: "/goals",       label: t("nav.goals"),        icon: "goals",        iconComponent: Target },
     { href: "/categories",  label: t("nav.categories"),   icon: "categories",   iconComponent: FolderTree },
     { href: "/ledgers",     label: t("nav.ledgers"),      icon: "ledgers",      iconComponent: BookOpen },
     { href: "/import",      label: t("nav.import"),       icon: "import",       iconComponent: Upload },
