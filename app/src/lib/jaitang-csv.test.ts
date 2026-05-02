@@ -59,6 +59,9 @@ describe("parseJaitangCsv", () => {
       amount: 100,
       paymentMethod: "cash",
       tripName: "ทริปทะเล",
+      fxCurrency: null,
+      fxAmount: null,
+      fxRate: null,
       note: "กาแฟ",
     });
   });
@@ -83,6 +86,9 @@ describe("parseJaitangCsv", () => {
       amount: 100,
       paymentMethod: "cash",
       tripName: null,
+      fxCurrency: null,
+      fxAmount: null,
+      fxRate: null,
       note: "กาแฟ",
     });
   });
@@ -219,6 +225,9 @@ describe("export → parse round trip", () => {
       amount: 123.45,
       paymentMethod: "cash",
       tripName: "ทริปทะเล",
+      fxCurrency: null,
+      fxAmount: null,
+      fxRate: null,
       note: 'lunch, with "x"',
     });
   });
@@ -238,6 +247,49 @@ describe("export → parse round trip", () => {
     ].join("\n");
     const { rows } = parseJaitangCsv(csv);
     expect(rows[0].tripName).toBeNull();
+  });
+
+  it("round-trips FX columns when present", () => {
+    // Header includes ทั้ง 3 FX columns + values are valid → parser keeps them.
+    const fxHeader =
+      "วันที่,ประเภท,หมวด,จำนวน,ช่องทาง,ทริป,สกุลต่างประเทศ,จำนวนต่างประเทศ,อัตรา,โน้ต";
+    const csv =
+      BOM +
+      [
+        fxHeader,
+        // 350 THB ≈ 1500 JPY at 0.2333 rate
+        `2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,350.00,เงินสด,ทริปญี่ปุ่น,JPY,1500.00,0.2333,ราเมง`,
+      ].join("\n");
+    const { rows } = parseJaitangCsv(csv);
+    expect(rows[0]).toMatchObject({
+      occurredAt: "2026-05-02T03:30:00.000Z",
+      kind: "expense",
+      categoryName: "อาหาร",
+      amount: 350,
+      paymentMethod: "cash",
+      tripName: "ทริปญี่ปุ่น",
+      fxCurrency: "JPY",
+      fxAmount: 1500,
+      fxRate: 0.2333,
+      note: "ราเมง",
+    });
+  });
+
+  it("drops partial FX (e.g. amount missing) back to home-currency row", () => {
+    const fxHeader =
+      "วันที่,ประเภท,หมวด,จำนวน,ช่องทาง,ทริป,สกุลต่างประเทศ,จำนวนต่างประเทศ,อัตรา,โน้ต";
+    const csv =
+      BOM +
+      [
+        fxHeader,
+        // fx_amount missing — DB constraint requires all-or-none, so we
+        // refuse to parse a partial set.
+        `2026-05-02T03:30:00.000Z,รายจ่าย,อาหาร,350.00,เงินสด,,JPY,,0.2333,ราเมง`,
+      ].join("\n");
+    const { rows } = parseJaitangCsv(csv);
+    expect(rows[0].fxCurrency).toBeNull();
+    expect(rows[0].fxAmount).toBeNull();
+    expect(rows[0].fxRate).toBeNull();
   });
 
   it("preserves trip names that contain commas (RFC-4180 quoted)", () => {

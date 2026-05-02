@@ -16,6 +16,8 @@ import { getServerSupabase } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { getLocale, getTranslations } from "next-intl/server";
+import { fetchFxRate } from "@/lib/fx";
+import { SUPPORTED_CODES } from "@/lib/currencies";
 
 /**
  * Confirm a tripId actually belongs to the active ledger. Without this
@@ -43,12 +45,60 @@ const TxSchema = z.object({
   note: z.string().max(500).optional(),
   paymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
   tripId: z.string().uuid().nullable().optional(),
+  /**
+   * The currency the user typed `amount` in. When != ledger.currency we
+   * convert + store fx_currency / fx_amount / fx_rate. When equal (or
+   * absent), `amount` IS already home currency and fx fields stay null.
+   */
+  fxCurrency: z
+    .string()
+    .min(3)
+    .max(3)
+    .refine((c) => SUPPORTED_CODES.has(c), "Unsupported currency")
+    .optional(),
   // Must include a TZ designator (`Z` or `±HH:MM`). Without one, the server
   // would reinterpret the string in UTC and store an instant N hours off
   // from what the user actually typed. The form converts before submitting;
   // this validator catches stale clients or out-of-band callers.
   occurredAt: z.iso.datetime({ offset: true }),
 });
+
+/**
+ * Resolve the (amount, fx_*) trio for storage given what the user typed
+ * and the chosen currency. Returns home-currency `amount` plus the
+ * three fx fields (all null when user typed in home currency).
+ *
+ * Rate is fetched server-side at submit time (not from the client preview)
+ * so a stale rate from a 30-second-old preview can't be exploited.
+ */
+async function resolveFxFields(
+  enteredAmount: number,
+  fxCurrency: string | undefined,
+  homeCurrency: string
+): Promise<
+  | {
+      amount: number;
+      fx: { currency: string; amount: number; rate: number } | null;
+    }
+  | { error: string }
+> {
+  if (!fxCurrency || fxCurrency === homeCurrency) {
+    return { amount: enteredAmount, fx: null };
+  }
+  try {
+    const rate = await fetchFxRate(fxCurrency, homeCurrency);
+    const homeAmount = Math.round(enteredAmount * rate * 100) / 100;
+    return {
+      amount: homeAmount,
+      fx: { currency: fxCurrency, amount: enteredAmount, rate },
+    };
+  } catch {
+    return {
+      error:
+        "FX rate unavailable — please retry, switch back to home currency, or save and edit the rate later",
+    };
+  }
+}
 
 function refreshAll() {
   revalidatePath("/dashboard");
@@ -83,6 +133,7 @@ export async function createTransactionAction(formData: FormData) {
     note: formData.get("note") || undefined,
     paymentMethod: formData.get("paymentMethod") || null,
     tripId: formData.get("tripId") || null,
+    fxCurrency: formData.get("fxCurrency") || undefined,
     occurredAt: formData.get("occurredAt"),
   });
   if (!parsed.success) {
@@ -97,15 +148,31 @@ export async function createTransactionAction(formData: FormData) {
     tripId = null;
   }
 
+  // Resolve home-currency amount + fx fields. We always re-fetch the rate
+  // here even though the form's preview already had one — the form's
+  // value is just a hint, the source of truth must come from the server.
+  const { ledger } = await requireSession();
+  const fxResult = await resolveFxFields(
+    parsed.data.amount,
+    parsed.data.fxCurrency,
+    ledger.currency
+  );
+  if ("error" in fxResult) {
+    return { ok: false as const, error: fxResult.error };
+  }
+
   const tx = await createTransaction({
     ledgerId,
     userId,
     categoryId: parsed.data.categoryId ?? null,
     tripId,
     kind: parsed.data.kind,
-    amount: parsed.data.amount,
+    amount: fxResult.amount,
     note: parsed.data.note,
     paymentMethod: parsed.data.paymentMethod ?? null,
+    fxCurrency: fxResult.fx?.currency ?? null,
+    fxAmount: fxResult.fx?.amount ?? null,
+    fxRate: fxResult.fx?.rate ?? null,
     occurredAt: new Date(parsed.data.occurredAt).toISOString(),
   });
 
@@ -173,7 +240,7 @@ export async function createTransactionAction(formData: FormData) {
 export async function updateTransactionAction(id: string, formData: FormData) {
   // requireSession() is React-cached so calling it twice in this function
   // (once for userId, once for ledgerId) is free — we just consolidate.
-  const { userId, ledgerId } = await requireSession();
+  const { userId, ledgerId, ledger } = await requireSession();
 
   const parsed = TxSchema.safeParse({
     kind: formData.get("kind"),
@@ -182,6 +249,7 @@ export async function updateTransactionAction(id: string, formData: FormData) {
     note: formData.get("note") || undefined,
     paymentMethod: formData.get("paymentMethod") || null,
     tripId: formData.get("tripId") || null,
+    fxCurrency: formData.get("fxCurrency") || undefined,
     occurredAt: formData.get("occurredAt"),
   });
   if (!parsed.success) {
@@ -193,13 +261,27 @@ export async function updateTransactionAction(id: string, formData: FormData) {
     tripId = null;
   }
 
+  // Same FX resolution as create — keep amount in home currency, store
+  // the foreign-currency original alongside.
+  const fxResult = await resolveFxFields(
+    parsed.data.amount,
+    parsed.data.fxCurrency,
+    ledger.currency
+  );
+  if ("error" in fxResult) {
+    return { ok: false as const, error: fxResult.error };
+  }
+
   await updateTransaction(id, {
     kind: parsed.data.kind,
-    amount: parsed.data.amount,
+    amount: fxResult.amount,
     categoryId: parsed.data.categoryId ?? null,
     note: parsed.data.note ?? null,
     paymentMethod: parsed.data.paymentMethod ?? null,
     tripId,
+    fxCurrency: fxResult.fx?.currency ?? null,
+    fxAmount: fxResult.fx?.amount ?? null,
+    fxRate: fxResult.fx?.rate ?? null,
     occurredAt: new Date(parsed.data.occurredAt).toISOString(),
   });
 

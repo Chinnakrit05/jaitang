@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { cn, toLocalDateTimeInput } from "@/lib/utils";
 import { createTripAction } from "@/app/(app)/trips/actions";
+import { CurrencyPicker } from "@/components/currency-picker";
 
 const ICON_CHOICES = ["✈️", "🏖️", "🏔️", "🍜", "🎉", "🎒", "🚗", "🛳️", "🏕️", "🎁"];
 const COLOR_CHOICES = [
@@ -17,12 +18,14 @@ const COLOR_CHOICES = [
   "#64748b",
 ];
 
-export function CreateTripForm() {
+export function CreateTripForm({ ledgerCurrency }: { ledgerCurrency: string }) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [icon, setIcon] = useState(ICON_CHOICES[0]);
   const [color, setColor] = useState(COLOR_CHOICES[0]);
+  // Default to ledger currency — most trips are domestic.
+  const [currency, setCurrency] = useState(ledgerCurrency);
 
   // Same client-side TZ trick we use on the transaction form: SSR with no
   // value, then fill in via ref on mount so the prefilled date is in the
@@ -42,6 +45,7 @@ export function CreateTripForm() {
         const fd = new FormData(e.currentTarget);
         fd.set("icon", icon);
         fd.set("color", color);
+        fd.set("currency", currency);
         // Convert TZ-naive datetime-local strings to UTC ISO before submit
         // (same reason as transaction-form.tsx).
         for (const k of ["startsAt", "endsAt"]) {
@@ -110,6 +114,20 @@ export function CreateTripForm() {
             />
           ))}
         </div>
+      </div>
+
+      <div>
+        <div className="text-xs text-(--muted) mb-1.5">
+          {t("trips.currencyLabel")}
+        </div>
+        <CurrencyPicker
+          value={currency}
+          onChange={setCurrency}
+          ariaLabel={t("trips.currencyLabel")}
+        />
+        <p className="text-xs text-(--muted) mt-1">
+          {t("trips.currencyHint")}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

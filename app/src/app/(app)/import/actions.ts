@@ -16,13 +16,14 @@ import { mapNotesToCategories } from "@/lib/import-mapper";
 import { listTrips } from "@/lib/trips";
 import { yearMonthInTz } from "@/lib/utils";
 import { BUSINESS_TZ } from "@/lib/business-tz";
+import { SUPPORTED_CODES } from "@/lib/currencies";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 
 export type PreviewRow = {
   id: string; // unique within plan, used as React key + final patch
   occurredAt: string;
   kind: TxKind;
-  amount: number;
+  amount: number; // home currency
   note: string;
   source: string;
   categoryId: string | null;
@@ -39,6 +40,11 @@ export type PreviewRow = {
    *  tripId is null (= source had a trip but destination doesn't have a
    *  matching one — user can pre-create the trip and re-upload). */
   tripName: string | null;
+  /** Foreign-currency triple if the source had FX; carried through to the
+   *  destination row as-is so trip totals and badges keep working. */
+  fxCurrency: string | null;
+  fxAmount: number | null;
+  fxRate: number | null;
 };
 
 export type ImportPreview = {
@@ -180,6 +186,9 @@ export async function parseImportAction(
       paymentMethod: null, // Numbers app source has no payment-method column
       tripId: null,        // Numbers app source has no trip column
       tripName: null,
+      fxCurrency: null,    // Numbers app source has no FX columns
+      fxAmount: null,
+      fxRate: null,
     };
   });
 
@@ -276,6 +285,9 @@ async function previewJaitangCsv({
       paymentMethod: r.paymentMethod,
       tripId,
       tripName: r.tripName,
+      fxCurrency: r.fxCurrency,
+      fxAmount: r.fxAmount,
+      fxRate: r.fxRate,
     };
   });
 
@@ -307,6 +319,9 @@ const ApplyRow = z.object({
   newCategoryIcon: z.string().min(1).max(8).nullable(),
   paymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
   tripId: z.string().uuid().nullable().optional(),
+  fxCurrency: z.string().min(3).max(3).nullable().optional(),
+  fxAmount: z.number().positive().nullable().optional(),
+  fxRate: z.number().positive().nullable().optional(),
 });
 
 const ApplySchema = z.object({
@@ -359,6 +374,16 @@ export async function applyImportAction(
     }
     const safeTripId =
       r.tripId && allowedTripIds.has(r.tripId) ? r.tripId : null;
+    // FX must be the all-or-none triple to satisfy the DB constraint.
+    // If any field is missing or invalid (e.g. unsupported currency),
+    // drop all three back to null and let the row save as home-currency.
+    const fxOk =
+      !!r.fxCurrency &&
+      r.fxAmount !== null &&
+      r.fxAmount !== undefined &&
+      r.fxRate !== null &&
+      r.fxRate !== undefined &&
+      SUPPORTED_CODES.has(r.fxCurrency);
 
     await createTransaction({
       ledgerId,
@@ -369,6 +394,9 @@ export async function applyImportAction(
       amount: r.amount,
       note: r.note,
       paymentMethod: r.paymentMethod ?? null,
+      fxCurrency: fxOk ? r.fxCurrency! : null,
+      fxAmount: fxOk ? r.fxAmount! : null,
+      fxRate: fxOk ? r.fxRate! : null,
       occurredAt: r.occurredAt,
     });
     created++;

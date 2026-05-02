@@ -84,8 +84,16 @@ create table if not exists public.trips (
   starts_at timestamptz,
   ends_at timestamptz,
   archived boolean not null default false,
+  -- Trip's "native" currency. NULL = inherit ledger.currency at runtime.
+  -- ISO 4217 (e.g. 'JPY'). When set, new transactions tagged with this trip
+  -- default to this currency in the form picker.
+  currency text,
   created_at timestamptz not null default now()
 );
+
+-- Idempotent migration for existing trips
+alter table public.trips
+  add column if not exists currency text;
 
 create index if not exists idx_trips_ledger on public.trips(ledger_id);
 create index if not exists idx_trips_active on public.trips(ledger_id) where archived = false;
@@ -107,9 +115,22 @@ create table if not exists public.transactions (
   note text,
   -- 'cash' | 'transfer' | null (unspecified, e.g. legacy rows)
   payment_method text check (payment_method in ('cash', 'transfer')),
+  -- Multi-currency support. `amount` (above) is ALWAYS in the ledger's
+  -- home currency. The fx_* trio is metadata for foreign-currency rows:
+  --   fx_currency: ISO 4217 code, e.g. 'JPY'
+  --   fx_amount:   value in fx_currency the user actually paid
+  --   fx_rate:     home / fx ratio at insert time (e.g. 0.2333 for JPY→THB)
+  -- All three set together, or all null (= row is in home currency).
+  fx_currency text,
+  fx_amount numeric(14, 2),
+  fx_rate numeric(18, 8),
   occurred_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint fx_fields_consistent check (
+    (fx_currency is null and fx_amount is null and fx_rate is null) or
+    (fx_currency is not null and fx_amount is not null and fx_rate is not null)
+  )
 );
 
 -- Idempotent migration for existing deployments where the columns did not exist.
@@ -118,6 +139,26 @@ alter table public.transactions
   check (payment_method in ('cash', 'transfer'));
 alter table public.transactions
   add column if not exists trip_id uuid references public.trips(id) on delete set null;
+alter table public.transactions
+  add column if not exists fx_currency text;
+alter table public.transactions
+  add column if not exists fx_amount numeric(14, 2);
+alter table public.transactions
+  add column if not exists fx_rate numeric(18, 8);
+
+-- Add the consistency check separately so it doesn't fail on re-runs.
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'fx_fields_consistent'
+  ) then
+    alter table public.transactions
+      add constraint fx_fields_consistent check (
+        (fx_currency is null and fx_amount is null and fx_rate is null) or
+        (fx_currency is not null and fx_amount is not null and fx_rate is not null)
+      );
+  end if;
+end $$;
 
 create index if not exists idx_tx_ledger_occurred on public.transactions(ledger_id, occurred_at desc);
 create index if not exists idx_tx_user on public.transactions(user_id);

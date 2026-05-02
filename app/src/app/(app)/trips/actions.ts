@@ -15,6 +15,7 @@ import {
   removeTransactionFromTrip,
   updateTrip,
 } from "@/lib/trips";
+import { SUPPORTED_CODES } from "@/lib/currencies";
 
 function refresh() {
   revalidatePath("/trips");
@@ -29,6 +30,12 @@ const CreateTripSchema = z.object({
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/)
     .optional(),
+  currency: z
+    .string()
+    .min(3)
+    .max(3)
+    .refine((c) => SUPPORTED_CODES.has(c), "Unsupported currency")
+    .optional(),
   startsAt: z.string().optional(),
   endsAt: z.string().optional(),
 });
@@ -41,6 +48,7 @@ export async function createTripAction(formData: FormData) {
     name: formData.get("name"),
     icon: formData.get("icon") || undefined,
     color: formData.get("color") || undefined,
+    currency: formData.get("currency") || undefined,
     startsAt: formData.get("startsAt") || undefined,
     endsAt: formData.get("endsAt") || undefined,
   });
@@ -56,6 +64,7 @@ export async function createTripAction(formData: FormData) {
     name: parsed.data.name,
     icon: parsed.data.icon,
     color: parsed.data.color,
+    currency: parsed.data.currency ?? null,
     startsAt: parsed.data.startsAt
       ? new Date(parsed.data.startsAt).toISOString()
       : null,
@@ -88,6 +97,58 @@ export async function clearActiveTripAction() {
   await requireSession();
   await clearActiveTripCookie();
   refresh();
+}
+
+const UpdateTripSchema = z.object({
+  name: z.string().min(1).max(80),
+  icon: z.string().min(1).max(8).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  currency: z
+    .string()
+    .min(3)
+    .max(3)
+    .refine((c) => SUPPORTED_CODES.has(c), "Unsupported currency")
+    .optional(),
+});
+
+/**
+ * Edit a trip's metadata (name / icon / color / currency). Currency
+ * change does NOT retro-convert existing transactions — they keep their
+ * original `fx_*` snapshot. New rows tagged to this trip pick up the
+ * new currency from the form's default. See trip-detail page for the
+ * "mixed currencies in one trip" rendering.
+ */
+export async function updateTripDetailsAction(
+  tripId: string,
+  formData: FormData
+) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+
+  const parsed = UpdateTripSchema.safeParse({
+    name: formData.get("name"),
+    icon: formData.get("icon") || undefined,
+    color: formData.get("color") || undefined,
+    currency: formData.get("currency") || undefined,
+  });
+  if (!parsed.success) {
+    return {
+      ok: false as const,
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
+    };
+  }
+
+  await updateTrip(tripId, ledgerId, {
+    name: parsed.data.name,
+    icon: parsed.data.icon ?? null,
+    color: parsed.data.color ?? null,
+    currency: parsed.data.currency ?? null,
+  });
+  refresh();
+  return { ok: true as const };
 }
 
 export async function archiveTripAction(tripId: string) {

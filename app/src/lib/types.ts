@@ -21,6 +21,8 @@ export type Trip = {
   starts_at: string | null;
   ends_at: string | null;
   archived: boolean;
+  /** ISO 4217 (e.g. 'JPY'). null = inherit ledger.currency. */
+  currency: string | null;
   created_at: string;
 };
 
@@ -34,6 +36,14 @@ export type Transaction = {
   amount: number;
   note: string | null;
   payment_method: PaymentMethod | null;
+  /**
+   * Multi-currency metadata. `amount` is always home currency; these three
+   * record the foreign-currency original. All three are set together or
+   * all null (DB constraint enforces this).
+   */
+  fx_currency: string | null;
+  fx_amount: number | null;
+  fx_rate: number | null;
   occurred_at: string;
   created_at: string;
   updated_at: string;
@@ -41,7 +51,7 @@ export type Transaction = {
 
 export type TransactionWithCategory = Transaction & {
   category: Pick<Category, "id" | "name" | "icon" | "color"> | null;
-  trip?: Pick<Trip, "id" | "name" | "icon" | "color"> | null;
+  trip?: Pick<Trip, "id" | "name" | "icon" | "color" | "currency"> | null;
   user?: {
     id: string;
     name: string | null;

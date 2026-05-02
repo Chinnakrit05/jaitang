@@ -33,7 +33,7 @@ export default async function EditTransactionPage({
     sb
       .from("transactions")
       .select(
-        "id, ledger_id, kind, amount, category_id, trip_id, note, payment_method, occurred_at, user_id"
+        "id, ledger_id, kind, amount, category_id, trip_id, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, user_id"
       )
       .eq("id", id)
       .eq("ledger_id", ledgerId)
@@ -80,15 +80,30 @@ export default async function EditTransactionPage({
         splitMembers={splitMembers}
         trips={allTrips
           .filter((tr) => !tr.archived)
-          .map((tr) => ({ id: tr.id, name: tr.name, icon: tr.icon }))}
+          .map((tr) => ({
+            id: tr.id,
+            name: tr.name,
+            icon: tr.icon,
+            currency: tr.currency,
+          }))}
+        currency={ledger.currency}
         initial={{
           id: tx.id,
           kind: tx.kind,
-          amount: Number(tx.amount),
+          // For FX rows we want the form to display the NATIVE amount, not
+          // the home value — that's what the user originally typed and
+          // expects to edit. fx_amount falls back to amount for legacy rows.
+          amount:
+            tx.fx_amount !== null && tx.fx_amount !== undefined
+              ? Number(tx.fx_amount)
+              : Number(tx.amount),
           categoryId: tx.category_id,
           note: tx.note,
           paymentMethod: tx.payment_method ?? null,
           tripId: tx.trip_id ?? null,
+          fxCurrency: tx.fx_currency ?? null,
+          fxAmount: tx.fx_amount ?? null,
+          fxRate: tx.fx_rate ?? null,
           occurredAt: tx.occurred_at,
           splitWith,
         }}

@@ -168,6 +168,25 @@ export function TransactionList({
                           </span>
                         </>
                       )}
+                      {tx.fx_currency && tx.fx_amount !== null && (
+                        <>
+                          <span>•</span>
+                          <span
+                            className="tabular-nums"
+                            title={
+                              tx.fx_rate
+                                ? `1 ${tx.fx_currency} ≈ ${tx.fx_rate.toFixed(4)} ${currency}`
+                                : undefined
+                            }
+                          >
+                            {formatCurrency(
+                              tx.fx_amount,
+                              tx.fx_currency,
+                              fmtLocale
+                            )}
+                          </span>
+                        </>
+                      )}
                       {showAttribution && tx.user && (
                         <>
                           <span>•</span>

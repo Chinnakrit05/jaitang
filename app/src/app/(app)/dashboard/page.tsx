@@ -8,8 +8,10 @@ import { TransactionList } from "@/components/transaction-list";
 import { ExpenseByCategoryChart, DailyTrendChart } from "@/components/dashboard-charts";
 import { PaymentMethodBreakdown } from "@/components/payment-method-breakdown";
 import { DashboardRangeFilter } from "@/components/dashboard-range-filter";
+import { DashboardCurrencyToggle } from "@/components/dashboard-currency-toggle";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
+import { SUPPORTED_CODES } from "@/lib/currencies";
 
 export default async function DashboardPage({
   searchParams,
@@ -32,6 +34,17 @@ export default async function DashboardPage({
   const range = resolveRange(sp.range);
   const rangeKey = range.key;
 
+  // ?cur=JPY filters the dashboard to JPY-only rows. Defended against
+  // bad input — only allow our supported list, otherwise treat as "no
+  // filter" rather than 500.
+  const curParam = sp.cur;
+  const filterCurrency =
+    curParam &&
+    curParam !== ledger.currency &&
+    SUPPORTED_CODES.has(curParam)
+      ? curParam
+      : null;
+
   // Pull the rows in this window + the last 5 (separate query — recent
   // transactions on the home page should not be limited by the filter).
   const [items, recent] = await Promise.all([
@@ -43,7 +56,18 @@ export default async function DashboardPage({
     }),
     listTransactions({ ledgerId, limit: 5 }),
   ]);
-  const summary = aggregateMonthSummary(items);
+  const summary = aggregateMonthSummary(items, filterCurrency);
+  // Distinct foreign currencies present in this period — drives whether
+  // the toggle row even renders.
+  const availableForeignCurrencies = Array.from(
+    new Set(
+      items
+        .map((tx) => tx.fx_currency)
+        .filter((c): c is string => !!c && c !== ledger.currency)
+    )
+  ).sort();
+  // The active filter shapes how cards format their value: home or native.
+  const displayCurrency = filterCurrency ?? ledger.currency;
 
   // Range-specific subtitle. For single-day windows we show the date so the
   // user can confirm "เมื่อวาน" wasn't the wrong day; for month windows we
@@ -73,13 +97,20 @@ export default async function DashboardPage({
 
       <DashboardRangeFilter activeKey={rangeKey} />
 
+      {availableForeignCurrencies.length > 0 && (
+        <DashboardCurrencyToggle
+          homeCurrency={ledger.currency}
+          available={availableForeignCurrencies}
+        />
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <SummaryCard
           label={t("dashboard.incomeMonth")}
           value={summary.income}
           icon={<TrendingUp size={20} />}
           tone="income"
-          currency={currency}
+          currency={displayCurrency}
           fmtLocale={fmtLocale}
         />
         <SummaryCard
@@ -87,7 +118,7 @@ export default async function DashboardPage({
           value={summary.expense}
           icon={<TrendingDown size={20} />}
           tone="expense"
-          currency={currency}
+          currency={displayCurrency}
           fmtLocale={fmtLocale}
         />
         <SummaryCard
@@ -96,7 +127,7 @@ export default async function DashboardPage({
           icon={<Wallet size={20} />}
           tone={summary.balance >= 0 ? "balance" : "expense"}
           showSign
-          currency={currency}
+          currency={displayCurrency}
           fmtLocale={fmtLocale}
         />
       </div>
@@ -104,18 +135,26 @@ export default async function DashboardPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
           <h2 className="font-semibold mb-4">{t("dashboard.expenseByCategory")}</h2>
-          <ExpenseByCategoryChart summary={summary} currency={currency} fmtLocale={fmtLocale} />
+          <ExpenseByCategoryChart
+            summary={summary}
+            currency={displayCurrency}
+            fmtLocale={fmtLocale}
+          />
         </section>
 
         <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
           <h2 className="font-semibold mb-4">{t("dashboard.dailyTrend")}</h2>
-          <DailyTrendChart summary={summary} currency={currency} fmtLocale={fmtLocale} />
+          <DailyTrendChart
+            summary={summary}
+            currency={displayCurrency}
+            fmtLocale={fmtLocale}
+          />
         </section>
       </div>
 
       <PaymentMethodBreakdown
         summary={summary}
-        currency={currency}
+        currency={displayCurrency}
         fmtLocale={fmtLocale}
       />
 

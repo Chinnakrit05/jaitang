@@ -7,6 +7,8 @@ import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { Banknote, Landmark, Plane, Users } from "lucide-react";
+import { CurrencyPicker } from "@/components/currency-picker";
+import { getFxRateAction } from "@/app/(app)/transactions/fx-actions";
 
 export type SplitMember = {
   userId: string;
@@ -20,6 +22,9 @@ export type TripChoice = {
   id: string;
   name: string;
   icon: string | null;
+  /** Trip's native currency. Drives the form's currency default when this
+   *  trip is active. null = inherit ledger.currency. */
+  currency: string | null;
 };
 
 type Props = {
@@ -35,6 +40,10 @@ type Props = {
     splitWith?: string[];
     /** Existing trip association on the row being edited (or null) */
     tripId?: string | null;
+    /** Existing FX state on the row being edited */
+    fxCurrency?: string | null;
+    fxAmount?: number | null;
+    fxRate?: number | null;
   };
   splitMembers?: SplitMember[];
   /** Active trip in the current session — drives the auto-tag toggle for new tx */
@@ -43,6 +52,7 @@ type Props = {
   trips?: TripChoice[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   submitLabel?: string;
+  /** Ledger's home currency. Used for FX preview formatting. */
   currency?: string;
 };
 
@@ -92,6 +102,57 @@ export function TransactionForm({
     initial?.tripId ?? (initial ? null : activeTrip?.id ?? null);
   const [tripId, setTripId] = useState<string | null>(initialTripId);
 
+  // FX state. Three sources for the default currency, in priority order:
+  //   1. Existing row's fx_currency (edit mode preserving original)
+  //   2. Active trip's currency (new-tx flow during a foreign trip)
+  //   3. Ledger's home currency (everyday domestic case)
+  const homeCurrency = currency;
+  const initialCurrency =
+    initial?.fxCurrency ??
+    (initial ? null : activeTrip?.currency && activeTrip.currency !== homeCurrency
+      ? activeTrip.currency
+      : null) ??
+    homeCurrency;
+  const [txCurrency, setTxCurrency] = useState<string>(initialCurrency);
+  // Live preview rate fetched from the server when a foreign currency is
+  // selected. Null → loading / not-yet-fetched. The actual stored rate is
+  // re-fetched in the server action — this is just for the preview hint.
+  const [previewRate, setPreviewRate] = useState<number | null>(
+    initial?.fxRate ?? null
+  );
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  // Debounced rate refresh: when the user picks a non-home currency,
+  // fetch a fresh rate after they pause typing. Setting state inside
+  // an effect is the right call here — we *are* synchronizing local
+  // state with an external system (the FX provider). The lint rule
+  // flags it because it can't tell that intent apart from cascading
+  // renders.
+  useEffect(() => {
+    if (txCurrency === homeCurrency) {
+      setPreviewRate(null);
+      setPreviewError(null);
+      return;
+    }
+    setPreviewError(null);
+    const t = setTimeout(async () => {
+      const result = await getFxRateAction(txCurrency, homeCurrency);
+      if (result.ok) {
+        setPreviewRate(result.rate);
+      } else {
+        setPreviewError(result.error);
+        setPreviewRate(null);
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [txCurrency, homeCurrency]);
+
+  const numAmt = Number(amountInput) || 0;
+  const previewHomeAmount =
+    txCurrency !== homeCurrency && previewRate !== null
+      ? numAmt * previewRate
+      : null;
+
   // datetime-local must be initialized on the client.
   //
   // `toLocalDateTimeInput()` calls Date.getHours() / getMonth() / etc., which return
@@ -117,8 +178,14 @@ export function TransactionForm({
   const canSplit = !!splitMembers && splitMembers.length > 1 && kind === "expense";
 
   const splitIds = Array.from(splitSelected);
-  const numAmount = Number(amountInput) || 0;
-  const perPerson = splitOn && splitIds.length > 0 ? numAmount / splitIds.length : 0;
+  // For split: the "per person" value is computed in HOME currency so it
+  // matches everything else on the form. When the form is in foreign
+  // currency, we use the previewed home amount; otherwise the entered
+  // amount IS already home.
+  const homeAmountForSplit =
+    txCurrency === homeCurrency ? numAmt : previewHomeAmount ?? 0;
+  const perPerson =
+    splitOn && splitIds.length > 0 ? homeAmountForSplit / splitIds.length : 0;
   const splitParam = splitOn && splitIds.length > 1 ? splitIds.join(",") : "";
 
   const submit = submitLabel ?? t("common.save");
@@ -180,20 +247,60 @@ export function TransactionForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t("common.amountTHB")}</label>
-        <input
-          name="amount"
-          type="number"
-          inputMode="decimal"
-          step="0.01"
-          min="0.01"
-          required
-          value={amountInput}
-          onChange={(e) => setAmountInput(e.target.value)}
-          placeholder={t("transactions.amountPlaceholder")}
-          className="w-full px-4 py-3 rounded-xl border border-(--border) bg-(--card) text-2xl font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)"
-          autoFocus={!initial}
-        />
+        <label className="block text-sm font-medium mb-1.5">
+          {t("common.amount")}
+        </label>
+        {/* hidden field so server gets the chosen currency */}
+        <input type="hidden" name="fxCurrency" value={txCurrency} />
+        <div className="flex gap-2">
+          <input
+            name="amount"
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min="0.01"
+            required
+            value={amountInput}
+            onChange={(e) => setAmountInput(e.target.value)}
+            placeholder={t("transactions.amountPlaceholder")}
+            className="flex-1 min-w-0 px-4 py-3 rounded-xl border border-(--border) bg-(--card) text-2xl font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)"
+            autoFocus={!initial}
+          />
+          <CurrencyPicker
+            value={txCurrency}
+            onChange={setTxCurrency}
+            ariaLabel="currency"
+            className="px-3 py-3 text-sm font-medium"
+          />
+        </div>
+        {txCurrency !== homeCurrency && (
+          <div className="mt-1.5 text-xs text-(--muted)">
+            {previewError ? (
+              <span className="text-(--expense)">
+                {t("transactions.fxError")}
+              </span>
+            ) : previewHomeAmount !== null ? (
+              <span>
+                ≈{" "}
+                <span className="text-(--foreground) font-medium tabular-nums">
+                  {formatCurrency(previewHomeAmount, homeCurrency, fmtLocale)}
+                </span>{" "}
+                <span className="text-(--muted)">
+                  (
+                  {t("transactions.fxRateLine", {
+                    rate: previewRate?.toFixed(4) ?? "—",
+                    from: txCurrency,
+                  })}
+                  )
+                </span>
+              </span>
+            ) : (
+              <span className="opacity-60">
+                {t("transactions.fxFetching")}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {canSplit && (

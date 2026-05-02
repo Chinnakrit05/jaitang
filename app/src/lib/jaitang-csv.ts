@@ -14,18 +14,23 @@ export type JaitangCsvRow = {
   occurredAt: string; // ISO with TZ designator
   kind: TxKind;
   categoryName: string | null; // null = uncategorized in source
-  amount: number;
+  amount: number;            // home currency
   paymentMethod: PaymentMethod | null;
   /** Trip name from the source ledger. Free text, may match an existing
    *  trip in the destination ledger or not. v1: ignored on import — see
    *  comment in actions.ts for the rationale. */
   tripName: string | null;
+  /** Foreign-currency triple if the source row had FX. All three are set
+   *  together or all null. Imported into the destination row as-is. */
+  fxCurrency: string | null;
+  fxAmount: number | null;
+  fxRate: number | null;
   note: string;
 };
 
 // Header field order matters only for the row parser; the detector below
-// just checks the FIRST FOUR columns so older exports without ช่องทาง / ทริป
-// are still recognized.
+// just checks the FIRST FOUR columns so older exports without ช่องทาง / ทริป /
+// FX columns are still recognized.
 const HEADER_FIELDS = [
   "วันที่",
   "ประเภท",
@@ -33,6 +38,9 @@ const HEADER_FIELDS = [
   "จำนวน",
   "ช่องทาง",
   "ทริป",
+  "สกุลต่างประเทศ",
+  "จำนวนต่างประเทศ",
+  "อัตรา",
   "โน้ต",
 ];
 
@@ -145,8 +153,11 @@ export function parseJaitangCsv(text: string): {
   const kindCol = idx("ประเภท") >= 0 ? idx("ประเภท") : 1;
   const catCol = idx("หมวด") >= 0 ? idx("หมวด") : 2;
   const amountCol = idx("จำนวน") >= 0 ? idx("จำนวน") : 3;
-  const methodCol = idx("ช่องทาง"); // -1 in legacy 6-col exports (OK)
+  const methodCol = idx("ช่องทาง"); // -1 in legacy exports (OK)
   const tripCol = idx("ทริป"); // -1 in pre-trip exports (OK)
+  const fxCurCol = idx("สกุลต่างประเทศ"); // -1 in pre-FX exports (OK)
+  const fxAmtCol = idx("จำนวนต่างประเทศ");
+  const fxRateCol = idx("อัตรา");
   const noteCol = idx("โน้ต") >= 0 ? idx("โน้ต") : header.length - 1;
 
   const rows: JaitangCsvRow[] = [];
@@ -164,6 +175,19 @@ export function parseJaitangCsv(text: string): {
     const paymentMethod =
       methodCol >= 0 ? parsePaymentMethod(fields[methodCol] ?? "") : null;
     const tripRaw = tripCol >= 0 ? (fields[tripCol] ?? "").trim() : "";
+    const fxCurrencyRaw =
+      fxCurCol >= 0 ? (fields[fxCurCol] ?? "").trim().toUpperCase() : "";
+    const fxAmountRaw =
+      fxAmtCol >= 0 ? parseAmount(fields[fxAmtCol] ?? "") : null;
+    const fxRateNum =
+      fxRateCol >= 0 ? Number(fields[fxRateCol] ?? "") : NaN;
+    // FX is "valid" only if all three fields are present + parse cleanly.
+    // Any partial set drops back to home-currency (no fx_*).
+    const fxValid =
+      fxCurrencyRaw !== "" &&
+      fxAmountRaw !== null &&
+      Number.isFinite(fxRateNum) &&
+      fxRateNum > 0;
     const note = (fields[noteCol] ?? "").trim();
 
     if (!dateStr || !kind || amount === null) {
@@ -185,6 +209,9 @@ export function parseJaitangCsv(text: string): {
       amount,
       paymentMethod,
       tripName: tripRaw || null,
+      fxCurrency: fxValid ? fxCurrencyRaw : null,
+      fxAmount: fxValid ? fxAmountRaw : null,
+      fxRate: fxValid ? fxRateNum : null,
       note,
     });
   }

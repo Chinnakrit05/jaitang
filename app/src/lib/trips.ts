@@ -26,7 +26,9 @@ export async function listTrips(
 
   let q = sb
     .from("trips")
-    .select("id, ledger_id, name, icon, color, starts_at, ends_at, archived, created_at")
+    .select(
+      "id, ledger_id, name, icon, color, starts_at, ends_at, archived, currency, created_at"
+    )
     .eq("ledger_id", ledgerId);
   if (!opts.includeArchived) q = q.eq("archived", false);
   q = q.order("archived", { ascending: true })
@@ -74,7 +76,9 @@ export async function getTrip(
   const sb = getServerSupabase();
   const { data, error } = await sb
     .from("trips")
-    .select("id, ledger_id, name, icon, color, starts_at, ends_at, archived, created_at")
+    .select(
+      "id, ledger_id, name, icon, color, starts_at, ends_at, archived, currency, created_at"
+    )
     .eq("id", tripId)
     .eq("ledger_id", ledgerId)
     .maybeSingle();
@@ -87,6 +91,7 @@ export async function createTrip(input: {
   name: string;
   icon?: string;
   color?: string;
+  currency?: string | null;
   startsAt?: string | null;
   endsAt?: string | null;
 }): Promise<Trip> {
@@ -98,6 +103,7 @@ export async function createTrip(input: {
       name: input.name,
       icon: input.icon ?? "✈️",
       color: input.color ?? "#3b82f6",
+      currency: input.currency ?? null,
       starts_at: input.startsAt ?? null,
       ends_at: input.endsAt ?? null,
     })
@@ -114,6 +120,7 @@ export async function updateTrip(
     name: string;
     icon: string | null;
     color: string | null;
+    currency: string | null;
     startsAt: string | null;
     endsAt: string | null;
     archived: boolean;
@@ -124,6 +131,7 @@ export async function updateTrip(
   if (patch.name !== undefined) update.name = patch.name;
   if (patch.icon !== undefined) update.icon = patch.icon;
   if (patch.color !== undefined) update.color = patch.color;
+  if (patch.currency !== undefined) update.currency = patch.currency;
   if (patch.startsAt !== undefined) update.starts_at = patch.startsAt;
   if (patch.endsAt !== undefined) update.ends_at = patch.endsAt;
   if (patch.archived !== undefined) update.archived = patch.archived;

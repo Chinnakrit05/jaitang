@@ -33,7 +33,7 @@ export async function listTransactions(
   let q = sb
     .from("transactions")
     .select(
-      "id, ledger_id, user_id, category_id, trip_id, kind, amount, note, payment_method, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), trip:trips(id, name, icon, color), user:users(id, name, email, image)"
+      "id, ledger_id, user_id, category_id, trip_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), trip:trips(id, name, icon, color, currency), user:users(id, name, email, image)"
     )
     .eq("ledger_id", opts.ledgerId)
     .order("occurred_at", { ascending: false })
@@ -73,6 +73,9 @@ export async function listTransactions(
       amount: Number(row.amount),
       note: row.note,
       payment_method: (row.payment_method as PaymentMethod | null) ?? null,
+      fx_currency: (row.fx_currency as string | null) ?? null,
+      fx_amount: row.fx_amount === null || row.fx_amount === undefined ? null : Number(row.fx_amount),
+      fx_rate: row.fx_rate === null || row.fx_rate === undefined ? null : Number(row.fx_rate),
       occurred_at: row.occurred_at,
       created_at: row.created_at,
       updated_at: row.updated_at,
@@ -90,9 +93,17 @@ export type CreateTxInput = {
   /** Optional trip association — null = no trip */
   tripId?: string | null;
   kind: TxKind;
+  /** Always home currency. Foreign-currency originals go in fx* fields. */
   amount: number;
   note?: string;
   paymentMethod?: PaymentMethod | null;
+  /**
+   * FX trio. Pass all three together (foreign-currency row) or all null /
+   * undefined (home-currency row). DB enforces this with a check constraint.
+   */
+  fxCurrency?: string | null;
+  fxAmount?: number | null;
+  fxRate?: number | null;
   occurredAt: string;
 };
 
@@ -109,6 +120,9 @@ export async function createTransaction(input: CreateTxInput) {
       amount: input.amount,
       note: input.note ?? null,
       payment_method: input.paymentMethod ?? null,
+      fx_currency: input.fxCurrency ?? null,
+      fx_amount: input.fxAmount ?? null,
+      fx_rate: input.fxRate ?? null,
       occurred_at: input.occurredAt,
     })
     .select()
@@ -126,6 +140,9 @@ export async function updateTransaction(
     amount: number;
     note: string | null;
     paymentMethod: PaymentMethod | null;
+    fxCurrency: string | null;
+    fxAmount: number | null;
+    fxRate: number | null;
     occurredAt: string;
   }>
 ) {
@@ -137,6 +154,9 @@ export async function updateTransaction(
   if (input.amount !== undefined) patch.amount = input.amount;
   if (input.note !== undefined) patch.note = input.note;
   if (input.paymentMethod !== undefined) patch.payment_method = input.paymentMethod;
+  if (input.fxCurrency !== undefined) patch.fx_currency = input.fxCurrency;
+  if (input.fxAmount !== undefined) patch.fx_amount = input.fxAmount;
+  if (input.fxRate !== undefined) patch.fx_rate = input.fxRate;
   if (input.occurredAt !== undefined) patch.occurred_at = input.occurredAt;
 
   const { data, error } = await sb
@@ -210,10 +230,29 @@ export async function sumPeriod(
  * Pure aggregation. Extracted from `getMonthSummary` so unit tests can
  * exercise it without a Supabase round trip. Whatever fetch the caller
  * runs, hand the row list here and you get the dashboard's shape.
+ *
+ * `filterCurrency` is the optional FX filter for the dashboard toggle:
+ *   - null/undefined → home currency view: include all rows, use `amount`
+ *   - <CURRENCY>     → only rows whose `fx_currency` matches; sum `fx_amount`
+ *
+ * The home-view path is the default and matches all pre-FX behavior.
  */
 export function aggregateMonthSummary(
-  txs: TransactionWithCategory[]
+  txs: TransactionWithCategory[],
+  filterCurrency?: string | null
 ): MonthSummary {
+  // Apply currency filter up front so all downstream loops use the
+  // already-filtered set + already-resolved native amounts.
+  const inFilter = (tx: TransactionWithCategory) => {
+    if (!filterCurrency) return true;
+    return tx.fx_currency === filterCurrency;
+  };
+  const amountOf = (tx: TransactionWithCategory) => {
+    if (!filterCurrency) return tx.amount; // home
+    // We've filtered to fx_currency=filterCurrency, so fx_amount is set.
+    return tx.fx_amount ?? 0;
+  };
+  txs = txs.filter(inFilter);
   let income = 0;
   let expense = 0;
   const byCatMap = new Map<
@@ -235,13 +274,14 @@ export function aggregateMonthSummary(
   };
 
   for (const tx of txs) {
-    if (tx.kind === "income") income += tx.amount;
-    else expense += tx.amount;
+    const a = amountOf(tx);
+    if (tx.kind === "income") income += a;
+    else expense += a;
 
     const catKey = `${tx.kind}:${tx.category_id ?? "none"}`;
     const existing = byCatMap.get(catKey);
     if (existing) {
-      existing.total += tx.amount;
+      existing.total += a;
     } else {
       byCatMap.set(catKey, {
         category_id: tx.category_id,
@@ -249,7 +289,7 @@ export function aggregateMonthSummary(
         icon: tx.category?.icon ?? null,
         color: tx.category?.color ?? null,
         kind: tx.kind,
-        total: tx.amount,
+        total: a,
       });
     }
 
@@ -258,8 +298,8 @@ export function aggregateMonthSummary(
     // attribute it to yesterday on the daily-trend chart.
     const day = dayKeyInTz(tx.occurred_at, BUSINESS_TZ);
     const dayEntry = byDayMap.get(day) ?? { income: 0, expense: 0 };
-    if (tx.kind === "income") dayEntry.income += tx.amount;
-    else dayEntry.expense += tx.amount;
+    if (tx.kind === "income") dayEntry.income += a;
+    else dayEntry.expense += a;
     byDayMap.set(day, dayEntry);
 
     // Bucket by payment method. NULL → "unspecified" so the dashboard can
@@ -271,8 +311,8 @@ export function aggregateMonthSummary(
         : tx.payment_method === "transfer"
         ? byPaymentMethod.transfer
         : byPaymentMethod.unspecified;
-    if (tx.kind === "income") bucket.income += tx.amount;
-    else bucket.expense += tx.amount;
+    if (tx.kind === "income") bucket.income += a;
+    else bucket.expense += a;
   }
 
   return {

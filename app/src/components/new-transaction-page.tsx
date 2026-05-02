@@ -26,6 +26,7 @@ export function NewTransactionPage({
   splitMembers,
   activeTrip,
   trips,
+  currency,
 }: {
   categories: Category[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
@@ -33,6 +34,7 @@ export function NewTransactionPage({
   splitMembers?: SplitMember[];
   activeTrip?: TripChoice | null;
   trips?: TripChoice[];
+  currency?: string;
 }) {
   // Use a key to force-remount the form when OCR fills it
   const [formKey, setFormKey] = useState(0);
@@ -64,6 +66,7 @@ export function NewTransactionPage({
         trips={trips}
         action={action}
         submitLabel="บันทึก"
+        currency={currency}
       />
     </div>
   );

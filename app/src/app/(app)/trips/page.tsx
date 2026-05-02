@@ -64,7 +64,7 @@ export default async function TripsPage() {
           {t("trips.createTitle")}
         </h2>
         <p className="text-sm text-(--muted)">{t("trips.createHint")}</p>
-        <CreateTripForm />
+        <CreateTripForm ledgerCurrency={ledger.currency} />
       </section>
 
       {/* Archived */}

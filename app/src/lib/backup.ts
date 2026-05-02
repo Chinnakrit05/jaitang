@@ -23,6 +23,11 @@ export type BackupTransaction = {
   payment_method?: "cash" | "transfer" | null;
   // Optional: pre-trip backups don't include this field.
   trip_id?: string | null;
+  // Optional: pre-FX backups don't include these. Set as a triple or all
+  // unset; partial sets are rejected on restore (DB constraint).
+  fx_currency?: string | null;
+  fx_amount?: number | null;
+  fx_rate?: number | null;
   occurred_at: string;
   created_at: string;
 };
@@ -35,6 +40,8 @@ export type BackupTrip = {
   starts_at: string | null;
   ends_at: string | null;
   archived: boolean;
+  // Optional: pre-multi-currency backups don't include this.
+  currency?: string | null;
 };
 
 export type BackupBudget = {
@@ -117,7 +124,7 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
       sb
         .from("transactions")
         .select(
-          "id, category_id, trip_id, kind, amount, note, payment_method, occurred_at, created_at"
+          "id, category_id, trip_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at"
         )
         .eq("ledger_id", l.id)
         .order("occurred_at"),
@@ -133,7 +140,7 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
         .eq("ledger_id", l.id),
       sb
         .from("trips")
-        .select("id, name, icon, color, starts_at, ends_at, archived")
+        .select("id, name, icon, color, starts_at, ends_at, archived, currency")
         .eq("ledger_id", l.id),
     ]);
 
@@ -241,6 +248,9 @@ const BackupSchema = z.object({
           amount: z.number().positive(),
           note: z.string().nullable(),
           payment_method: z.enum(["cash", "transfer"]).nullable().optional(),
+          fx_currency: z.string().min(3).max(3).nullable().optional(),
+          fx_amount: z.number().positive().nullable().optional(),
+          fx_rate: z.number().positive().nullable().optional(),
           occurred_at: z.string(),
           created_at: z.string().optional(),
         })
@@ -255,6 +265,7 @@ const BackupSchema = z.object({
             starts_at: z.string().nullable(),
             ends_at: z.string().nullable(),
             archived: z.boolean(),
+            currency: z.string().min(3).max(3).nullable().optional(),
           })
         )
         .optional(),
@@ -390,6 +401,7 @@ export async function restoreBackup(
             name: tr.name,
             icon: tr.icon,
             color: tr.color,
+            currency: tr.currency ?? null,
             starts_at: tr.starts_at,
             ends_at: tr.ends_at,
             archived: tr.archived,
@@ -432,6 +444,27 @@ export async function restoreBackup(
       // Bulk insert in chunks of 200 for speed; afterwards we can't recover ids in order
       // for splits, so do row-by-row when there are any splits.
       const hasSplits = (lb.splits ?? []).length > 0;
+      // FX must satisfy the all-or-none constraint; partials drop to null.
+      const fxOf = (t: {
+        fx_currency?: string | null;
+        fx_amount?: number | null;
+        fx_rate?: number | null;
+      }) => {
+        const ok =
+          !!t.fx_currency &&
+          t.fx_amount !== null &&
+          t.fx_amount !== undefined &&
+          t.fx_rate !== null &&
+          t.fx_rate !== undefined;
+        return ok
+          ? {
+              fx_currency: t.fx_currency!,
+              fx_amount: t.fx_amount!,
+              fx_rate: t.fx_rate!,
+            }
+          : { fx_currency: null, fx_amount: null, fx_rate: null };
+      };
+
       if (hasSplits) {
         for (const t of lb.transactions) {
           const { data: nt, error: terr } = await sb
@@ -445,6 +478,7 @@ export async function restoreBackup(
               amount: t.amount,
               note: t.note,
               payment_method: t.payment_method ?? null,
+              ...fxOf(t),
               occurred_at: t.occurred_at,
             })
             .select("id")
@@ -463,6 +497,7 @@ export async function restoreBackup(
           amount: t.amount,
           note: t.note,
           payment_method: t.payment_method ?? null,
+          ...fxOf(t),
           occurred_at: t.occurred_at,
         }));
         for (let i = 0; i < rows.length; i += 200) {

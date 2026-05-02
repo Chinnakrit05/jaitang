@@ -41,13 +41,19 @@ export default async function NewTransaction() {
           id: activeTripRow.id,
           name: activeTripRow.name,
           icon: activeTripRow.icon,
+          currency: activeTripRow.currency,
         }
       : null;
 
   // Trip picker shouldn't show archived trips for new selection.
   const trips: TripChoice[] = allTripStats
     .filter((tr) => !tr.archived)
-    .map((tr) => ({ id: tr.id, name: tr.name, icon: tr.icon }));
+    .map((tr) => ({
+      id: tr.id,
+      name: tr.name,
+      icon: tr.icon,
+      currency: tr.currency,
+    }));
 
   return (
     <div className="max-w-xl mx-auto">
@@ -66,6 +72,7 @@ export default async function NewTransaction() {
         splitMembers={splitMembers}
         activeTrip={activeTrip}
         trips={trips}
+        currency={ledger.currency}
       />
     </div>
   );

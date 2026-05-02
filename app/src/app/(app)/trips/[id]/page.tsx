@@ -7,6 +7,7 @@ import { getTrip } from "@/lib/trips";
 import { listTransactions } from "@/lib/transactions";
 import { TransactionList } from "@/components/transaction-list";
 import { TripActions } from "@/components/trip-actions";
+import { EditTripModal } from "@/components/edit-trip-modal";
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -49,6 +50,30 @@ export default async function TripDetailPage({
     .filter((tx) => tx.kind === "expense")
     .reduce((s, tx) => s + tx.amount, 0);
 
+  // Group expenses by currency for the multi-currency display. Trip can
+  // have rows from before/after a currency change — both are valid and
+  // shown side by side. Home-currency rows (fx_currency = null) bucket
+  // under ledger.currency.
+  type Bucket = { currency: string; total: number; homeTotal: number };
+  const expenseByCurrency = new Map<string, Bucket>();
+  for (const tx of items) {
+    if (tx.kind !== "expense") continue;
+    const cur = tx.fx_currency ?? ledger.currency;
+    const native = tx.fx_amount ?? tx.amount;
+    const b = expenseByCurrency.get(cur) ?? {
+      currency: cur,
+      total: 0,
+      homeTotal: 0,
+    };
+    b.total += native;
+    b.homeTotal += tx.amount; // amount is always home currency
+    expenseByCurrency.set(cur, b);
+  }
+  const expenseBuckets = Array.from(expenseByCurrency.values()).sort(
+    (a, b) => b.homeTotal - a.homeTotal
+  );
+  const showMultiCurrency = expenseBuckets.length > 1;
+
   // Bind action ids before passing to the client. We can't pass server
   // actions across the RSC boundary with arguments otherwise.
   const setActiveBound = setActiveTripAction.bind(null, trip.id);
@@ -81,21 +106,31 @@ export default async function TripDetailPage({
         <div className="flex items-start gap-4">
           <span className="text-5xl">{trip.icon ?? "✈️"}</span>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold flex items-center gap-2 flex-wrap">
-              {trip.name}
-              {trip.archived && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                  <Archive size={12} />
-                  {t("trips.archivedBadge")}
-                </span>
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold flex items-center gap-2 flex-wrap">
+                {trip.name}
+                {trip.currency && trip.currency !== ledger.currency && (
+                  <span className="inline-flex items-center text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5 tabular-nums">
+                    {trip.currency}
+                  </span>
+                )}
+                {trip.archived && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
+                    <Archive size={12} />
+                    {t("trips.archivedBadge")}
+                  </span>
+                )}
+                {isActive && !trip.archived && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-(--accent-foreground) bg-(--accent) rounded-full px-2 py-0.5">
+                    <Plane size={12} />
+                    {t("trips.activeBadge")}
+                  </span>
+                )}
+              </h1>
+              {canManage && (
+                <EditTripModal trip={trip} ledgerCurrency={ledger.currency} />
               )}
-              {isActive && !trip.archived && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-(--accent-foreground) bg-(--accent) rounded-full px-2 py-0.5">
-                  <Plane size={12} />
-                  {t("trips.activeBadge")}
-                </span>
-              )}
-            </h1>
+            </div>
             {(trip.starts_at || trip.ends_at) && (
               <p className="text-sm text-(--muted) mt-1">
                 {formatTripRange(trip.starts_at, trip.ends_at, fmtLocale)}
@@ -127,6 +162,39 @@ export default async function TripDetailPage({
             isCount
           />
         </div>
+
+        {/* Multi-currency breakdown — only when the trip's expenses span
+            more than one currency, e.g. user changed trip currency mid-trip
+            or recorded a one-off in a different currency. Single-currency
+            trips (the common case) don't need this, the totals above suffice. */}
+        {showMultiCurrency && (
+          <div className="mt-4 rounded-xl border border-(--border) bg-(--background) p-3 space-y-1.5">
+            <div className="text-[11px] uppercase tracking-wide text-(--muted) font-medium">
+              {t("trips.byCurrencyHeading")}
+            </div>
+            {expenseBuckets.map((b) => (
+              <div
+                key={b.currency}
+                className="flex items-center justify-between text-sm tabular-nums"
+              >
+                <span className="font-medium">
+                  {formatCurrency(b.total, b.currency, fmtLocale)}
+                </span>
+                {b.currency !== ledger.currency && (
+                  <span className="text-(--muted) text-xs">
+                    ≈ {formatCurrency(b.homeTotal, ledger.currency, fmtLocale)}
+                  </span>
+                )}
+              </div>
+            ))}
+            <div className="border-t border-(--border) pt-1.5 mt-1.5 flex items-center justify-between text-sm font-semibold tabular-nums">
+              <span>{t("trips.totalHome")}</span>
+              <span className="text-(--expense)">
+                ≈ {formatCurrency(totalExpense, ledger.currency, fmtLocale)}
+              </span>
+            </div>
+          </div>
+        )}
 
         {canManage && (
           <TripActions

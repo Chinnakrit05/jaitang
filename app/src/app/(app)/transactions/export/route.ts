@@ -40,7 +40,18 @@ export async function GET(req: Request) {
     limit: 50000,
   });
 
-  const header = ["วันที่", "ประเภท", "หมวด", "จำนวน", "ช่องทาง", "ทริป", "โน้ต"];
+  const header = [
+    "วันที่",
+    "ประเภท",
+    "หมวด",
+    "จำนวน",         // home currency
+    "ช่องทาง",
+    "ทริป",
+    "สกุลต่างประเทศ", // fx_currency (blank = home)
+    "จำนวนต่างประเทศ", // fx_amount (blank = home)
+    "อัตรา",          // fx_rate (blank = home)
+    "โน้ต",
+  ];
   const lines = [header.join(",")];
   for (const tx of items) {
     const method =
@@ -57,6 +68,13 @@ export async function GET(req: Request) {
         tx.amount.toFixed(2),
         method,
         tx.trip?.name ?? "",
+        tx.fx_currency ?? "",
+        tx.fx_amount !== null && tx.fx_amount !== undefined
+          ? tx.fx_amount.toFixed(2)
+          : "",
+        tx.fx_rate !== null && tx.fx_rate !== undefined
+          ? tx.fx_rate.toFixed(8)
+          : "",
         tx.note ?? "",
       ]
         .map(csvEscape)
