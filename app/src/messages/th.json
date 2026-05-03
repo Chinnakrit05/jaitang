@@ -528,6 +528,29 @@
     "empty": "ยังไม่มีรายการในปี {year}",
     "footer": "สร้างเมื่อ {generatedAt} • Jaitang"
   },
+  "netWorth": {
+    "heading": "มูลค่าสุทธิ",
+    "headlineLabel": "รวมทั้งหมด",
+    "vsPrevMonth": "เทียบเดือนที่แล้ว",
+    "empty": "เพิ่มบัญชีก่อนเพื่อเริ่มดูมูลค่าสุทธิ"
+  },
+  "subscriptions": {
+    "monthlyCost": "ค่าใช้จ่ายต่อเดือน",
+    "monthlyIncome": "รายรับประจำต่อเดือน",
+    "activeCount": "ใช้งานอยู่ {count} รายการ",
+    "upcomingHeading": "อีก {days} วันข้างหน้า",
+    "moreUpcoming": "+อีก {count} รายการ"
+  },
+  "install": {
+    "title": "ติดตั้ง Jaitang",
+    "body": "เพิ่มเข้าหน้าโฮมเพื่อเปิดได้แตะเดียว — รู้สึกเหมือนแอปจริง",
+    "bodyIos": "บน iOS Safari ปักหมุด Jaitang ไว้ที่หน้าโฮมเพื่อเปิดได้เร็วขึ้น",
+    "iosStep1": "แตะ Share",
+    "iosStep2": "เพิ่มไปหน้าโฮม",
+    "installButton": "ติดตั้ง",
+    "laterButton": "ไว้ก่อน",
+    "dismissAria": "ปิดข้อความติดตั้ง"
+  },
   "ocr": {
     "title": "สแกนใบเสร็จ / สลิปโอนเงิน ด้วย AI",
     "hint": "อัปโหลดรูปใบเสร็จหรือสลิปโอน — ระบบอ่านยอด/หมวด/วันที่/ผู้รับ มาเติมให้",

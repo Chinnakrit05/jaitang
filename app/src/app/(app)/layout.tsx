@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/session";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { InstallPrompt } from "@/components/install-prompt";
 import { getTrip } from "@/lib/trips";
 import { listTransactions } from "@/lib/transactions";
 
@@ -51,6 +52,7 @@ export default async function DashboardLayout({
       activeTripBanner={activeTripBanner}
     >
       {children}
+      <InstallPrompt />
     </DashboardShell>
   );
 }

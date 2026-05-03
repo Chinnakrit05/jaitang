@@ -23,6 +23,7 @@ import {
   updateRecurringAction,
 } from "@/app/(app)/recurring/actions";
 import { CurrencyPicker } from "@/components/currency-picker";
+import { SubscriptionStats } from "@/components/subscription-stats";
 import { formatCurrency, formatDate, cn, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 
@@ -74,6 +75,8 @@ export function RecurringPanel({
 
   return (
     <div className="space-y-4">
+      <SubscriptionStats rules={rules} homeCurrency={homeCurrency} />
+
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"

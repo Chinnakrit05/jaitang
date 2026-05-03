@@ -528,6 +528,29 @@
     "empty": "{year}年还没有任何交易。",
     "footer": "生成于 {generatedAt} • Jaitang"
   },
+  "netWorth": {
+    "heading": "净资产",
+    "headlineLabel": "总计",
+    "vsPrevMonth": "对比上月",
+    "empty": "添加一个账户开始追踪净资产。"
+  },
+  "subscriptions": {
+    "monthlyCost": "每月成本",
+    "monthlyIncome": "每月收入",
+    "activeCount": "{count} 条启用规则",
+    "upcomingHeading": "未来 {days} 天",
+    "moreUpcoming": "还有 {count} 条"
+  },
+  "install": {
+    "title": "安装 Jaitang",
+    "body": "添加到主屏幕,一键打开 — 像真正的应用一样。",
+    "bodyIos": "iOS Safari 中,可以通过分享菜单将 Jaitang 添加到主屏幕。",
+    "iosStep1": "点击分享",
+    "iosStep2": "添加到主屏幕",
+    "installButton": "安装",
+    "laterButton": "稍后",
+    "dismissAria": "关闭安装提示"
+  },
   "ocr": {
     "title": "用 AI 扫描收据或转账凭证",
     "hint": "上传收据或银行/PromptPay 转账凭证的照片 — 自动识别金额、收款人、日期、分类。",

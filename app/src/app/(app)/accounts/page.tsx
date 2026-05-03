@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { Plus, Archive, Wallet, ArrowLeftRight } from "lucide-react";
+import { Plus, Archive, Wallet, ArrowLeftRight, LineChart } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { listAccounts } from "@/lib/accounts";
+import { buildNetWorthHistory } from "@/lib/net-worth";
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrency } from "@/lib/utils";
 import { AccountCard } from "@/components/account-card";
 import { CreateAccountForm } from "@/components/create-account-form";
+import { NetWorthChart } from "@/components/net-worth-chart";
 
 export default async function AccountsPage() {
   const [{ ledgerId, ledger }, t, locale] = await Promise.all([
@@ -16,7 +18,10 @@ export default async function AccountsPage() {
   ]);
   const fmtLocale = intlLocale(locale);
 
-  const accounts = await listAccounts(ledgerId, { includeArchived: true });
+  const [accounts, netWorthHistory] = await Promise.all([
+    listAccounts(ledgerId, { includeArchived: true }),
+    buildNetWorthHistory(ledgerId, ledger.currency, { monthsBack: 11 }),
+  ]);
   const active = accounts.filter((a) => !a.archived);
   const archived = accounts.filter((a) => a.archived);
 
@@ -50,6 +55,21 @@ export default async function AccountsPage() {
           </Link>
         )}
       </div>
+
+      {/* Net worth chart — only render when the user has at least one
+          account (otherwise the chart is just a flat line at 0). */}
+      {accounts.length > 0 && (
+        <section className="rounded-2xl border border-(--border) bg-(--card) p-5 card-hover">
+          <div className="flex items-center gap-2 mb-3">
+            <LineChart size={16} className="text-(--accent)" />
+            <h2 className="font-semibold text-sm">{t("netWorth.heading")}</h2>
+          </div>
+          <NetWorthChart
+            points={netWorthHistory}
+            homeCurrency={ledger.currency}
+          />
+        </section>
+      )}
 
       {/* Active accounts */}
       <section className="space-y-3">

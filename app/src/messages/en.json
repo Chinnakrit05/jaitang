@@ -528,6 +528,29 @@
     "empty": "No transactions logged for {year} yet.",
     "footer": "Generated {generatedAt} • Jaitang"
   },
+  "netWorth": {
+    "heading": "Net worth",
+    "headlineLabel": "Total",
+    "vsPrevMonth": "vs last month",
+    "empty": "Add an account to start tracking net worth."
+  },
+  "subscriptions": {
+    "monthlyCost": "Monthly cost",
+    "monthlyIncome": "Monthly income",
+    "activeCount": "{count} active rules",
+    "upcomingHeading": "Next {days} days",
+    "moreUpcoming": "+{count} more upcoming"
+  },
+  "install": {
+    "title": "Install Jaitang",
+    "body": "Add to your home screen for one-tap access — feels like a real app.",
+    "bodyIos": "On iOS Safari you can pin Jaitang to the home screen for quick access.",
+    "iosStep1": "Tap Share",
+    "iosStep2": "Add to Home Screen",
+    "installButton": "Install",
+    "laterButton": "Later",
+    "dismissAria": "Dismiss install prompt"
+  },
   "ocr": {
     "title": "Scan receipt or transfer slip with AI",
     "hint": "Upload a photo of a receipt or bank/PromptPay slip — we read amount, recipient, date, and category.",

@@ -528,6 +528,29 @@
     "empty": "{year}年の取引はまだありません。",
     "footer": "生成: {generatedAt} • Jaitang"
   },
+  "netWorth": {
+    "heading": "純資産",
+    "headlineLabel": "合計",
+    "vsPrevMonth": "先月比",
+    "empty": "口座を追加して純資産の追跡を始めましょう。"
+  },
+  "subscriptions": {
+    "monthlyCost": "月額コスト",
+    "monthlyIncome": "月額収入",
+    "activeCount": "{count} 件のルールが有効",
+    "upcomingHeading": "今後 {days} 日間",
+    "moreUpcoming": "他 {count} 件"
+  },
+  "install": {
+    "title": "Jaitang をインストール",
+    "body": "ホーム画面に追加するとワンタップで開けます — 実際のアプリのように使えます。",
+    "bodyIos": "iOS Safari なら共有メニューからホーム画面に追加できます。",
+    "iosStep1": "共有をタップ",
+    "iosStep2": "ホーム画面に追加",
+    "installButton": "インストール",
+    "laterButton": "後で",
+    "dismissAria": "インストール案内を閉じる"
+  },
   "ocr": {
     "title": "AI でレシート・送金スリップをスキャン",
     "hint": "レシートや銀行/PromptPay 送金スリップの写真をアップロード — 金額・受取人・日付・カテゴリを読み取ります。",
