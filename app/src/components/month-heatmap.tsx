@@ -114,7 +114,30 @@ export function MonthHeatmap({
             const lv = level(expense);
             const isToday = c.key === todayBangkok;
             const isOpen = openDay === c.key;
-            const txCount = txByDay?.[c.key]?.length ?? 0;
+            const dayTxs = txByDay?.[c.key] ?? [];
+            const txCount = dayTxs.length;
+
+            // Top category icon for this day — pick the icon of the
+            // single category with the highest expense sum. Hidden on
+            // low-spend days to keep the cell from looking cluttered.
+            let topIcon: string | null = null;
+            if (lv >= 2 && dayTxs.length > 0) {
+              const byCat = new Map<string, { icon: string | null; total: number }>();
+              for (const tx of dayTxs) {
+                if (tx.kind !== "expense") continue;
+                const id = tx.category?.id ?? "__null__";
+                const cur = byCat.get(id) ?? {
+                  icon: tx.category?.icon ?? null,
+                  total: 0,
+                };
+                cur.total += tx.amount;
+                byCat.set(id, cur);
+              }
+              const top = Array.from(byCat.values()).sort(
+                (a, b) => b.total - a.total
+              )[0];
+              topIcon = top?.icon ?? null;
+            }
 
             return (
               <button
@@ -122,7 +145,7 @@ export function MonthHeatmap({
                 type="button"
                 onClick={() => setOpenDay(isOpen ? null : c.key)}
                 className={cn(
-                  "aspect-square rounded-md flex flex-col items-center justify-center text-xs transition relative",
+                  "aspect-square rounded-md flex flex-col items-center justify-center text-xs transition relative px-0.5",
                   HEAT_CLASSES[lv],
                   isOpen && "ring-2 ring-(--accent)",
                   isToday && !isOpen && "ring-1 ring-(--accent)/60"
@@ -150,10 +173,24 @@ export function MonthHeatmap({
                     aria-hidden
                   />
                 )}
-                <span className="font-medium">{c.day}</span>
-                {expense > 0 && lv >= 3 && (
-                  <span className="text-[9px] font-medium opacity-80 tabular-nums">
-                    {Math.round(expense / 1000)}k
+                {/* Tx count in top-right — only when more than one,
+                    otherwise the bare day-number cells stay clean. */}
+                {txCount > 1 && (
+                  <span className="absolute top-0.5 right-1 text-[8px] tabular-nums opacity-60 font-medium">
+                    {txCount}
+                  </span>
+                )}
+                <span className="font-medium leading-none">{c.day}</span>
+                {expense > 0 && (
+                  <span className="mt-1 inline-flex items-center gap-0.5 text-[9px] leading-none font-medium opacity-90">
+                    {topIcon && (
+                      <span className="text-[10px]" aria-hidden>
+                        {topIcon}
+                      </span>
+                    )}
+                    <span className="tabular-nums">
+                      {compactAmount(expense)}
+                    </span>
                   </span>
                 )}
               </button>
@@ -325,6 +362,26 @@ export function MonthHeatmap({
       )}
     </div>
   );
+}
+
+/**
+ * Compact amount for the per-cell label. The cell is tiny (~50-80px on
+ * mobile) so we shorten aggressively:
+ *   < 1000   → "850"
+ *   < 10k    → "1.2k"
+ *   < 1M     → "120k"
+ *   ≥ 1M     → "1.5M"
+ * No currency symbol — the user already knows it's home currency from
+ * the dashboard, and the heatmap title carries the same info.
+ */
+function compactAmount(n: number): string {
+  if (n < 1000) return String(Math.round(n));
+  if (n < 10_000) {
+    // 1.2k, 9.9k — show one decimal so the user can tell ฿1.2k from ฿1.9k.
+    return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  if (n < 1_000_000) return `${Math.round(n / 1000)}k`;
+  return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
 }
 
 // Tailwind-class lookup keyed by heat level. Kept inline (vs computed) so
