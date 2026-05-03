@@ -23,6 +23,7 @@ import {
   Upload,
   Wallet,
   HandCoins,
+  MessageCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -45,6 +46,7 @@ export type IconName =
   | "goals"
   | "accounts"
   | "loans"
+  | "chat"
   | "settings"
   | "quick"
   | "import";
@@ -63,6 +65,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   goals: Target,
   accounts: Wallet,
   loans: HandCoins,
+  chat: MessageCircle,
   settings: Settings,
   quick: Sparkles,
   import: Upload,

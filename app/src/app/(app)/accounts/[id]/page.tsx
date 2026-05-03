@@ -6,10 +6,13 @@ import { requireSession } from "@/lib/session";
 import { getAccount } from "@/lib/accounts";
 import { listTransactions } from "@/lib/transactions";
 import { listTransfersForAccount } from "@/lib/transfers";
+import { buildNetWorthHistory } from "@/lib/net-worth";
 import { TransactionList } from "@/components/transaction-list";
 import { TransferRow } from "@/components/transfer-row";
 import { AccountActions } from "@/components/account-actions";
+import { AccountBalanceChart } from "@/components/account-balance-chart";
 import { EditAccountModal } from "@/components/edit-account-modal";
+import { ReconcileModal } from "@/components/reconcile-modal";
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -46,11 +49,19 @@ export default async function AccountDetailPage({
   const accountCurrency = account.currency ?? ledger.currency;
 
   // Pull transactions tagged with this account, plus transfers touching
-  // it on either side. Both feed the timeline.
-  const [transactions, transfers] = await Promise.all([
+  // it on either side. Both feed the timeline. Also pull net-worth
+  // history so we can render this account's per-month balance series.
+  const [transactions, transfers, netWorthHistory] = await Promise.all([
     listTransactions({ ledgerId, accountId: account.id, limit: 5000 }),
     listTransfersForAccount(account.id, ledgerId, 500),
+    buildNetWorthHistory(ledgerId, ledger.currency, { monthsBack: 11 }),
   ]);
+
+  // Extract this account's series from the net-worth history.
+  const chartPoints = netWorthHistory.map((snap) => ({
+    date: snap.date,
+    value: snap.perAccount[account.id] ?? 0,
+  }));
 
   // Bind action ids before passing to the client.
   const archiveBound = archiveAccountAction.bind(null, account.id);
@@ -102,7 +113,11 @@ export default async function AccountDetailPage({
           pattern as trip detail. */}
       <div className="rounded-2xl border border-(--border) bg-(--card) p-5 relative">
         {canManage && (
-          <div className="absolute top-3 right-3 z-10">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            <ReconcileModal
+              accountId={account.id}
+              accountCurrency={accountCurrency}
+            />
             <EditAccountModal
               account={account}
               ledgerCurrency={ledger.currency}
@@ -124,7 +139,7 @@ export default async function AccountDetailPage({
           <div className="flex-1 min-w-0">
             <h1
               className={`text-2xl font-bold flex items-center gap-2 flex-wrap ${
-                canManage ? "pr-12 sm:pr-28" : ""
+                canManage ? "pr-24 sm:pr-56" : ""
               }`}
             >
               {account.name}
@@ -209,6 +224,18 @@ export default async function AccountDetailPage({
           />
         )}
       </div>
+
+      {/* Per-account balance chart */}
+      <section className="rounded-2xl border border-(--border) bg-(--card) p-5">
+        <h2 className="font-semibold mb-3 text-sm">
+          {t("accounts.chartHeading")}
+        </h2>
+        <AccountBalanceChart
+          points={chartPoints}
+          currency={accountCurrency}
+          color={account.color}
+        />
+      </section>
 
       {/* Transfers section — only render the heading if there are any */}
       {transfers.length > 0 && (

@@ -25,6 +25,7 @@ import {
   Upload,
   Wallet,
   HandCoins,
+  MessageCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -83,6 +84,7 @@ export async function DashboardShell({
     { href: "/transactions",label: t("nav.transactions"), icon: "transactions", iconComponent: ListOrdered },
     { href: "/calendar",    label: t("nav.calendar"),     icon: "calendar",     iconComponent: CalendarDays },
     { href: "/insights",    label: t("nav.insights"),     icon: "insights",     iconComponent: LineChart },
+    { href: "/chat",        label: t("nav.chat"),         icon: "chat",         iconComponent: MessageCircle },
     { href: "/budgets",     label: t("nav.budgets"),      icon: "budgets",      iconComponent: PiggyBank },
     { href: "/recurring",   label: t("nav.recurring"),    icon: "recurring",    iconComponent: Repeat },
     { href: "/balances",    label: t("nav.balances"),     icon: "balances",     iconComponent: Scale },
