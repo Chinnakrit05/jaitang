@@ -58,6 +58,35 @@ export type Transfer = {
   created_at: string;
 };
 
+export type LoanKind = "lent" | "borrowed";
+export type LoanStatus = "open" | "settled";
+
+export type Loan = {
+  id: string;
+  ledger_id: string;
+  user_id: string;
+  kind: LoanKind;
+  counterparty: string;
+  principal: number;
+  /** ISO 4217. Default 'THB'. Single-currency per loan; no FX tracking. */
+  currency: string;
+  started_at: string;
+  due_date: string | null;
+  status: LoanStatus;
+  settled_at: string | null;
+  note: string | null;
+  created_at: string;
+};
+
+export type LoanRepayment = {
+  id: string;
+  loan_id: string;
+  amount: number;
+  occurred_at: string;
+  note: string | null;
+  created_at: string;
+};
+
 export type Goal = {
   id: string;
   ledger_id: string;

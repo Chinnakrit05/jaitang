@@ -8,13 +8,24 @@ import {
   createRecurring,
   deleteRecurring,
   setRecurringActive,
+  updateRecurring,
   applyDueRecurring,
 } from "@/lib/recurring";
+import { SUPPORTED_CODES } from "@/lib/currencies";
 
 const Schema = z.object({
   kind: z.enum(["income", "expense"]),
   amount: z.coerce.number().positive().max(1e10),
   categoryId: z.string().uuid().nullable().optional(),
+  accountId: z.string().uuid().nullable().optional(),
+  tripId: z.string().uuid().nullable().optional(),
+  fxCurrency: z
+    .string()
+    .min(3)
+    .max(3)
+    .refine((c) => SUPPORTED_CODES.has(c), "Unsupported currency")
+    .nullable()
+    .optional(),
   note: z.string().max(500).optional(),
   period: z.enum(["daily", "weekly", "monthly"]),
   dayOfMonth: z.coerce.number().int().min(1).max(31).nullable().optional(),
@@ -37,6 +48,9 @@ export async function createRecurringAction(formData: FormData) {
     kind: formData.get("kind"),
     amount: formData.get("amount"),
     categoryId: formData.get("categoryId") || null,
+    accountId: formData.get("accountId") || null,
+    tripId: formData.get("tripId") || null,
+    fxCurrency: formData.get("fxCurrency") || null,
     note: formData.get("note") || undefined,
     period: formData.get("period"),
     dayOfMonth: formData.get("dayOfMonth") || null,
@@ -52,6 +66,9 @@ export async function createRecurringAction(formData: FormData) {
     ledgerId,
     userId,
     categoryId: parsed.data.categoryId ?? null,
+    accountId: parsed.data.accountId ?? null,
+    tripId: parsed.data.tripId ?? null,
+    fxCurrency: parsed.data.fxCurrency ?? null,
     kind: parsed.data.kind,
     amount: parsed.data.amount,
     note: parsed.data.note ?? null,
@@ -68,6 +85,52 @@ export async function createRecurringAction(formData: FormData) {
   });
   refresh();
   redirect("/recurring");
+}
+
+const UpdateSchema = Schema.partial().extend({
+  // Make startDate optional on update
+  startDate: z.iso.datetime({ offset: true }).optional(),
+});
+
+export async function updateRecurringAction(id: string, formData: FormData) {
+  const { role } = await requireSession();
+  assertWritable(role);
+
+  const parsed = UpdateSchema.safeParse({
+    kind: formData.get("kind") || undefined,
+    amount: formData.get("amount") || undefined,
+    categoryId: formData.get("categoryId") || null,
+    accountId: formData.get("accountId") || null,
+    tripId: formData.get("tripId") || null,
+    fxCurrency: formData.get("fxCurrency") || null,
+    note: formData.get("note") || undefined,
+    period: formData.get("period") || undefined,
+    dayOfMonth: formData.get("dayOfMonth") || null,
+    dayOfWeek: formData.get("dayOfWeek") || null,
+    startDate: formData.get("startDate") || undefined,
+  });
+  if (!parsed.success) {
+    return {
+      ok: false as const,
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
+    };
+  }
+
+  await updateRecurring(id, {
+    categoryId: parsed.data.categoryId ?? null,
+    accountId: parsed.data.accountId ?? null,
+    tripId: parsed.data.tripId ?? null,
+    fxCurrency: parsed.data.fxCurrency ?? null,
+    kind: parsed.data.kind,
+    amount: parsed.data.amount,
+    note: parsed.data.note ?? null,
+    period: parsed.data.period,
+    nextRunAt: parsed.data.startDate
+      ? new Date(parsed.data.startDate)
+      : undefined,
+  });
+  refresh();
+  return { ok: true as const };
 }
 
 export async function deleteRecurringAction(id: string) {

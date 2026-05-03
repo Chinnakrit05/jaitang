@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Plus, Trash2, Play, Pause, RefreshCw } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Play,
+  Pause,
+  RefreshCw,
+  Pencil,
+  Plane,
+  Wallet,
+} from "lucide-react";
 import type { Category, TxKind } from "@/lib/types";
 import type { RecurPeriod, RecurringRule } from "@/lib/recurring";
 import {
@@ -11,21 +20,43 @@ import {
   deleteRecurringAction,
   runDueAction,
   toggleRecurringAction,
+  updateRecurringAction,
 } from "@/app/(app)/recurring/actions";
+import { CurrencyPicker } from "@/components/currency-picker";
 import { formatCurrency, formatDate, cn, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
+
+export type RecurringAccountChoice = {
+  id: string;
+  name: string;
+  icon: string | null;
+  currency: string;
+};
+export type RecurringTripChoice = {
+  id: string;
+  name: string;
+  icon: string | null;
+  currency: string | null;
+};
 
 export function RecurringPanel({
   rules,
   categories,
+  accounts,
+  trips,
+  homeCurrency,
 }: {
   rules: RecurringRule[];
   categories: Category[];
+  accounts: RecurringAccountChoice[];
+  trips: RecurringTripChoice[];
+  homeCurrency: string;
 }) {
   const router = useRouter();
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(rules.length === 0);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   function applyDue() {
     startTransition(async () => {
@@ -38,6 +69,8 @@ export function RecurringPanel({
       }
     });
   }
+
+  const editingRule = rules.find((r) => r.id === editingId) ?? null;
 
   return (
     <div className="space-y-4">
@@ -64,6 +97,9 @@ export function RecurringPanel({
       {showForm && (
         <CreateRecurringForm
           categories={categories}
+          accounts={accounts}
+          trips={trips}
+          homeCurrency={homeCurrency}
           onDone={() => setShowForm(false)}
         />
       )}
@@ -73,9 +109,26 @@ export function RecurringPanel({
       ) : (
         <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
           {rules.map((r) => (
-            <RuleRow key={r.id} rule={r} pending={pending} />
+            <RuleRow
+              key={r.id}
+              rule={r}
+              homeCurrency={homeCurrency}
+              pending={pending}
+              onEdit={() => setEditingId(r.id)}
+            />
           ))}
         </ul>
+      )}
+
+      {editingRule && (
+        <EditRecurringModal
+          rule={editingRule}
+          categories={categories}
+          accounts={accounts}
+          trips={trips}
+          homeCurrency={homeCurrency}
+          onClose={() => setEditingId(null)}
+        />
       )}
     </div>
   );
@@ -83,9 +136,15 @@ export function RecurringPanel({
 
 function CreateRecurringForm({
   categories,
+  accounts,
+  trips,
+  homeCurrency,
   onDone,
 }: {
   categories: Category[];
+  accounts: RecurringAccountChoice[];
+  trips: RecurringTripChoice[];
+  homeCurrency: string;
   onDone: () => void;
 }) {
   const router = useRouter();
@@ -93,13 +152,12 @@ function CreateRecurringForm({
   const [pending, startTransition] = useTransition();
   const [kind, setKind] = useState<TxKind>("expense");
   const [period, setPeriod] = useState<RecurPeriod>("monthly");
+  const [accountId, setAccountId] = useState<string>("");
+  const [tripId, setTripId] = useState<string>("");
+  const [currency, setCurrency] = useState(homeCurrency);
   const [error, setError] = useState<string | null>(null);
   const visibleCats = categories.filter((c) => c.kind === kind);
 
-  // datetime-local must be initialised on the client (browser TZ). Computing
-  // it on the server would emit the value formatted in UTC, which the user's
-  // browser then displays verbatim as if it were local — off by the user's
-  // UTC offset. See transaction-form.tsx for the longer write-up.
   const startRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const el = startRef.current;
@@ -114,8 +172,9 @@ function CreateRecurringForm({
         const fd = new FormData(e.currentTarget);
         fd.set("kind", kind);
         fd.set("period", period);
-        // Convert TZ-naive "wall clock" string to UTC ISO so the server-side
-        // `new Date(str)` parse doesn't reinterpret it in UTC.
+        if (accountId) fd.set("accountId", accountId);
+        if (tripId) fd.set("tripId", tripId);
+        if (currency && currency !== homeCurrency) fd.set("fxCurrency", currency);
         const startRaw = fd.get("startDate");
         if (typeof startRaw === "string" && startRaw.length > 0) {
           const inst = new Date(startRaw);
@@ -159,10 +218,10 @@ function CreateRecurringForm({
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-medium mb-1 text-(--muted)">
-            {t("common.amountTHB")}
+            {t("recurring.amountLabel", { currency })}
           </label>
           <input
             name="amount"
@@ -187,6 +246,16 @@ function CreateRecurringForm({
             <option value="daily">{t("recurring.frequencyDaily")}</option>
           </select>
         </div>
+        <div>
+          <label className="block text-xs font-medium mb-1 text-(--muted)">
+            {t("accounts.currencyLabel")}
+          </label>
+          <CurrencyPicker
+            value={currency}
+            onChange={setCurrency}
+            ariaLabel={t("accounts.currencyLabel")}
+          />
+        </div>
       </div>
 
       <div>
@@ -207,6 +276,50 @@ function CreateRecurringForm({
         </select>
       </div>
 
+      {/* Optional account + trip pinning. Account list is filtered to
+          those whose currency matches the rule's currency — same logic
+          as TransactionForm. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium mb-1 text-(--muted) flex items-center gap-1">
+            <Wallet size={12} />
+            {t("accounts.accountField")}
+          </label>
+          <select
+            value={accountId}
+            onChange={(e) => setAccountId(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
+          >
+            <option value="">{t("accounts.noAccount")}</option>
+            {accounts
+              .filter((a) => a.currency === currency)
+              .map((a) => (
+                <option key={a.id} value={a.id}>
+                  {(a.icon ?? "💰") + " " + a.name}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1 text-(--muted) flex items-center gap-1">
+            <Plane size={12} />
+            {t("trips.tripField")}
+          </label>
+          <select
+            value={tripId}
+            onChange={(e) => setTripId(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
+          >
+            <option value="">{t("trips.noTrip")}</option>
+            {trips.map((tr) => (
+              <option key={tr.id} value={tr.id}>
+                {(tr.icon ?? "✈️") + " " + tr.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div>
         <label className="block text-xs font-medium mb-1 text-(--muted)">
           {t("recurring.startDate")}
@@ -216,8 +329,6 @@ function CreateRecurringForm({
           name="startDate"
           type="datetime-local"
           required
-          // No defaultValue — see useEffect; SSR-rendered TZ would mislead
-          // the user. The effect fills in `now + 1 min` in their browser TZ.
           suppressHydrationWarning
           className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
         />
@@ -249,7 +360,7 @@ function CreateRecurringForm({
         <button
           type="submit"
           disabled={pending}
-          className="flex-[2] px-3 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) text-sm font-semibold disabled:opacity-50"
+          className="flex-[2] px-3 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) text-sm font-semibold disabled:opacity-50 cta-primary"
         >
           {pending ? t("common.creating") : t("recurring.createButton")}
         </button>
@@ -258,7 +369,17 @@ function CreateRecurringForm({
   );
 }
 
-function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
+function RuleRow({
+  rule,
+  homeCurrency,
+  pending,
+  onEdit,
+}: {
+  rule: RecurringRule;
+  homeCurrency: string;
+  pending: boolean;
+  onEdit: () => void;
+}) {
   const router = useRouter();
   const t = useTranslations();
   const locale = useLocale();
@@ -269,6 +390,7 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
     weekly: t("recurring.frequencyWeekly"),
     monthly: t("recurring.frequencyMonthly"),
   };
+  const ruleCurrency = rule.fx_currency ?? homeCurrency;
 
   return (
     <li
@@ -277,10 +399,27 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
         !rule.active && "opacity-60"
       )}
     >
-      <span className="text-2xl">{rule.category?.icon ?? "✨"}</span>
+      <span className="text-2xl shrink-0">{rule.category?.icon ?? "✨"}</span>
       <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">
-          {rule.category?.name ?? t("common.uncategorizedFull")}
+        <div className="font-medium truncate flex items-center gap-1.5 flex-wrap">
+          <span>{rule.category?.name ?? t("common.uncategorizedFull")}</span>
+          {rule.account && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-1.5 py-0.5">
+              <Wallet size={10} />
+              {rule.account.name}
+            </span>
+          )}
+          {rule.trip && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-1.5 py-0.5">
+              {rule.trip.icon ?? "✈️"}
+              {rule.trip.name}
+            </span>
+          )}
+          {ruleCurrency !== homeCurrency && (
+            <span className="inline-flex items-center text-[10px] font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-1.5 py-0.5 tabular-nums">
+              {ruleCurrency}
+            </span>
+          )}
         </div>
         <div className="text-xs text-(--muted) flex items-center gap-2 flex-wrap">
           <span>{PERIOD_LABEL[rule.period]}</span>
@@ -297,13 +436,23 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
         </div>
       </div>
       <div
-        className={`tabular-nums font-semibold ${
+        className={`tabular-nums font-semibold shrink-0 ${
           rule.kind === "income" ? "text-(--income)" : "text-(--expense)"
         }`}
       >
         {rule.kind === "income" ? "+" : "−"}
-        {formatCurrency(rule.amount, "THB", fmtLocale)}
+        {formatCurrency(rule.amount, ruleCurrency, fmtLocale)}
       </div>
+      <button
+        type="button"
+        onClick={onEdit}
+        disabled={pending || busy}
+        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground) shrink-0"
+        aria-label={t("common.edit")}
+        title={t("common.edit")}
+      >
+        <Pencil size={16} />
+      </button>
       <button
         type="button"
         disabled={pending || busy}
@@ -313,7 +462,7 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
             router.refresh();
           })
         }
-        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
+        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground) shrink-0"
         aria-label={rule.active ? t("common.cancel") : t("common.confirm")}
       >
         {rule.active ? <Pause size={16} /> : <Play size={16} />}
@@ -328,11 +477,219 @@ function RuleRow({ rule, pending }: { rule: RecurringRule; pending: boolean }) {
             router.refresh();
           });
         }}
-        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
+        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense) shrink-0"
         aria-label={t("common.delete")}
       >
         <Trash2 size={16} />
       </button>
     </li>
+  );
+}
+
+function EditRecurringModal({
+  rule,
+  categories,
+  accounts,
+  trips,
+  homeCurrency,
+  onClose,
+}: {
+  rule: RecurringRule;
+  categories: Category[];
+  accounts: RecurringAccountChoice[];
+  trips: RecurringTripChoice[];
+  homeCurrency: string;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const t = useTranslations();
+  const [pending, startTransition] = useTransition();
+  const [kind, setKind] = useState<TxKind>(rule.kind);
+  const [period, setPeriod] = useState<RecurPeriod>(rule.period);
+  const [categoryId, setCategoryId] = useState<string>(rule.category_id ?? "");
+  const [accountId, setAccountId] = useState<string>(rule.account_id ?? "");
+  const [tripId, setTripId] = useState<string>(rule.trip_id ?? "");
+  const [currency, setCurrency] = useState(rule.fx_currency ?? homeCurrency);
+  const [amount, setAmount] = useState(String(rule.amount));
+  const [note, setNote] = useState(rule.note ?? "");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const visibleCats = categories.filter((c) => c.kind === kind);
+
+  function submit() {
+    setError(null);
+    const fd = new FormData();
+    fd.set("kind", kind);
+    fd.set("amount", amount);
+    fd.set("categoryId", categoryId);
+    fd.set("accountId", accountId);
+    fd.set("tripId", tripId);
+    if (currency && currency !== homeCurrency) fd.set("fxCurrency", currency);
+    fd.set("note", note);
+    fd.set("period", period);
+    startTransition(async () => {
+      const result = await updateRecurringAction(rule.id, fd);
+      if (result?.ok === false) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+      onClose();
+    });
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="close"
+        onClick={onClose}
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,500px)] max-h-[85vh] overflow-y-auto rounded-2xl bg-(--card) border border-(--border) shadow-2xl p-5"
+      >
+        <h2 className="font-semibold text-lg mb-4">{t("recurring.editTitle")}</h2>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 p-1 bg-(--background) rounded-xl">
+            <button
+              type="button"
+              onClick={() => setKind("expense")}
+              className={cn(
+                "py-2 rounded-lg text-sm font-medium transition",
+                kind === "expense"
+                  ? "bg-(--expense) text-white"
+                  : "text-(--muted)"
+              )}
+            >
+              {t("transactions.kindToggleExpense")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setKind("income")}
+              className={cn(
+                "py-2 rounded-lg text-sm font-medium transition",
+                kind === "income"
+                  ? "bg-(--income) text-white"
+                  : "text-(--muted)"
+              )}
+            >
+              {t("transactions.kindToggleIncome")}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background) tabular-nums"
+            />
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as RecurPeriod)}
+              className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
+            >
+              <option value="monthly">{t("recurring.frequencyMonthly")}</option>
+              <option value="weekly">{t("recurring.frequencyWeekly")}</option>
+              <option value="daily">{t("recurring.frequencyDaily")}</option>
+            </select>
+            <CurrencyPicker
+              value={currency}
+              onChange={setCurrency}
+              ariaLabel={t("accounts.currencyLabel")}
+            />
+          </div>
+
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
+          >
+            <option value="">{t("recurring.selectCategory")}</option>
+            {visibleCats.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.icon} {c.name}
+              </option>
+            ))}
+          </select>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <select
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
+            >
+              <option value="">{t("accounts.noAccount")}</option>
+              {accounts
+                .filter((a) => a.currency === currency)
+                .map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {(a.icon ?? "💰") + " " + a.name}
+                  </option>
+                ))}
+            </select>
+            <select
+              value={tripId}
+              onChange={(e) => setTripId(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
+            >
+              <option value="">{t("trips.noTrip")}</option>
+              {trips.map((tr) => (
+                <option key={tr.id} value={tr.id}>
+                  {(tr.icon ?? "✈️") + " " + tr.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <input
+            type="text"
+            maxLength={500}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={t("recurring.notePlaceholder")}
+            className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
+          />
+
+          {error && (
+            <div className="rounded-lg bg-(--expense)/10 text-(--expense) px-3 py-2 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={pending}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium disabled:opacity-50"
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              type="button"
+              onClick={submit}
+              disabled={pending}
+              className="flex-[2] px-4 py-2.5 rounded-xl bg-(--accent) text-(--accent-foreground) text-sm font-semibold disabled:opacity-50 cta-primary"
+            >
+              {pending ? t("common.saving") : t("common.save")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

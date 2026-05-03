@@ -275,6 +275,18 @@ create table if not exists public.recurring_transactions (
 create index if not exists idx_recur_ledger on public.recurring_transactions(ledger_id);
 create index if not exists idx_recur_due on public.recurring_transactions(next_run_at) where active = true;
 
+-- v2 columns: optionally pin a recurring rule to an account / trip /
+-- foreign currency so the materialized tx already has the right tags.
+-- Idempotent for existing deployments.
+alter table public.recurring_transactions
+  add column if not exists account_id uuid references public.accounts(id) on delete set null;
+alter table public.recurring_transactions
+  add column if not exists trip_id uuid references public.trips(id) on delete set null;
+alter table public.recurring_transactions
+  add column if not exists fx_currency text;
+create index if not exists idx_recur_account on public.recurring_transactions(account_id) where account_id is not null;
+create index if not exists idx_recur_trip on public.recurring_transactions(trip_id) where trip_id is not null;
+
 -- ============================================================
 -- Transaction splits (หารบิล — ใครติดเงินคนจ่ายเท่าไหร่)
 --
@@ -362,6 +374,54 @@ create table if not exists public.goal_contributions (
 create index if not exists idx_goal_contrib_goal on public.goal_contributions(goal_id);
 
 -- ============================================================
+-- Loans (เงินยืม — ให้ยืม / ขอยืม)
+-- Track outstanding balances with someone OUTSIDE the ledger system —
+-- e.g. lent ฿1000 to a friend, borrowed ฿500 from mom. Different from
+-- transaction_splits (which is for in-app shared bills). Repayments
+-- are partial; status = 'open' until total repaid >= principal, then
+-- 'settled'. Currency-agnostic.
+-- ============================================================
+create type loan_kind as enum ('lent', 'borrowed');
+create type loan_status as enum ('open', 'settled');
+
+create table if not exists public.loans (
+  id uuid primary key default uuid_generate_v4(),
+  ledger_id uuid not null references public.ledgers(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete restrict,
+  kind loan_kind not null,
+  -- Free-text counterparty name. Loans are with people outside the
+  -- system, so we don't try to map to a user_id.
+  counterparty text not null,
+  principal numeric(14, 2) not null check (principal > 0),
+  currency text not null default 'THB',
+  started_at timestamptz not null default now(),
+  due_date timestamptz,
+  status loan_status not null default 'open',
+  settled_at timestamptz,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_loans_ledger on public.loans(ledger_id);
+create index if not exists idx_loans_open on public.loans(ledger_id) where status = 'open';
+
+-- ============================================================
+-- Loan repayments — partial payments against a loan. Each row pays
+-- down `loans.principal`; when sum >= principal, app marks the loan
+-- as 'settled'.
+-- ============================================================
+create table if not exists public.loan_repayments (
+  id uuid primary key default uuid_generate_v4(),
+  loan_id uuid not null references public.loans(id) on delete cascade,
+  amount numeric(14, 2) not null check (amount > 0),
+  occurred_at timestamptz not null default now(),
+  note text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_loan_repay_loan on public.loan_repayments(loan_id);
+
+-- ============================================================
 -- Push subscriptions (Web Push API — per device/browser)
 -- ============================================================
 create table if not exists public.push_subscriptions (
@@ -427,6 +487,8 @@ alter table public.goals enable row level security;
 alter table public.goal_contributions enable row level security;
 alter table public.accounts enable row level security;
 alter table public.transfers enable row level security;
+alter table public.loans enable row level security;
+alter table public.loan_repayments enable row level security;
 
 -- For MVP: deny all by default; service-role bypasses RLS,
 -- so anon/authenticated clients see nothing unless we add

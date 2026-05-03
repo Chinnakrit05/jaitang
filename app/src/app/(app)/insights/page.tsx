@@ -1,4 +1,11 @@
-import { ChevronLeft, ChevronRight, TrendingDown, TrendingUp, Sparkles } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  TrendingDown,
+  TrendingUp,
+  Sparkles,
+  Calendar,
+} from "lucide-react";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
@@ -73,12 +80,21 @@ export default async function InsightsPage({
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Sparkles size={20} className="text-(--accent)" />
-          {t("insights.title")}
-        </h1>
-        <p className="text-sm text-(--muted) mt-1">{t("insights.subtitle")}</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Sparkles size={20} className="text-(--accent)" />
+            {t("insights.title")}
+          </h1>
+          <p className="text-sm text-(--muted) mt-1">{t("insights.subtitle")}</p>
+        </div>
+        <Link
+          href={`/insights/year/${year}`}
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
+        >
+          <Calendar size={14} />
+          {t("yearReport.cta", { year })}
+        </Link>
       </div>
 
       {/* Month nav */}

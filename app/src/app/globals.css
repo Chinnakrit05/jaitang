@@ -102,3 +102,39 @@ body {
 .dark .cta-primary {
   box-shadow: 0 0 0 1px rgba(76, 201, 240, 0.2), 0 4px 16px -4px rgba(76, 201, 240, 0.3);
 }
+
+/* ============================================================
+   Print styles — used by the year-end report (and any future
+   "save as PDF" view). Hide the app shell so the printed page
+   shows only the report content; force a white background so
+   ink isn't wasted on dark theme.
+   ============================================================ */
+@media print {
+  /* Reset to light theme for ink savings + readability. */
+  :root {
+    color-scheme: light;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  /* Hide nav, headers, footers, install banners, etc. */
+  nav,
+  aside,
+  header[role="banner"],
+  footer,
+  .print\:hidden,
+  [data-print-hide] {
+    display: none !important;
+  }
+  /* Avoid tearing cards across pages. */
+  section,
+  .rounded-2xl {
+    break-inside: avoid;
+  }
+  /* Trim shadows + heavy borders that look noisy on print. */
+  .card-hover,
+  .cta-primary {
+    box-shadow: none !important;
+  }
+}

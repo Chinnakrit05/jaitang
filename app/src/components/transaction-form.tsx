@@ -6,9 +6,10 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
-import { Banknote, Landmark, Plane, Users, Wallet } from "lucide-react";
+import { Banknote, Landmark, Plane, Sparkles, Users, Wallet } from "lucide-react";
 import { CurrencyPicker } from "@/components/currency-picker";
 import { getFxRateAction } from "@/app/(app)/transactions/fx-actions";
+import { suggestCategoryAction } from "@/app/(app)/transactions/categorize-action";
 
 export type SplitMember = {
   userId: string;
@@ -104,6 +105,16 @@ export function TransactionForm({
   const [amountInput, setAmountInput] = useState<string>(
     initial?.amount ? String(initial.amount) : ""
   );
+  const [noteInput, setNoteInput] = useState<string>(initial?.note ?? "");
+  // Auto-categorize state. `loading` while the AI call is in flight,
+  // `error` if it failed, `confidence` so we can show a soft hint when
+  // the model wasn't sure (low/medium → user should double-check).
+  const [aiCategorize, setAiCategorize] = useState<{
+    loading: boolean;
+    error: string | null;
+    confidence: "high" | "medium" | "low" | null;
+  }>({ loading: false, error: null, confidence: null });
+  const formRef = useRef<HTMLFormElement>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
     initial?.paymentMethod ?? "cash"
   );
@@ -228,8 +239,38 @@ export function TransactionForm({
 
   const submit = submitLabel ?? t("common.save");
 
+  /**
+   * Ask the AI for a category given the current note + kind. Selects
+   * the suggested radio programmatically. We don't change the radio
+   * markup (still uncontrolled with `defaultChecked`) — `.click()`
+   * triggers the browser's native checked-state update, which is
+   * what the form serializer actually reads at submit time.
+   */
+  async function runCategorizeSuggest() {
+    const note = noteInput.trim();
+    if (!note) return;
+    setAiCategorize({ loading: true, error: null, confidence: null });
+    const result = await suggestCategoryAction({ note, kind });
+    if (result.ok === false) {
+      setAiCategorize({ loading: false, error: result.error, confidence: null });
+      return;
+    }
+    if (result.categoryId) {
+      const radio = formRef.current?.querySelector<HTMLInputElement>(
+        `input[name="categoryId"][value="${result.categoryId}"]`
+      );
+      radio?.click();
+    }
+    setAiCategorize({
+      loading: false,
+      error: result.categoryId ? null : t("transactions.aiCategorizeNoMatch"),
+      confidence: result.confidence,
+    });
+  }
+
   return (
     <form
+      ref={formRef}
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
@@ -536,7 +577,33 @@ export function TransactionForm({
       })()}
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t("common.category")}</label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-sm font-medium">{t("common.category")}</label>
+          {/* AI suggest — only useful when there's a note to read. We
+              keep the button visible (just disabled) to teach the
+              feature; tooltip explains why it's off. */}
+          <button
+            type="button"
+            onClick={runCategorizeSuggest}
+            disabled={
+              aiCategorize.loading || noteInput.trim().length === 0
+            }
+            title={
+              noteInput.trim().length === 0
+                ? t("transactions.aiCategorizeNeedsNote")
+                : t("transactions.aiCategorizeHint")
+            }
+            className="inline-flex items-center gap-1 text-xs font-medium text-(--accent) hover:bg-(--accent)/10 px-2 py-1 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Sparkles
+              size={13}
+              className={aiCategorize.loading ? "animate-pulse" : ""}
+            />
+            {aiCategorize.loading
+              ? t("transactions.aiCategorizeLoading")
+              : t("transactions.aiCategorizeButton")}
+          </button>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {visibleCats.map((c) => (
             <CategoryRadio
@@ -546,6 +613,16 @@ export function TransactionForm({
             />
           ))}
         </div>
+        {aiCategorize.error && (
+          <p className="mt-1.5 text-xs text-(--muted)">
+            {aiCategorize.error}
+          </p>
+        )}
+        {aiCategorize.confidence === "low" && !aiCategorize.error && (
+          <p className="mt-1.5 text-xs text-(--muted)">
+            {t("transactions.aiCategorizeLowConfidence")}
+          </p>
+        )}
       </div>
 
       <div>
@@ -606,7 +683,8 @@ export function TransactionForm({
           name="note"
           type="text"
           maxLength={500}
-          defaultValue={initial?.note ?? ""}
+          value={noteInput}
+          onChange={(e) => setNoteInput(e.target.value)}
           placeholder={t("transactions.noteHint")}
           className="w-full px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--accent)"
         />
