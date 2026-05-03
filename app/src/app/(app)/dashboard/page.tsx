@@ -30,10 +30,11 @@ export default async function DashboardPage({
   const name = user.name?.split(" ")[0] ?? "you";
   const currency = ledger.currency;
 
-  // Default to "month" so the home screen still feels like the monthly
-  // overview new users expect; any other range comes from a click on the
-  // pills below the greeting.
-  const range = resolveRange(sp.range);
+  // Default to "today" so the home screen mirrors what the user is
+  // most likely curious about — what they spent today. Other ranges
+  // come from a click on the pills below the greeting; URL ?range=
+  // wins when present.
+  const range = resolveRange(sp.range ?? "today");
   const rangeKey = range.key;
 
   // ?cur=JPY filters the dashboard to JPY-only rows. Defended against

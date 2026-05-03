@@ -11,6 +11,7 @@ import { listMembers } from "@/lib/members";
 import { listSplits } from "@/lib/splits";
 import { listTrips } from "@/lib/trips";
 import { listAccounts } from "@/lib/accounts";
+import { listDistinctNotes } from "@/lib/transactions";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -30,23 +31,31 @@ export default async function EditTransactionPage({
 
   const sb = getServerSupabase();
 
-  // Fetch transaction + categories + (members/splits if shared) + trips + accounts in parallel
-  const [txRes, categories, members, existingSplits, allTrips, accountRows] =
-    await Promise.all([
-      sb
-        .from("transactions")
-        .select(
-          "id, ledger_id, kind, amount, category_id, trip_id, account_id, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, user_id"
-        )
-        .eq("id", id)
-        .eq("ledger_id", ledgerId)
-        .maybeSingle(),
-      listCategories(ledgerId),
-      ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
-      ledger.is_personal ? Promise.resolve([]) : listSplits(id),
-      listTrips(ledgerId),
-      listAccounts(ledgerId, { includeArchived: true }),
-    ]);
+  // Fetch transaction + categories + (members/splits if shared) + trips + accounts + note suggestions in parallel
+  const [
+    txRes,
+    categories,
+    members,
+    existingSplits,
+    allTrips,
+    accountRows,
+    noteSuggestions,
+  ] = await Promise.all([
+    sb
+      .from("transactions")
+      .select(
+        "id, ledger_id, kind, amount, category_id, trip_id, account_id, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, user_id"
+      )
+      .eq("id", id)
+      .eq("ledger_id", ledgerId)
+      .maybeSingle(),
+    listCategories(ledgerId),
+    ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
+    ledger.is_personal ? Promise.resolve([]) : listSplits(id),
+    listTrips(ledgerId),
+    listAccounts(ledgerId, { includeArchived: true }),
+    listDistinctNotes(ledgerId, 200),
+  ]);
 
   if (txRes.error) throw txRes.error;
   const tx = txRes.data;
@@ -99,6 +108,7 @@ export default async function EditTransactionPage({
             currency: tr.currency,
           }))}
         accounts={accounts}
+        noteSuggestions={noteSuggestions}
         currency={ledger.currency}
         initial={{
           id: tx.id,

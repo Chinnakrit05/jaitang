@@ -65,6 +65,9 @@ type Props = {
   /** All accounts (incl. archived) in the current ledger. Filtered by tx
    *  currency before display. */
   accounts?: AccountChoice[];
+  /** Past tx notes for the note-input autocomplete (datalist). Already
+   *  deduped + frequency-ranked by the server. */
+  noteSuggestions?: string[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   submitLabel?: string;
   /** Ledger's home currency. Used for FX preview formatting. */
@@ -78,6 +81,7 @@ export function TransactionForm({
   activeTrip,
   trips,
   accounts,
+  noteSuggestions,
   action,
   submitLabel,
   currency = "THB",
@@ -679,6 +683,11 @@ export function TransactionForm({
         <label className="block text-sm font-medium mb-1.5">
           {t("common.noteOptional")}
         </label>
+        {/* `list=` + <datalist> gives us native autocomplete in every
+            modern browser (incl. mobile). The browser handles
+            substring matching as the user types — no custom dropdown
+            JS needed. We feed the user's past notes ranked by usage
+            frequency from listDistinctNotes(). */}
         <input
           name="note"
           type="text"
@@ -686,8 +695,21 @@ export function TransactionForm({
           value={noteInput}
           onChange={(e) => setNoteInput(e.target.value)}
           placeholder={t("transactions.noteHint")}
+          list={
+            noteSuggestions && noteSuggestions.length > 0
+              ? "tx-note-suggestions"
+              : undefined
+          }
+          autoComplete="off"
           className="w-full px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--accent)"
         />
+        {noteSuggestions && noteSuggestions.length > 0 && (
+          <datalist id="tx-note-suggestions">
+            {noteSuggestions.map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
+        )}
       </div>
 
       {error && (

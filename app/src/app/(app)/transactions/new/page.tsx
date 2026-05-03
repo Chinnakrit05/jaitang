@@ -5,6 +5,7 @@ import { createTransactionAction } from "../actions";
 import { listMembers } from "@/lib/members";
 import { getTrip, listTrips } from "@/lib/trips";
 import { listAccounts } from "@/lib/accounts";
+import { listDistinctNotes } from "@/lib/transactions";
 import type {
   AccountChoice,
   SplitMember,
@@ -22,15 +23,22 @@ export default async function NewTransaction() {
     getTranslations(),
   ]);
 
-  // Fetch categories + members + trip data + accounts in parallel
-  const [categories, members, activeTripRow, allTripStats, accountRows] =
-    await Promise.all([
-      listCategories(ledgerId),
-      ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
-      activeTripId ? getTrip(activeTripId, ledgerId) : Promise.resolve(null),
-      listTrips(ledgerId),
-      listAccounts(ledgerId, { includeArchived: true }),
-    ]);
+  // Fetch categories + members + trip data + accounts + note suggestions in parallel
+  const [
+    categories,
+    members,
+    activeTripRow,
+    allTripStats,
+    accountRows,
+    noteSuggestions,
+  ] = await Promise.all([
+    listCategories(ledgerId),
+    ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
+    activeTripId ? getTrip(activeTripId, ledgerId) : Promise.resolve(null),
+    listTrips(ledgerId),
+    listAccounts(ledgerId, { includeArchived: true }),
+    listDistinctNotes(ledgerId, 200),
+  ]);
 
   const splitMembers: SplitMember[] | undefined = members
     ? members.map((m) => ({
@@ -88,6 +96,7 @@ export default async function NewTransaction() {
         activeTrip={activeTrip}
         trips={trips}
         accounts={accounts}
+        noteSuggestions={noteSuggestions}
         currency={ledger.currency}
       />
     </div>

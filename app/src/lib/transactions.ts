@@ -368,3 +368,49 @@ export async function getMonthSummary(
 
   return aggregateMonthSummary(txs);
 }
+
+/**
+ * Distinct, frequency-ranked note strings the user has typed before in
+ * this ledger. Powers the note input's autocomplete (`<datalist>`).
+ *
+ * Why client-side filtering on a pre-fetched list rather than a debounced
+ * server search: typical users have at most a few hundred distinct notes,
+ * and a single round-trip on form mount is faster than per-keystroke
+ * lookups — plus `<datalist>` handles the matching natively. We cap at
+ * `limit` rows so the payload stays small even for power users.
+ */
+export async function listDistinctNotes(
+  ledgerId: string,
+  limit = 200
+): Promise<string[]> {
+  const sb = getServerSupabase();
+  // Pull recent rows; let JS handle the dedupe + frequency ranking.
+  // PostgREST doesn't expose `distinct on` directly, so we trade a
+  // wider pull for code simplicity. With limit=2000 and ~500 distinct
+  // notes the wire payload is still tiny (just the note column).
+  const { data, error } = await sb
+    .from("transactions")
+    .select("note")
+    .eq("ledger_id", ledgerId)
+    .not("note", "is", null)
+    .order("occurred_at", { ascending: false })
+    .limit(2000);
+  if (error) throw error;
+
+  const counts = new Map<string, number>();
+  for (const row of data ?? []) {
+    const raw = (row.note as string | null)?.trim();
+    if (!raw) continue;
+    // Strip the "[ค่าประจำ] " prefix that recurring rules add — those
+    // would crowd out organic notes. Recurring autotags should not be
+    // promoted as suggestions.
+    const cleaned = raw.replace(/^\[ค่าประจำ\]\s*/, "");
+    if (!cleaned) continue;
+    counts.set(cleaned, (counts.get(cleaned) ?? 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([note]) => note);
+}
