@@ -122,9 +122,48 @@
 
 body {
   background: var(--background);
+  /* Two soft radial glows in opposite corners — uses --accent so it shifts
+     when the user picks a different color. Subtle (8% / 5% mix), but visible
+     enough that switching accents feels like a whole-page change.
+     `color-mix` is supported in every modern browser since 2023. */
+  background-image:
+    radial-gradient(
+      900px circle at 100% -10%,
+      color-mix(in srgb, var(--accent) 8%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      700px circle at 0% 110%,
+      color-mix(in srgb, var(--accent) 5%, transparent),
+      transparent 55%
+    );
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+.dark body {
+  /* Stronger glow on dark — accent reads as a glow against #09090b */
+  background-image:
+    radial-gradient(
+      900px circle at 100% -10%,
+      color-mix(in srgb, var(--accent) 14%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      700px circle at 0% 110%,
+      color-mix(in srgb, var(--accent) 9%, transparent),
+      transparent 55%
+    );
+}
+.dark.oled body {
+  /* OLED users want pure black — keep the glow tiny */
+  background-image:
+    radial-gradient(
+      800px circle at 100% -10%,
+      color-mix(in srgb, var(--accent) 6%, transparent),
+      transparent 60%
+    );
 }
 
 /* Slim, themed scrollbar for the horizontally-scrolling filter strips on
@@ -164,20 +203,90 @@ body {
   box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 6px 20px -6px rgba(0, 0, 0, 0.5);
 }
 
-/* Primary CTA polish: a hairline shadow that hugs the button + a tiny
-   press response. Used on the "+ เพิ่มรายการ" / "บันทึก" buttons. */
+/* Primary CTA polish: hairline shadow + accent-tinted halo. Uses
+   color-mix so changing --accent re-tints the glow automatically. */
 .cta-primary {
   transition: transform 100ms ease, box-shadow 150ms ease, opacity 150ms ease;
-  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(76, 201, 240, 0.25);
+  box-shadow:
+    0 1px 0 0 rgba(0, 0, 0, 0.06),
+    0 2px 10px -2px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 .cta-primary:hover {
-  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.06), 0 4px 14px -2px rgba(76, 201, 240, 0.35);
+  box-shadow:
+    0 1px 0 0 rgba(0, 0, 0, 0.06),
+    0 6px 18px -2px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 .cta-primary:active {
   transform: translateY(1px);
 }
 .dark .cta-primary {
-  box-shadow: 0 0 0 1px rgba(76, 201, 240, 0.2), 0 4px 16px -4px rgba(76, 201, 240, 0.3);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
+    0 4px 18px -4px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.dark .cta-primary:hover {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
+    0 6px 22px -4px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* ============================================================
+   Accent surface utilities — apply to any card/section to give
+   it a subtle accent presence. Designed to STACK with existing
+   border / bg classes; just add to taste.
+   ============================================================ */
+
+/* Accent-tinted top edge — 2px gradient stripe along the top
+   of any card. Gives the impression that the section "belongs"
+   to the active accent without dominating. */
+.accent-top {
+  position: relative;
+}
+.accent-top::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  right: 1rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--accent) 60%, transparent),
+    transparent 80%
+  );
+  pointer-events: none;
+}
+
+/* Highlights the bottom edge of the sticky header — replaces the flat
+   gray border with a thin accent gradient. Already-present `border-b`
+   gets overridden by this rule. */
+.header-accent-edge {
+  border-bottom-color: color-mix(in srgb, var(--accent) 35%, var(--border)) !important;
+  box-shadow: 0 1px 0 0 color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Hover state for clickable cards — ring tints in accent. */
+.card-hover:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border)) !important;
+}
+
+/* Subtle accent fill for "currently active" nav items. */
+.nav-active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.dark .nav-active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* Form focus ring — slightly thicker + more saturated than default */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 1px;
 }
 
 /* ============================================================
