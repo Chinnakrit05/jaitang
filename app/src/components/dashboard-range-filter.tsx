@@ -33,12 +33,10 @@ export function DashboardRangeFilter({ activeKey }: { activeKey: RangeKey }) {
 
   function setRange(key: RangeKey) {
     const sp = new URLSearchParams(params.toString());
-    if (key === "month") {
-      // The default — keep the URL clean rather than `?range=month`.
-      sp.delete("range");
-    } else {
-      sp.set("range", key);
-    }
+    // Always set ?range explicitly — the page's default is "today", not
+    // "month", so stripping the param sent the user back to today every
+    // time they clicked "เดือนนี้". Never assume the default; bind it.
+    sp.set("range", key);
     const qs = sp.toString();
     startTransition(() => router.push(`/dashboard${qs ? `?${qs}` : ""}`));
   }
