@@ -197,10 +197,16 @@ body {
 }
 .card-hover:hover {
   transform: translateY(-1px);
-  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.04), 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in srgb, var(--foreground) 5%, transparent),
+    0 1px 0 0 color-mix(in srgb, var(--accent) 20%, transparent),
+    0 8px 22px -6px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 .dark .card-hover:hover {
-  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 6px 20px -6px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in srgb, var(--accent) 18%, transparent),
+    0 1px 0 0 color-mix(in srgb, var(--accent) 30%, transparent),
+    0 10px 28px -6px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /* Primary CTA polish: hairline shadow + accent-tinted halo. Uses
@@ -228,6 +234,69 @@ body {
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
     0 6px 22px -4px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* ============================================================
+   Card border polish — every surface using `bg-(--card)` (which
+   covers ~255 cards across the app) automatically picks up:
+     - A border slightly tinted with the active accent (10%)
+     - An inner top-edge highlight (1px) — gives a "lift"
+     - A 1px outer bottom shadow tinted with accent
+   Cards stop looking like flat gray rectangles; the active
+   accent becomes visible on every card edge.
+   ============================================================ */
+[class~="bg-(--card)"] {
+  border-color: color-mix(in srgb, var(--accent) 10%, var(--border));
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in srgb, var(--foreground) 5%, transparent),
+    0 1px 0 0 color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.dark [class~="bg-(--card)"] {
+  border-color: color-mix(in srgb, var(--accent) 14%, var(--border));
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in srgb, var(--accent) 14%, transparent),
+    0 1px 0 0 color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+/* Opt-in "premium" card — gradient accent border drawn via the
+   classic mask trick so it follows rounded corners. Use on hero
+   cards (dashboard summary, year-end report header, etc.) when a
+   plain tinted border isn't enough. */
+.card-premium {
+  position: relative;
+  isolation: isolate;
+}
+.card-premium::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 70%, transparent),
+    color-mix(in srgb, var(--accent) 20%, transparent) 35%,
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Soft accent halo around a card — pairs nicely with `.card-premium`
+   on hero sections. Pure box-shadow so it doesn't shift layout. */
+.card-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 8px 30px -8px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.dark .card-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent),
+    0 10px 36px -8px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 /* ============================================================
