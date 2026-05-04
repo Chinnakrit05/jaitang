@@ -2,6 +2,7 @@ import { signIn, auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { DecorativePattern } from "@/components/decorative-pattern";
 
 export default async function LoginPage() {
   const session = await auth();
@@ -18,8 +19,10 @@ export default async function LoginPage() {
         <ThemeToggle />
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6">
-        <div className="w-full max-w-sm rounded-2xl border border-(--border) bg-(--card) p-8 shadow-sm">
+      <main className="flex-1 flex items-center justify-center px-6 relative overflow-hidden">
+        <DecorativePattern kind="confetti" className="top-8 left-8 hidden sm:block opacity-80" />
+        <DecorativePattern kind="confetti" className="bottom-8 right-8 hidden sm:block opacity-80 rotate-180" />
+        <div className="w-full max-w-sm rounded-2xl border border-(--border) bg-(--card) p-8 shadow-sm card-premium relative">
           <div className="text-center mb-8">
             <span className="text-5xl block mb-3">💰</span>
             <h1 className="text-2xl font-bold mb-1">{t("login.title")}</h1>

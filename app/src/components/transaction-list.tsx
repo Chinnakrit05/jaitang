@@ -13,6 +13,7 @@ import {
 } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
+import { EmptyIllustration } from "@/components/empty-illustration";
 import { removeTransactionFromTripAction } from "@/app/(app)/trips/actions";
 import { useRouter } from "next/navigation";
 
@@ -45,9 +46,7 @@ export function TransactionList({
   if (!items.length) {
     return (
       <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-12 text-center">
-        <div className="mx-auto mb-4 inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-(--background) border border-(--border)">
-          <span className="text-3xl" aria-hidden>📭</span>
-        </div>
+        <EmptyIllustration kind="transactions" className="mb-4" />
         <p className="font-semibold mb-1.5">{t("transactions.emptyTitle")}</p>
         <p className="text-sm text-(--muted) mb-5 max-w-xs mx-auto">
           {t("transactions.emptyHint")}

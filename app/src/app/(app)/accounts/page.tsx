@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/utils";
 import { AccountCard } from "@/components/account-card";
 import { CreateAccountForm } from "@/components/create-account-form";
 import { NetWorthChart } from "@/components/net-worth-chart";
+import { EmptyIllustration } from "@/components/empty-illustration";
 
 export default async function AccountsPage() {
   const [{ ledgerId, ledger }, t, locale] = await Promise.all([
@@ -78,11 +79,7 @@ export default async function AccountsPage() {
         </h2>
         {active.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-8 text-center">
-            <div className="mx-auto mb-3 inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-(--background) border border-(--border)">
-              <span className="text-2xl" aria-hidden>
-                💰
-              </span>
-            </div>
+            <EmptyIllustration kind="account" size={80} className="mb-3" />
             <p className="text-sm text-(--muted)">{t("accounts.activeEmpty")}</p>
           </div>
         ) : (

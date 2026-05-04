@@ -11,6 +11,7 @@ import { PaymentMethodBreakdown } from "@/components/payment-method-breakdown";
 import { DashboardRangeFilter } from "@/components/dashboard-range-filter";
 import { DashboardCurrencyToggle } from "@/components/dashboard-currency-toggle";
 import { DashboardAccountBalances } from "@/components/dashboard-account-balances";
+import { DecorativePattern } from "@/components/decorative-pattern";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { SUPPORTED_CODES } from "@/lib/currencies";
@@ -81,8 +82,9 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div className="space-y-1.5">
+      <div className="relative flex items-end justify-between flex-wrap gap-3 overflow-hidden">
+        <DecorativePattern kind="dots" className="top-0 right-0 -mr-2 -mt-2 hidden sm:block" />
+        <div className="space-y-1.5 relative">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             {t("dashboard.greeting", { name })}
           </h1>
@@ -93,7 +95,7 @@ export default async function DashboardPage({
         </div>
         <Link
           href="/transactions/new"
-          className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm cta-primary"
+          className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm cta-primary relative"
         >
           <Plus size={18} />
           {t("dashboard.addTransaction")}

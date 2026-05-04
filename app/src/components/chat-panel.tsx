@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Send, Sparkles, Bot, User } from "lucide-react";
+import { Send, Bot, User } from "lucide-react";
 import { sendChatMessageAction } from "@/app/(app)/chat/actions";
 import type { ChatMessage } from "@/lib/chat-ai";
+import { EmptyIllustration } from "@/components/empty-illustration";
 
 /**
  * Chat panel for /chat. Holds conversation in memory only — refresh
@@ -68,9 +69,7 @@ export function ChatPanel({
       >
         {empty ? (
           <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto">
-            <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-(--accent)/10 text-(--accent) mb-3">
-              <Sparkles size={26} />
-            </div>
+            <EmptyIllustration kind="chat" className="mb-3" />
             <h2 className="font-semibold mb-1">{t("chat.emptyTitle")}</h2>
             <p className="text-sm text-(--muted) mb-4">
               {t("chat.emptyHint")}

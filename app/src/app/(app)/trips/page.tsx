@@ -7,6 +7,7 @@ import { intlLocale } from "@/lib/locale-format";
 import { formatCurrency } from "@/lib/utils";
 import { TripCard } from "@/components/trip-card";
 import { CreateTripForm } from "@/components/create-trip-form";
+import { EmptyIllustration } from "@/components/empty-illustration";
 
 export default async function TripsPage() {
   const [{ ledgerId, ledger, activeTripId }, t, locale] = await Promise.all([
@@ -37,9 +38,7 @@ export default async function TripsPage() {
         </h2>
         {active.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-8 text-center">
-            <div className="mx-auto mb-3 inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-(--background) border border-(--border)">
-              <span className="text-2xl" aria-hidden>✈️</span>
-            </div>
+            <EmptyIllustration kind="trip" size={80} className="mb-3" />
             <p className="text-sm text-(--muted)">{t("trips.activeEmpty")}</p>
           </div>
         ) : (
