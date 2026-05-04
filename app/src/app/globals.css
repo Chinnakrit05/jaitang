@@ -28,6 +28,83 @@
   --expense: #f87171;
 }
 
+/* ============================================================
+   OLED True Black — only effective when also `.dark`.
+   Pure #000 background saves OLED battery; cards lift slightly
+   above so the surface hierarchy stays readable.
+   ============================================================ */
+.dark.oled {
+  --background: #000000;
+  --card: #0a0a0a;
+  --border: #1f1f1f;
+}
+
+/* ============================================================
+   Accent variants — one definition per data-accent value.
+   These override --accent (and tweak --accent-foreground for
+   contrast) regardless of light/dark. The default <html> with
+   no data-accent uses Cyan from the :root block above.
+   ============================================================ */
+[data-accent="cyan"] {
+  --accent: #4cc9f0;
+  --accent-foreground: #001a22;
+}
+[data-accent="mint"] {
+  --accent: #10b981;
+  --accent-foreground: #052e1f;
+}
+.dark[data-accent="mint"] {
+  --accent: #34d399;
+  --accent-foreground: #052e1f;
+}
+[data-accent="ocean"] {
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+}
+[data-accent="lavender"] {
+  --accent: #a855f7;
+  --accent-foreground: #ffffff;
+}
+[data-accent="coral"] {
+  --accent: #f97316;
+  --accent-foreground: #2a0d00;
+}
+[data-accent="rose"] {
+  --accent: #ec4899;
+  --accent-foreground: #ffffff;
+}
+
+/* ============================================================
+   Seasonal palettes — override the accent (and sometimes
+   --background tint) when active. data-season takes precedence
+   over data-accent so the seasonal pick "wins" the color slot
+   while it's set.
+   ============================================================ */
+[data-season="songkran"] {
+  /* Water-blue + flower-pink hint */
+  --accent: #06b6d4;
+  --accent-foreground: #ffffff;
+}
+[data-season="loy-krathong"] {
+  /* Moonlit gold + warm cream */
+  --accent: #eab308;
+  --accent-foreground: #2a1a00;
+}
+.dark[data-season="loy-krathong"] {
+  --accent: #facc15;
+  --accent-foreground: #2a1a00;
+}
+[data-season="chinese-new-year"] {
+  /* Festive red */
+  --accent: #dc2626;
+  --accent-foreground: #ffffff;
+}
+[data-season="christmas"] {
+  /* Pine green */
+  --accent: #16a34a;
+  --accent-foreground: #ffffff;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

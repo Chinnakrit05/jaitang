@@ -1,6 +1,37 @@
 {
   "appName": "Jaitang",
   "appTagline": "心中的账本",
+  "theme": {
+    "modeTitle": "模式",
+    "mode": {
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统"
+    },
+    "oledTitle": "纯黑 (OLED)",
+    "oledHint": "纯黑背景 — OLED 屏更省电,仅在深色模式下生效。",
+    "accentTitle": "强调色",
+    "accent": {
+      "cyan": "青色",
+      "mint": "薄荷绿",
+      "ocean": "海洋蓝",
+      "lavender": "薰衣草",
+      "coral": "珊瑚橙",
+      "rose": "玫瑰粉"
+    },
+    "accentDisabledBySeason": "强调色被节日主题覆盖 — 关闭节日主题以选择颜色。",
+    "seasonTitle": "节日主题",
+    "seasonHint": "节庆配色 — 启用时会替代强调色。",
+    "seasonAutoTitle": "按日期自动",
+    "seasonAutoHint": "在泼水节、水灯节、春节、圣诞节自动切换。",
+    "season": {
+      "default": "默认",
+      "songkran": "泼水节",
+      "loyKrathong": "水灯节",
+      "chineseNewYear": "春节",
+      "christmas": "圣诞节"
+    }
+  },
   "common": {
     "save": "保存",
     "cancel": "取消",

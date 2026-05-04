@@ -1,6 +1,37 @@
 {
   "appName": "Jaitang",
   "appTagline": "Heart-pocket ledger",
+  "theme": {
+    "modeTitle": "Mode",
+    "mode": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "oledTitle": "True Black (OLED)",
+    "oledHint": "Pure black background — saves OLED battery. Only effective when dark.",
+    "accentTitle": "Accent color",
+    "accent": {
+      "cyan": "Cyan",
+      "mint": "Mint",
+      "ocean": "Ocean",
+      "lavender": "Lavender",
+      "coral": "Coral",
+      "rose": "Rose"
+    },
+    "accentDisabledBySeason": "Accent is overridden by the active seasonal theme — turn it off to pick a color.",
+    "seasonTitle": "Seasonal theme",
+    "seasonHint": "Festive palettes — replace Accent while active.",
+    "seasonAutoTitle": "Auto by date",
+    "seasonAutoHint": "Switch automatically during Songkran, Loy Krathong, Chinese New Year, Christmas.",
+    "season": {
+      "default": "Default",
+      "songkran": "Songkran",
+      "loyKrathong": "Loy Krathong",
+      "chineseNewYear": "Chinese New Year",
+      "christmas": "Christmas"
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

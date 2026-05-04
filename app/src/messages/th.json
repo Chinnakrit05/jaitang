@@ -1,6 +1,37 @@
 {
   "appName": "Jaitang",
   "appTagline": "สมุดบัญชีในใจ",
+  "theme": {
+    "modeTitle": "โหมด",
+    "mode": {
+      "light": "สว่าง",
+      "dark": "มืด",
+      "system": "ตามระบบ"
+    },
+    "oledTitle": "True Black (OLED)",
+    "oledHint": "พื้นหลังดำสนิท ประหยัดแบตจอ OLED — ใช้กับโหมดมืดเท่านั้น",
+    "accentTitle": "สีหลัก (Accent)",
+    "accent": {
+      "cyan": "ฟ้าคราม",
+      "mint": "เขียวมิ้นต์",
+      "ocean": "น้ำเงินทะเล",
+      "lavender": "ม่วงลาเวนเดอร์",
+      "coral": "ส้มคอรัล",
+      "rose": "ชมพูโรส"
+    },
+    "accentDisabledBySeason": "สีหลักถูกแทนด้วยธีมเทศกาล — ปิดธีมเทศกาลก่อนเพื่อเลือกสีหลัก",
+    "seasonTitle": "ธีมตามเทศกาล",
+    "seasonHint": "แต่งสีตามช่วงเทศกาลพิเศษ — แทนสี Accent ขณะเปิดอยู่",
+    "seasonAutoTitle": "อัตโนมัติตามวันที่",
+    "seasonAutoHint": "เปลี่ยนเองตามช่วงเทศกาล (สงกรานต์, ลอยกระทง, ตรุษจีน, คริสต์มาส)",
+    "season": {
+      "default": "ปกติ",
+      "songkran": "สงกรานต์",
+      "loyKrathong": "ลอยกระทง",
+      "chineseNewYear": "ตรุษจีน",
+      "christmas": "คริสต์มาส"
+    }
+  },
   "common": {
     "save": "บันทึก",
     "cancel": "ยกเลิก",

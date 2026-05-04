@@ -1,6 +1,37 @@
 {
   "appName": "Jaitang",
   "appTagline": "心の家計簿",
+  "theme": {
+    "modeTitle": "モード",
+    "mode": {
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システムに従う"
+    },
+    "oledTitle": "True Black (OLED)",
+    "oledHint": "純黒の背景で OLED 画面のバッテリーを節約 — ダークモード時のみ有効。",
+    "accentTitle": "アクセントカラー",
+    "accent": {
+      "cyan": "シアン",
+      "mint": "ミント",
+      "ocean": "オーシャン",
+      "lavender": "ラベンダー",
+      "coral": "コーラル",
+      "rose": "ローズ"
+    },
+    "accentDisabledBySeason": "アクセントは季節テーマで上書きされています — 季節テーマをオフにすると選べます。",
+    "seasonTitle": "季節テーマ",
+    "seasonHint": "祝祭日のパレット — 有効時はアクセントを上書きします。",
+    "seasonAutoTitle": "日付で自動切替",
+    "seasonAutoHint": "ソンクラン、ロイクラトン、春節、クリスマスに自動で切り替え。",
+    "season": {
+      "default": "デフォルト",
+      "songkran": "ソンクラン",
+      "loyKrathong": "ロイクラトン",
+      "chineseNewYear": "春節",
+      "christmas": "クリスマス"
+    }
+  },
   "common": {
     "save": "保存",
     "cancel": "キャンセル",

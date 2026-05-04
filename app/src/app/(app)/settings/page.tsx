@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/session";
 import { getTranslations } from "next-intl/server";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeControls } from "@/components/theme-controls";
 import { PushToggle } from "@/components/push-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { BackupSection } from "@/components/backup-section";
@@ -68,12 +68,12 @@ export default async function SettingsPage() {
         <PushToggle vapidPublicKey={vapidPublicKey} />
       </section>
 
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
-        <h2 className="font-semibold">{t("settings.themeSection")}</h2>
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <span className="text-sm text-(--muted)">{t("settings.themeHint")}</span>
+      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-4">
+        <div>
+          <h2 className="font-semibold">{t("settings.themeSection")}</h2>
+          <p className="text-sm text-(--muted) mt-1">{t("settings.themeHint")}</p>
         </div>
+        <ThemeControls />
       </section>
 
       <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">

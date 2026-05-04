@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_Thai } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider, themeBootScript } from "@/components/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -48,6 +48,11 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${notoThai.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        {/* Apply OLED / accent / seasonal preferences before paint to avoid
+            a flash of the default cyan theme on every page load. */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body className="min-h-full">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>{children}</ThemeProvider>
