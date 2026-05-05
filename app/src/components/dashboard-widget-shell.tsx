@@ -2,14 +2,31 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Pencil, RotateCcw, X } from "lucide-react";
+import { EyeOff, GripVertical, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import {
   DEFAULT_LAYOUT,
   loadLayout,
-  moveItem,
   saveLayout,
   setVisible,
-  WIDGET_IDS,
   type Layout,
   type WidgetId,
 } from "@/lib/dashboard-layout";
@@ -17,27 +34,24 @@ import {
 export type WidgetMap = Partial<Record<WidgetId, ReactNode>>;
 
 /**
- * Renders dashboard widgets in user-customized order. Server renders all
- * widgets and passes them in via `widgets`; this client shell:
+ * Customizable dashboard. Server renders all widgets; this client shell:
  *   1. Loads layout from localStorage (defaults to canonical order).
- *   2. Filters/reorders the widgets based on layout state.
- *   3. Exposes an "Edit layout" panel where the user can move widgets
- *      up/down or hide/show them. Changes persist immediately.
+ *   2. Renders visible widgets in a `@dnd-kit` SortableContext so the
+ *      user can drag them to reorder.
+ *   3. In edit mode: each widget shows a drag handle and a hide button.
+ *      Hidden widgets are surfaced as chips at the bottom so they can
+ *      be restored.
  *
- * Hydration order: the very first paint uses DEFAULT_LAYOUT (server-side
- * render is deterministic). After mount we swap in the saved layout.
- * This may cause a brief flash for users who heavily customized — fine
- * for v1; SSR-cookie-based hydration is the next-step upgrade.
+ * Mobile: PointerSensor handles mouse + stylus, TouchSensor uses a
+ * 180ms long-press so taps and scrolls don't accidentally start drags.
  */
 export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
   const t = useTranslations();
   const [layout, setLayout] = useState<Layout>(DEFAULT_LAYOUT);
   const [editing, setEditing] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setLayout(loadLayout());
-    setHydrated(true);
   }, []);
 
   function commit(next: Layout) {
@@ -45,8 +59,27 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
     saveLayout(next);
   }
 
-  function move(index: number, dir: -1 | 1) {
-    commit(moveItem(layout, index, index + dir));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    }),
+    useSensor(TouchSensor, {
+      // Long-press to start drag — keeps scroll/tap usable on mobile.
+      activationConstraint: { delay: 180, tolerance: 6 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = layout.map((it) => it.id);
+    const from = ids.indexOf(active.id as WidgetId);
+    const to = ids.indexOf(over.id as WidgetId);
+    if (from === -1 || to === -1) return;
+    commit(arrayMove(layout, from, to));
   }
 
   function toggle(id: WidgetId, visible: boolean) {
@@ -66,7 +99,9 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
     recent: t("dashboard.widgetRecent"),
   };
 
-  const hidden = layout.filter((it) => !it.visible);
+  const visibleItems = layout.filter((it) => it.visible);
+  const hiddenItems = layout.filter((it) => !it.visible);
+  const visibleIds = visibleItems.map((it) => it.id);
 
   return (
     <>
@@ -88,97 +123,143 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
             </>
           )}
         </button>
+        {editing && layout.some((it, i) => it.id !== DEFAULT_LAYOUT[i]?.id || !it.visible) && (
+          <button
+            type="button"
+            onClick={reset}
+            className="inline-flex items-center gap-1 text-xs text-(--muted) hover:text-(--foreground) px-2 py-1 rounded-md hover:bg-(--card)"
+          >
+            <RotateCcw size={12} />
+            {t("dashboard.layoutReset")}
+          </button>
+        )}
       </div>
 
-      {editing && (
-        <div className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-2 fade-rise">
-          <ul className="space-y-1.5">
-            {layout.map((item, index) => (
-              <li
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={visibleIds} strategy={verticalListSortingStrategy}>
+          <div className="space-y-6">
+            {visibleItems.map((item) => {
+              const node = widgets[item.id];
+              if (!node) return null;
+              return (
+                <SortableWidget
+                  key={item.id}
+                  id={item.id}
+                  label={widgetLabel[item.id]}
+                  editing={editing}
+                  onHide={() => toggle(item.id, false)}
+                  hideLabel={t("dashboard.layoutHide")}
+                >
+                  {node}
+                </SortableWidget>
+              );
+            })}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      {editing && hiddenItems.length > 0 && (
+        <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-4 fade-rise">
+          <div className="text-xs uppercase tracking-wide text-(--muted) mb-2 font-medium">
+            {t("dashboard.layoutHidden")}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {hiddenItems.map((item) => (
+              <button
                 key={item.id}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-(--background) transition"
+                type="button"
+                onClick={() => toggle(item.id, true)}
+                className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) transition"
               >
-                <span
-                  className={`flex-1 text-sm font-medium truncate ${
-                    item.visible ? "" : "text-(--muted) line-through"
-                  }`}
-                >
-                  {widgetLabel[item.id]}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => move(index, -1)}
-                  disabled={index === 0}
-                  aria-label={t("dashboard.layoutMoveUp")}
-                  title={t("dashboard.layoutMoveUp")}
-                  className="p-1.5 rounded-md hover:bg-(--card) disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ArrowUp size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => move(index, 1)}
-                  disabled={index === layout.length - 1}
-                  aria-label={t("dashboard.layoutMoveDown")}
-                  title={t("dashboard.layoutMoveDown")}
-                  className="p-1.5 rounded-md hover:bg-(--card) disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ArrowDown size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggle(item.id, !item.visible)}
-                  aria-label={
-                    item.visible
-                      ? t("dashboard.layoutHide")
-                      : t("dashboard.layoutShow")
-                  }
-                  title={
-                    item.visible
-                      ? t("dashboard.layoutHide")
-                      : t("dashboard.layoutShow")
-                  }
-                  className="p-1.5 rounded-md hover:bg-(--card) text-(--muted) hover:text-(--foreground)"
-                >
-                  {item.visible ? <Eye size={14} /> : <EyeOff size={14} />}
-                </button>
-              </li>
+                <Plus size={14} />
+                {widgetLabel[item.id]}
+              </button>
             ))}
-          </ul>
-          <div className="flex items-center justify-between pt-2 border-t border-(--border)">
-            <span className="text-xs text-(--muted)">
-              {hidden.length === 0
-                ? t("dashboard.layoutEmpty")
-                : `${t("dashboard.layoutHidden")}: ${hidden
-                    .map((it) => widgetLabel[it.id])
-                    .join(", ")}`}
-            </span>
-            <button
-              type="button"
-              onClick={reset}
-              className="inline-flex items-center gap-1 text-xs text-(--muted) hover:text-(--foreground) px-2 py-1 rounded-md hover:bg-(--background)"
-            >
-              <RotateCcw size={12} />
-              {t("dashboard.layoutReset")}
-            </button>
           </div>
         </div>
       )}
-
-      {/* The widgets themselves — render only those marked visible, in
-          the user's chosen order. Use a key on the outer fragment that
-          changes after hydration so React doesn't try to reconcile the
-          server-rendered "all visible / default order" tree with the
-          customized tree (and break inner client state). */}
-      <div className="space-y-6" key={hydrated ? "client" : "ssr"}>
-        {layout
-          .filter((it) => it.visible)
-          .map((it) => {
-            const node = widgets[it.id];
-            if (!node) return null;
-            return <div key={it.id}>{node}</div>;
-          })}
-      </div>
     </>
   );
 }
+
+function SortableWidget({
+  id,
+  label,
+  editing,
+  children,
+  onHide,
+  hideLabel,
+}: {
+  id: WidgetId;
+  label: string;
+  editing: boolean;
+  children: ReactNode;
+  onHide: () => void;
+  hideLabel: string;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id, disabled: !editing });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    // Lift the dragged widget visually so the user knows it's "in hand".
+    zIndex: isDragging ? 30 : undefined,
+    opacity: isDragging ? 0.92 : undefined,
+    boxShadow: isDragging
+      ? "0 12px 32px -8px color-mix(in srgb, var(--accent) 40%, transparent)"
+      : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative">
+      {editing && (
+        <div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-(--card)/90 backdrop-blur rounded-lg border border-(--border) p-1 shadow-sm">
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            aria-label={label}
+            title={label}
+            className="inline-flex items-center justify-center h-7 w-7 rounded-md text-(--muted) hover:text-(--foreground) hover:bg-(--background) cursor-grab active:cursor-grabbing touch-none"
+          >
+            <GripVertical size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={onHide}
+            aria-label={hideLabel}
+            title={hideLabel}
+            className="inline-flex items-center justify-center h-7 w-7 rounded-md text-(--muted) hover:text-(--expense) hover:bg-(--background)"
+          >
+            <EyeOff size={14} />
+          </button>
+        </div>
+      )}
+      {/* Edit-mode visual cue: dashed accent ring around each widget so
+          the user knows the widget is the draggable unit. */}
+      {editing && (
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-2xl border-2 border-dashed pointer-events-none"
+          style={{
+            borderColor: "color-mix(in srgb, var(--accent) 40%, transparent)",
+          }}
+        />
+      )}
+      {children}
+    </div>
+  );
+}
+
