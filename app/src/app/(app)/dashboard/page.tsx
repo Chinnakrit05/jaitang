@@ -12,6 +12,10 @@ import { DashboardRangeFilter } from "@/components/dashboard-range-filter";
 import { DashboardCurrencyToggle } from "@/components/dashboard-currency-toggle";
 import { DashboardAccountBalances } from "@/components/dashboard-account-balances";
 import { DecorativePattern } from "@/components/decorative-pattern";
+import {
+  DashboardWidgetShell,
+  type WidgetMap,
+} from "@/components/dashboard-widget-shell";
 import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { SUPPORTED_CODES } from "@/lib/currencies";
@@ -111,79 +115,101 @@ export default async function DashboardPage({
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <SummaryCard
-          label={t("dashboard.incomeMonth")}
-          value={summary.income}
-          icon={<TrendingUp size={20} />}
-          tone="income"
-          currency={displayCurrency}
-          fmtLocale={fmtLocale}
-        />
-        <SummaryCard
-          label={t("dashboard.expenseMonth")}
-          value={summary.expense}
-          icon={<TrendingDown size={20} />}
-          tone="expense"
-          currency={displayCurrency}
-          fmtLocale={fmtLocale}
-        />
-        <SummaryCard
-          label={t("dashboard.balanceCard")}
-          value={summary.balance}
-          icon={<Wallet size={20} />}
-          tone={summary.balance >= 0 ? "balance" : "expense"}
-          showSign
-          currency={displayCurrency}
-          fmtLocale={fmtLocale}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
-          <h2 className="section-heading font-semibold mb-4">{t("dashboard.expenseByCategory")}</h2>
-          <ExpenseByCategoryChart
-            summary={summary}
-            currency={displayCurrency}
-            fmtLocale={fmtLocale}
-          />
-        </section>
-
-        <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
-          <h2 className="section-heading font-semibold mb-4">{t("dashboard.dailyTrend")}</h2>
-          <DailyTrendChart
-            summary={summary}
-            currency={displayCurrency}
-            fmtLocale={fmtLocale}
-          />
-        </section>
-      </div>
-
-      <DashboardAccountBalances
-        accounts={accountBalances}
-        homeCurrency={ledger.currency}
-        fmtLocale={fmtLocale}
-      />
-
-      <PaymentMethodBreakdown
-        summary={summary}
-        currency={displayCurrency}
-        fmtLocale={fmtLocale}
-      />
-
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="section-heading font-semibold">{t("dashboard.recent")}</h2>
-          <Link href="/transactions" className="text-sm text-(--accent) hover:underline">
-            {t("dashboard.viewAll")}
-          </Link>
-        </div>
-        <TransactionList
-          items={recent}
-          showAttribution={!ledger.is_personal}
-          currency={currency}
-        />
-      </section>
+      {/* Customizable widgets — order + visibility persist per-user via
+          localStorage. Charts are now stacked full-width (was 2-col)
+          so they can be reordered independently. */}
+      {(() => {
+        const widgets: WidgetMap = {
+          summary: (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <SummaryCard
+                label={t("dashboard.incomeMonth")}
+                value={summary.income}
+                icon={<TrendingUp size={20} />}
+                tone="income"
+                currency={displayCurrency}
+                fmtLocale={fmtLocale}
+              />
+              <SummaryCard
+                label={t("dashboard.expenseMonth")}
+                value={summary.expense}
+                icon={<TrendingDown size={20} />}
+                tone="expense"
+                currency={displayCurrency}
+                fmtLocale={fmtLocale}
+              />
+              <SummaryCard
+                label={t("dashboard.balanceCard")}
+                value={summary.balance}
+                icon={<Wallet size={20} />}
+                tone={summary.balance >= 0 ? "balance" : "expense"}
+                showSign
+                currency={displayCurrency}
+                fmtLocale={fmtLocale}
+              />
+            </div>
+          ),
+          expenseByCategory: (
+            <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
+              <h2 className="section-heading font-semibold mb-4">
+                {t("dashboard.expenseByCategory")}
+              </h2>
+              <ExpenseByCategoryChart
+                summary={summary}
+                currency={displayCurrency}
+                fmtLocale={fmtLocale}
+              />
+            </section>
+          ),
+          dailyTrend: (
+            <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
+              <h2 className="section-heading font-semibold mb-4">
+                {t("dashboard.dailyTrend")}
+              </h2>
+              <DailyTrendChart
+                summary={summary}
+                currency={displayCurrency}
+                fmtLocale={fmtLocale}
+              />
+            </section>
+          ),
+          accountBalances: (
+            <DashboardAccountBalances
+              accounts={accountBalances}
+              homeCurrency={ledger.currency}
+              fmtLocale={fmtLocale}
+            />
+          ),
+          paymentMethod: (
+            <PaymentMethodBreakdown
+              summary={summary}
+              currency={displayCurrency}
+              fmtLocale={fmtLocale}
+            />
+          ),
+          recent: (
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="section-heading font-semibold">
+                  {t("dashboard.recent")}
+                </h2>
+                <Link
+                  href="/transactions"
+                  className="text-sm text-(--accent) hover:underline"
+                >
+                  {t("dashboard.viewAll")}
+                </Link>
+              </div>
+              <TransactionList
+                items={recent}
+                showAttribution={!ledger.is_personal}
+                currency={currency}
+              />
+            </section>
+          ),
+        };
+        return <DashboardWidgetShell widgets={widgets} />;
+      })()}
     </div>
   );
 }

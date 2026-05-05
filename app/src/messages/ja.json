@@ -126,7 +126,22 @@
     "paymentMethodTitle": "支払い方法別",
     "paymentMethodEmpty": "今月の取引はまだありません",
     "paymentMethodUnspecified": "未指定",
-    "paymentMethodUnspecifiedHint": "現金/振込が未設定の古い取引 — 取引編集ページで補完できます"
+    "paymentMethodUnspecifiedHint": "現金/振込が未設定の古い取引 — 取引編集ページで補完できます",
+    "layoutEdit": "レイアウト編集",
+    "layoutDone": "完了",
+    "layoutReset": "リセット",
+    "layoutHidden": "非表示中",
+    "layoutEmpty": "すべてのウィジェットが表示中",
+    "layoutMoveUp": "上に移動",
+    "layoutMoveDown": "下に移動",
+    "layoutHide": "非表示",
+    "layoutShow": "表示",
+    "widgetSummary": "収支サマリー",
+    "widgetExpenseByCategory": "カテゴリ別支出",
+    "widgetDailyTrend": "日次トレンド",
+    "widgetAccountBalances": "口座残高",
+    "widgetPaymentMethod": "支払い方法",
+    "widgetRecent": "最近の取引"
   },
   "transactions": {
     "title": "すべての取引",

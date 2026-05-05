@@ -126,7 +126,22 @@
     "paymentMethodTitle": "按付款方式",
     "paymentMethodEmpty": "本月还没有记录",
     "paymentMethodUnspecified": "未标注",
-    "paymentMethodUnspecifiedHint": "尚未标注现金/转账的旧记录 — 可在记录编辑页补充"
+    "paymentMethodUnspecifiedHint": "尚未标注现金/转账的旧记录 — 可在记录编辑页补充",
+    "layoutEdit": "调整布局",
+    "layoutDone": "完成",
+    "layoutReset": "重置",
+    "layoutHidden": "已隐藏",
+    "layoutEmpty": "所有组件都已显示",
+    "layoutMoveUp": "上移",
+    "layoutMoveDown": "下移",
+    "layoutHide": "隐藏",
+    "layoutShow": "显示",
+    "widgetSummary": "收支摘要",
+    "widgetExpenseByCategory": "分类支出",
+    "widgetDailyTrend": "每日趋势",
+    "widgetAccountBalances": "账户余额",
+    "widgetPaymentMethod": "支付方式",
+    "widgetRecent": "最近记录"
   },
   "transactions": {
     "title": "全部记录",

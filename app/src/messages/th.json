@@ -126,7 +126,22 @@
     "paymentMethodTitle": "สรุปตามช่องทาง",
     "paymentMethodEmpty": "เดือนนี้ยังไม่มีรายการ",
     "paymentMethodUnspecified": "ไม่ระบุช่องทาง",
-    "paymentMethodUnspecifiedHint": "รายการเก่าที่ยังไม่ได้ระบุเงินสด/เงินโอน — แก้ที่หน้าแก้ไขรายการได้"
+    "paymentMethodUnspecifiedHint": "รายการเก่าที่ยังไม่ได้ระบุเงินสด/เงินโอน — แก้ที่หน้าแก้ไขรายการได้",
+    "layoutEdit": "ปรับเลย์เอาต์",
+    "layoutDone": "เสร็จ",
+    "layoutReset": "รีเซ็ต",
+    "layoutHidden": "ที่ซ่อนไว้",
+    "layoutEmpty": "ทุก widget แสดงอยู่",
+    "layoutMoveUp": "เลื่อนขึ้น",
+    "layoutMoveDown": "เลื่อนลง",
+    "layoutHide": "ซ่อน",
+    "layoutShow": "แสดง",
+    "widgetSummary": "สรุปรายรับ-รายจ่าย",
+    "widgetExpenseByCategory": "รายจ่ายตามหมวด",
+    "widgetDailyTrend": "เทรนด์รายวัน",
+    "widgetAccountBalances": "ยอดบัญชี",
+    "widgetPaymentMethod": "สรุปตามช่องทาง",
+    "widgetRecent": "รายการล่าสุด"
   },
   "transactions": {
     "title": "รายการทั้งหมด",

@@ -126,7 +126,22 @@
     "paymentMethodTitle": "By payment method",
     "paymentMethodEmpty": "No transactions yet this month",
     "paymentMethodUnspecified": "Not tagged",
-    "paymentMethodUnspecifiedHint": "Older rows with no cash/transfer tag — edit them on the transaction page to fill in"
+    "paymentMethodUnspecifiedHint": "Older rows with no cash/transfer tag — edit them on the transaction page to fill in",
+    "layoutEdit": "Edit layout",
+    "layoutDone": "Done",
+    "layoutReset": "Reset",
+    "layoutHidden": "Hidden",
+    "layoutEmpty": "All widgets are visible",
+    "layoutMoveUp": "Move up",
+    "layoutMoveDown": "Move down",
+    "layoutHide": "Hide",
+    "layoutShow": "Show",
+    "widgetSummary": "Income / Expense summary",
+    "widgetExpenseByCategory": "Expense by category",
+    "widgetDailyTrend": "Daily trend",
+    "widgetAccountBalances": "Account balances",
+    "widgetPaymentMethod": "Payment methods",
+    "widgetRecent": "Recent transactions"
   },
   "transactions": {
     "title": "All transactions",
