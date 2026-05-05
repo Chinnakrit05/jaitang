@@ -81,7 +81,7 @@ export default async function DashboardPage({
   const subtitle = buildSubtitle(rangeKey, range.from, fmtLocale, t);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-rise">
       <div className="relative flex items-end justify-between flex-wrap gap-3 overflow-hidden">
         <DecorativePattern kind="dots" className="top-0 right-0 -mr-2 -mt-2 hidden sm:block" />
         <div className="space-y-1.5 relative">
@@ -141,7 +141,7 @@ export default async function DashboardPage({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
-          <h2 className="font-semibold mb-4">{t("dashboard.expenseByCategory")}</h2>
+          <h2 className="section-heading font-semibold mb-4">{t("dashboard.expenseByCategory")}</h2>
           <ExpenseByCategoryChart
             summary={summary}
             currency={displayCurrency}
@@ -150,7 +150,7 @@ export default async function DashboardPage({
         </section>
 
         <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
-          <h2 className="font-semibold mb-4">{t("dashboard.dailyTrend")}</h2>
+          <h2 className="section-heading font-semibold mb-4">{t("dashboard.dailyTrend")}</h2>
           <DailyTrendChart
             summary={summary}
             currency={displayCurrency}
@@ -173,7 +173,7 @@ export default async function DashboardPage({
 
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold">{t("dashboard.recent")}</h2>
+          <h2 className="section-heading font-semibold">{t("dashboard.recent")}</h2>
           <Link href="/transactions" className="text-sm text-(--accent) hover:underline">
             {t("dashboard.viewAll")}
           </Link>
@@ -251,17 +251,58 @@ function SummaryCard({
       ? "text-(--expense)"
       : "text-(--accent)";
 
+  // Tone-tinted CSS var — drives the corner blob fill so income cards
+  // glow green, expense cards glow red, balance cards glow accent.
+  const toneVar =
+    tone === "income"
+      ? "var(--income)"
+      : tone === "expense"
+      ? "var(--expense)"
+      : "var(--accent)";
+
   const sign = showSign ? (value >= 0 ? "+" : "−") : "";
 
   return (
-    <div className="group card-hover rounded-2xl border border-(--border) bg-(--card) p-5 hover:border-(--muted)/40">
-      <div className="flex items-center justify-between text-xs uppercase tracking-wide text-(--muted) mb-3">
+    <div className="group card-hover rounded-2xl border border-(--border) bg-(--card) p-5 hover:border-(--muted)/40 relative overflow-hidden">
+      {/* Corner blob — soft radial glow in the tone color, fades into the
+          card. Pure CSS so it follows the theme without extra JS. */}
+      <div
+        aria-hidden
+        className="absolute -top-12 -right-12 w-40 h-40 rounded-full pointer-events-none transition-opacity opacity-60 group-hover:opacity-90"
+        style={{
+          background: `radial-gradient(circle, color-mix(in srgb, ${toneVar} 28%, transparent), transparent 70%)`,
+        }}
+      />
+      {/* Decorative arc in the bottom-left — adds visual interest without
+          stealing focus from the number. */}
+      <svg
+        aria-hidden
+        className="absolute -bottom-3 -left-3 pointer-events-none opacity-30 group-hover:opacity-50 transition-opacity"
+        width="72"
+        height="48"
+        viewBox="0 0 72 48"
+        fill="none"
+      >
+        <path
+          d="M0 40 Q18 20 36 30 T72 18"
+          stroke={toneVar}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+      <div className="flex items-center justify-between text-xs uppercase tracking-wide text-(--muted) mb-3 relative">
         <span className="font-medium">{label}</span>
-        <span className={`${toneClass} opacity-70 group-hover:opacity-100 transition`}>
+        <span
+          className={`${toneClass} inline-flex items-center justify-center h-8 w-8 rounded-xl transition group-hover:scale-110`}
+          style={{
+            background: `color-mix(in srgb, ${toneVar} 14%, transparent)`,
+          }}
+        >
           {icon}
         </span>
       </div>
-      <div className={`text-2xl sm:text-3xl font-semibold tabular-nums ${toneClass}`}>
+      <div className={`text-2xl sm:text-3xl font-semibold tabular-nums ${toneClass} relative`}>
         {value === 0 ? "—" : `${sign}${formatCurrency(Math.abs(value), currency, fmtLocale)}`}
       </div>
     </div>

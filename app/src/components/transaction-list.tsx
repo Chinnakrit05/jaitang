@@ -122,9 +122,15 @@ export function TransactionList({
               {txs.map((tx) => (
                 <li
                   key={tx.id}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition group"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition group tone-strip"
+                  style={{
+                    ["--tone" as string]:
+                      tx.kind === "income"
+                        ? "var(--income)"
+                        : "var(--expense)",
+                  }}
                 >
-                  <span className="text-2xl">{tx.category?.icon ?? "✨"}</span>
+                  <span className="text-2xl pl-1">{tx.category?.icon ?? "✨"}</span>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">
                       {tx.category?.name ?? t("common.uncategorizedFull")}

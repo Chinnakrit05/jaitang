@@ -53,6 +53,12 @@ export function ActiveTripBanner({
         href={`/trips/${tripId}`}
         className="flex items-center gap-2 px-4 sm:px-6 py-2 text-sm hover:bg-(--background)/50 transition"
       >
+        {/* Tiny pulsing dot — signals "live / active" without words */}
+        <span
+          aria-hidden
+          className="pulse-ring inline-block h-2 w-2 rounded-full shrink-0"
+          style={{ background: accent }}
+        />
         <Plane
           size={14}
           className="shrink-0"
