@@ -59,9 +59,9 @@ export function AccountCard({
             }}
           >
             {account.icon ? (
-              <EmojiOrIcon value={account.icon} size={20} />
+              <EmojiOrIcon value={account.icon} size={24} />
             ) : (
-              <JtIcon name={typeIcon} size={20} />
+              <JtIcon name={typeIcon} size={24} />
             )}
           </span>
           <div className="flex-1 min-w-0">
@@ -74,7 +74,7 @@ export function AccountCard({
               )}
               {account.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                  <JtIcon name="archive" size={12} />
+                  <JtIcon name="archive" size={16} />
                   {t("accounts.archivedBadge")}
                 </span>
               )}

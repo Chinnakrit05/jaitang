@@ -93,7 +93,7 @@ export default async function EditTransactionPage({
         href="/transactions"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground) mb-4"
       >
-        <JtIcon name="arrow-left" size={16} />
+        <JtIcon name="arrow-left" size={20} />
         {t("common.back")}
       </Link>
       <h1 className="text-2xl font-bold mb-6">{t("transactions.editTitle")}</h1>

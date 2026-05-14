@@ -55,7 +55,7 @@ export function GoalActions({
           }}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          <JtIcon name="archive" size={14} />
+          <JtIcon name="archive" size={18} />
           {pending ? labels.working : labels.archive}
         </button>
       )}
@@ -66,7 +66,7 @@ export function GoalActions({
           onClick={() => run(onUnarchive)}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          <JtIcon name="archive-restore" size={14} />
+          <JtIcon name="archive-restore" size={18} />
           {pending ? labels.working : labels.unarchive}
         </button>
       )}
@@ -79,7 +79,7 @@ export function GoalActions({
         }}
         className="inline-flex items-center gap-2 rounded-xl border border-(--expense)/40 bg-(--expense)/10 text-(--expense) hover:bg-(--expense)/20 px-4 py-2 text-sm font-medium disabled:opacity-50"
       >
-        <JtIcon name="trash2" size={14} />
+        <JtIcon name="trash2" size={18} />
         {labels.delete}
       </button>
     </div>

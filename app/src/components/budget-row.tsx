@@ -49,7 +49,7 @@ export function BudgetRow({
   return (
     <li className="px-4 py-3 hover:bg-(--background) transition">
       <div className="flex items-center gap-3">
-        <EmojiOrIcon value={category.icon} fallback="sparkle" size={24} />
+        <EmojiOrIcon value={category.icon} fallback="sparkle" size={28} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-3">
             <div className="font-medium truncate">{category.name}</div>
@@ -72,7 +72,7 @@ export function BudgetRow({
                   className="p-1.5 rounded-lg text-(--income) hover:bg-(--income)/10"
                   aria-label="บันทึก"
                 >
-                  <JtIcon name="check" size={16} />
+                  <JtIcon name="check" size={20} />
                 </button>
                 <button
                   type="button"
@@ -83,7 +83,7 @@ export function BudgetRow({
                   className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
                   aria-label="ยกเลิก"
                 >
-                  <JtIcon name="x" size={16} />
+                  <JtIcon name="x" size={20} />
                 </button>
               </div>
             ) : amount > 0 ? (
@@ -94,7 +94,7 @@ export function BudgetRow({
               >
                 {formatCurrency(spent, currency, fmtLocale)} /{" "}
                 {formatCurrency(amount, currency, fmtLocale)}
-                <JtIcon name="pencil" size={12} />
+                <JtIcon name="pencil" size={16} />
               </button>
             ) : (
               <button

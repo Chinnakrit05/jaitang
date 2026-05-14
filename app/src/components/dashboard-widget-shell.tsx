@@ -114,12 +114,12 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
         >
           {editing ? (
             <>
-              <JtIcon name="x" size={14} />
+              <JtIcon name="x" size={18} />
               {t("dashboard.layoutDone")}
             </>
           ) : (
             <>
-              <JtIcon name="pencil" size={14} />
+              <JtIcon name="pencil" size={18} />
               {t("dashboard.layoutEdit")}
             </>
           )}
@@ -130,7 +130,7 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
             onClick={reset}
             className="inline-flex items-center gap-1 text-xs text-(--muted) hover:text-(--foreground) px-2 py-1 rounded-md hover:bg-(--card)"
           >
-            <JtIcon name="rotate-ccw" size={12} />
+            <JtIcon name="rotate-ccw" size={16} />
             {t("dashboard.layoutReset")}
           </button>
         )}
@@ -177,7 +177,7 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
                 onClick={() => toggle(item.id, true)}
                 className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) transition"
               >
-                <JtIcon name="plus-fab" size={14} />
+                <JtIcon name="plus-fab" size={18} />
                 {widgetLabel[item.id]}
               </button>
             ))}
@@ -244,7 +244,7 @@ function SortableWidget({
             title={hideLabel}
             className="inline-flex items-center justify-center h-7 w-7 rounded-md text-(--muted) hover:text-(--expense) hover:bg-(--background)"
           >
-            <JtIcon name="eye-off" size={14} />
+            <JtIcon name="eye-off" size={18} />
           </button>
         </div>
       )}

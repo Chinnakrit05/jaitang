@@ -32,7 +32,7 @@ export async function DashboardAccountBalances({
       <section className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <JtIcon name="accounts" size={18} className="text-(--muted)" />
+            <JtIcon name="accounts" size={22} className="text-(--muted)" />
             <h2 className="font-semibold text-sm">
               {t("accounts.dashboardHeading")}
             </h2>
@@ -42,7 +42,7 @@ export async function DashboardAccountBalances({
             className="text-sm text-(--accent) hover:underline inline-flex items-center gap-1"
           >
             {t("accounts.dashboardCtaCreate")}
-            <JtIcon name="chevron-right" size={14} />
+            <JtIcon name="chevron-right" size={18} />
           </Link>
         </div>
         <p className="text-xs text-(--muted) mt-2">
@@ -74,7 +74,7 @@ export async function DashboardAccountBalances({
     <section className="rounded-2xl border border-(--border) bg-(--card) p-5 card-hover">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
-          <JtIcon name="accounts" size={18} className="text-(--accent)" />
+          <JtIcon name="accounts" size={22} className="text-(--accent)" />
           <h2 className="font-semibold">{t("accounts.dashboardHeading")}</h2>
         </div>
         <Link
@@ -82,7 +82,7 @@ export async function DashboardAccountBalances({
           className="text-sm text-(--accent) hover:underline inline-flex items-center gap-1"
         >
           {t("accounts.dashboardCtaAll")}
-          <JtIcon name="chevron-right" size={14} />
+          <JtIcon name="chevron-right" size={18} />
         </Link>
       </div>
 
@@ -121,7 +121,7 @@ export async function DashboardAccountBalances({
                       : "var(--card)",
                   }}
                 >
-                  <EmojiOrIcon value={a.icon} fallback="money-bag" size={20} />
+                  <EmojiOrIcon value={a.icon} fallback="money-bag" size={24} />
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{a.name}</div>

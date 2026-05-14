@@ -122,13 +122,13 @@ export function ThemeControls() {
           <ModeButton
             active={theme === "light"}
             onClick={() => setTheme("light")}
-            icon={<JtIcon name="sun" size={16} />}
+            icon={<JtIcon name="sun" size={20} />}
             label={t("theme.mode.light")}
           />
           <ModeButton
             active={theme === "dark"}
             onClick={() => setTheme("dark")}
-            icon={<JtIcon name="moon" size={16} />}
+            icon={<JtIcon name="moon" size={20} />}
             label={t("theme.mode.dark")}
           />
           <ModeButton
@@ -185,7 +185,7 @@ export function ThemeControls() {
                   style={{ backgroundColor: ACCENT_SWATCHES[a] }}
                 />
                 {t(meta.nameKey)}
-                {isActive && <JtIcon name="check" size={14} />}
+                {isActive && <JtIcon name="check" size={18} />}
               </button>
             );
           })}
@@ -241,7 +241,7 @@ export function ThemeControls() {
                     style={{ backgroundColor: swatch }}
                   />
                 )}
-                {isActive && <JtIcon name="check" size={14} />}
+                {isActive && <JtIcon name="check" size={18} />}
               </button>
             );
           })}

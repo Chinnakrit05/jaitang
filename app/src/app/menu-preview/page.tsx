@@ -109,22 +109,22 @@ export default function MenuPreviewPage() {
           </h2>
           <div className="flex flex-wrap items-center gap-3">
             <button className="inline-flex items-center gap-2 rounded-xl bg-(--accent) px-4 py-2 text-sm font-semibold text-(--accent-foreground)">
-              <JtIcon name="plus-fab" size={16} /> New transaction
+              <JtIcon name="plus-fab" size={20} /> New transaction
             </button>
             <button className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) px-4 py-2 text-sm font-medium">
-              <JtIcon name="pencil" size={14} /> Edit
+              <JtIcon name="pencil" size={18} /> Edit
             </button>
             <button className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) px-4 py-2 text-sm font-medium text-(--expense)">
-              <JtIcon name="trash2" size={14} /> Delete
+              <JtIcon name="trash2" size={18} /> Delete
             </button>
             <button className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) px-4 py-2 text-sm font-medium">
-              <JtIcon name="download" size={14} /> Export
+              <JtIcon name="download" size={18} /> Export
             </button>
             <button className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) px-4 py-2 text-sm font-medium">
-              <JtIcon name="camera" size={14} /> Scan
+              <JtIcon name="camera" size={18} /> Scan
             </button>
             <button className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) px-4 py-2 text-sm font-medium">
-              <JtIcon name="share" size={14} /> Share
+              <JtIcon name="share" size={18} /> Share
             </button>
           </div>
         </section>
@@ -135,19 +135,19 @@ export default function MenuPreviewPage() {
           </h2>
           <div className="flex items-center gap-4 text-sm">
             <span className="inline-flex items-center gap-1.5 text-(--income)">
-              <JtIcon name="trending-up" size={16} /> +12,400
+              <JtIcon name="trending-up" size={20} /> +12,400
             </span>
             <span className="inline-flex items-center gap-1.5 text-(--expense)">
-              <JtIcon name="trending-down" size={16} /> -8,650
+              <JtIcon name="trending-down" size={20} /> -8,650
             </span>
             <span className="inline-flex items-center gap-1.5 text-(--muted)">
-              <JtIcon name="minus" size={16} /> 0
+              <JtIcon name="minus" size={20} /> 0
             </span>
             <span className="inline-flex items-center gap-1.5 text-amber-500">
-              <JtIcon name="flame" size={16} /> Hot day
+              <JtIcon name="flame" size={20} /> Hot day
             </span>
             <span className="inline-flex items-center gap-1.5 text-(--accent)">
-              <JtIcon name="sparkles" size={16} /> AI insight
+              <JtIcon name="sparkles" size={20} /> AI insight
             </span>
           </div>
         </section>
@@ -169,7 +169,7 @@ export default function MenuPreviewPage() {
                 key={label}
                 className="inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--card) px-3 py-1.5 text-xs font-medium"
               >
-                <JtIcon name={icon} size={16} /> {label}
+                <JtIcon name={icon} size={20} /> {label}
               </span>
             ))}
           </div>
@@ -186,9 +186,9 @@ export default function MenuPreviewPage() {
           <PalettePreview label="Category picker (14)" palette={CATEGORY_PALETTE} />
 
           <div className="text-xs text-(--muted) pt-2">
-            Legacy emoji values (e.g. <EmojiOrIcon value="💵" size={14} />,{" "}
-            <EmojiOrIcon value="✈️" size={14} />,{" "}
-            <EmojiOrIcon value="🎯" size={14} />) still render via{" "}
+            Legacy emoji values (e.g. <EmojiOrIcon value="💵" size={18} />,{" "}
+            <EmojiOrIcon value="✈️" size={18} />,{" "}
+            <EmojiOrIcon value="🎯" size={18} />) still render via{" "}
             <code>EmojiOrIcon</code> for old DB rows.
           </div>
         </section>
@@ -222,7 +222,7 @@ function PalettePreview({
             key={name}
             className="inline-flex items-center justify-center h-10 w-10 rounded-lg border border-(--border) bg-(--card)"
           >
-            <JtIcon name={name} size={24} />
+            <JtIcon name={name} size={28} />
           </span>
         ))}
       </div>

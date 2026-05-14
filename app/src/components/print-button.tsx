@@ -18,7 +18,7 @@ export function PrintButton({ label }: { label: string }) {
       onClick={() => window.print()}
       className="inline-flex items-center gap-2 rounded-xl bg-(--accent) text-(--accent-foreground) px-4 py-2 text-sm font-semibold hover:opacity-90 transition cta-primary"
     >
-      <JtIcon name="download" size={14} />
+      <JtIcon name="download" size={18} />
       {label}
     </button>
   );

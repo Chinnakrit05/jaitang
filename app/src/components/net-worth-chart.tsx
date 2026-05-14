@@ -86,11 +86,11 @@ export function NetWorthChart({
             className={`inline-flex items-center gap-1 text-sm font-medium tabular-nums ${trendCls}`}
           >
             {trend === "up" ? (
-              <JtIcon name="trending-up" size={14} />
+              <JtIcon name="trending-up" size={18} />
             ) : trend === "down" ? (
-              <JtIcon name="trending-down" size={14} />
+              <JtIcon name="trending-down" size={18} />
             ) : (
-              <JtIcon name="minus" size={14} />
+              <JtIcon name="minus" size={18} />
             )}
             <span>
               {trend === "down" ? "−" : trend === "up" ? "+" : ""}

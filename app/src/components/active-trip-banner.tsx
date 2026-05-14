@@ -61,7 +61,7 @@ export function ActiveTripBanner({
           style={{ background: accent }}
         />
         <JtIcon name="trips"
-          size={14}
+          size={18}
           className="shrink-0"
           style={{ color: accent }}
         />
@@ -81,7 +81,7 @@ export function ActiveTripBanner({
           title={t("trips.deactivate")}
           className="ml-1 sm:ml-2 p-1 rounded-md text-(--muted) hover:bg-(--card) hover:text-(--foreground) disabled:opacity-50"
         >
-          <JtIcon name="x" size={14} />
+          <JtIcon name="x" size={18} />
         </button>
       </Link>
     </div>

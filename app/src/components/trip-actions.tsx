@@ -58,7 +58,7 @@ export function TripActions({
           onClick={() => run(onSetActive)}
           className="inline-flex items-center gap-2 rounded-xl bg-(--accent) text-(--accent-foreground) px-4 py-2 text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
         >
-          <JtIcon name="trips" size={14} />
+          <JtIcon name="trips" size={18} />
           {labels.setActive}
         </button>
       )}
@@ -72,7 +72,7 @@ export function TripActions({
           }}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          <JtIcon name="archive" size={14} />
+          <JtIcon name="archive" size={18} />
           {pending ? labels.working : labels.archive}
         </button>
       )}
@@ -83,7 +83,7 @@ export function TripActions({
           onClick={() => run(onUnarchive)}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          <JtIcon name="archive-restore" size={14} />
+          <JtIcon name="archive-restore" size={18} />
           {pending ? labels.working : labels.unarchive}
         </button>
       )}
@@ -96,7 +96,7 @@ export function TripActions({
         }}
         className="inline-flex items-center gap-2 rounded-xl border border-(--expense)/40 bg-(--expense)/10 text-(--expense) hover:bg-(--expense)/20 px-4 py-2 text-sm font-medium disabled:opacity-50"
       >
-        <JtIcon name="trash2" size={14} />
+        <JtIcon name="trash2" size={18} />
         {labels.delete}
       </button>
     </div>

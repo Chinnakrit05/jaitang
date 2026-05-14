@@ -50,7 +50,7 @@ export function QuickAddPanel() {
     <div className="space-y-3">
       <div className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-3">
         <div className="flex items-start gap-2">
-          <JtIcon name="sparkles" size={18} className="text-(--accent) shrink-0 mt-1" />
+          <JtIcon name="sparkles" size={22} className="text-(--accent) shrink-0 mt-1" />
           <p className="text-sm text-(--muted)">{t("quick.hint")}</p>
         </div>
         <textarea
@@ -77,12 +77,12 @@ export function QuickAddPanel() {
           >
             {pending ? (
               <>
-                <JtIcon name="loader-2" size={16} className="animate-spin" />
+                <JtIcon name="loader-2" size={20} className="animate-spin" />
                 {t("quick.thinking")}
               </>
             ) : (
               <>
-                <JtIcon name="send" size={16} />
+                <JtIcon name="send" size={20} />
                 {t("quick.submit")}
               </>
             )}
@@ -109,7 +109,7 @@ export function QuickAddPanel() {
       {/* Last saved */}
       {last && (
         <div className="rounded-2xl border border-(--income)/40 bg-(--income)/5 p-4 flex items-start gap-3">
-          <JtIcon name="check-circle-2" size={20} className="text-(--income) shrink-0 mt-0.5" />
+          <JtIcon name="check-circle-2" size={24} className="text-(--income) shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <div className="font-medium flex items-center gap-2 flex-wrap">
               <span>{t("quick.savedTitle")}</span>
@@ -144,7 +144,7 @@ export function QuickAddPanel() {
       {/* Error */}
       {error && (
         <div className="rounded-2xl border border-(--expense)/40 bg-(--expense)/5 p-4 flex items-start gap-3">
-          <JtIcon name="alert-circle" size={20} className="text-(--expense) shrink-0 mt-0.5" />
+          <JtIcon name="alert-circle" size={24} className="text-(--expense) shrink-0 mt-0.5" />
           <div className="flex-1 text-sm text-(--expense)">{error}</div>
         </div>
       )}

@@ -136,7 +136,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
             setIcon(PRESET_ICONS[(idx + 1) % PRESET_ICONS.length]);
           }}
         >
-          <EmojiOrIcon value={icon} size={24} />
+          <EmojiOrIcon value={icon} size={28} />
         </button>
         <input
           value={name}
@@ -154,7 +154,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
           disabled={pending || !name.trim()}
           className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) font-medium text-sm disabled:opacity-50"
         >
-          <JtIcon name="plus-fab" size={16} /> {t("categories.addButton")}
+          <JtIcon name="plus-fab" size={20} /> {t("categories.addButton")}
         </button>
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -219,7 +219,7 @@ function CategoryRow({ category }: { category: Category }) {
             }}
             className="px-2 py-1 rounded-lg border border-(--border) flex items-center justify-center"
           >
-            <EmojiOrIcon value={icon} size={22} />
+            <EmojiOrIcon value={icon} size={26} />
           </button>
           <input
             value={name}
@@ -235,7 +235,7 @@ function CategoryRow({ category }: { category: Category }) {
             className="p-1.5 rounded-lg text-(--income) hover:bg-(--income)/10"
             aria-label={t("common.save")}
           >
-            <JtIcon name="check" size={18} />
+            <JtIcon name="check" size={22} />
           </button>
           <button
             type="button"
@@ -247,12 +247,12 @@ function CategoryRow({ category }: { category: Category }) {
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
             aria-label={t("common.cancel")}
           >
-            <JtIcon name="x" size={18} />
+            <JtIcon name="x" size={22} />
           </button>
         </>
       ) : (
         <>
-          <EmojiOrIcon value={category.icon} fallback={DEFAULT_CATEGORY_ICON} size={24} />
+          <EmojiOrIcon value={category.icon} fallback={DEFAULT_CATEGORY_ICON} size={28} />
           <span className="flex-1 font-medium">{category.name}</span>
           <span
             className="h-3 w-3 rounded-full"
@@ -264,7 +264,7 @@ function CategoryRow({ category }: { category: Category }) {
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
             aria-label={t("common.edit")}
           >
-            <JtIcon name="pencil" size={16} />
+            <JtIcon name="pencil" size={20} />
           </button>
           <button
             type="button"
@@ -273,7 +273,7 @@ function CategoryRow({ category }: { category: Category }) {
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
             aria-label={t("common.delete")}
           >
-            <JtIcon name="trash2" size={16} />
+            <JtIcon name="trash2" size={20} />
           </button>
         </>
       )}

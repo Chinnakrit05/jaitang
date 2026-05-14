@@ -104,7 +104,7 @@ export function MembersPanel({
                   className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
                   aria-label={t("common.delete")}
                 >
-                  <JtIcon name="trash2" size={16} />
+                  <JtIcon name="trash2" size={20} />
                 </button>
               </>
             )}

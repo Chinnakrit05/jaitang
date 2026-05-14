@@ -111,7 +111,7 @@ export function EditTripModal({
         title={t("trips.editTrip")}
         className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
       >
-        <JtIcon name="pencil" size={14} />
+        <JtIcon name="pencil" size={18} />
         <span className="hidden sm:inline">{t("trips.editTrip")}</span>
       </button>
 
@@ -137,7 +137,7 @@ export function EditTripModal({
                 className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background)"
                 aria-label="close"
               >
-                <JtIcon name="x" size={18} />
+                <JtIcon name="x" size={22} />
               </button>
             </div>
 
@@ -167,13 +167,13 @@ export function EditTripModal({
                           : "border-(--border) bg-(--background) hover:bg-(--card)"
                       )}
                     >
-                      <JtIcon name={ic} size={22} />
+                      <JtIcon name={ic} size={26} />
                     </button>
                   ))}
                 </div>
                 {!ICON_CHOICES.includes(icon as IconName) && icon && (
                   <div className="mt-2 inline-flex items-center gap-2 text-xs text-(--muted)">
-                    <EmojiOrIcon value={icon} size={18} />
+                    <EmojiOrIcon value={icon} size={22} />
                     <span>(legacy emoji)</span>
                   </div>
                 )}

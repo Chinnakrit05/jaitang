@@ -59,7 +59,7 @@ export function InvitesPanel({
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition"
         >
-          <JtIcon name="plus-fab" size={16} />
+          <JtIcon name="plus-fab" size={20} />
           {t("invites.createNew")}
         </button>
       ) : (
@@ -160,7 +160,7 @@ export function InvitesPanel({
                 key={inv.id}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition"
               >
-                <JtIcon name="link-2" size={18} className="text-(--muted) shrink-0" />
+                <JtIcon name="link-2" size={22} className="text-(--muted) shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-sm font-semibold">
@@ -197,9 +197,9 @@ export function InvitesPanel({
                   aria-label={t("common.more")}
                 >
                   {copiedCode === inv.code ? (
-                    <JtIcon name="check" size={16} className="text-(--income)" />
+                    <JtIcon name="check" size={20} className="text-(--income)" />
                   ) : (
-                    <JtIcon name="copy" size={16} />
+                    <JtIcon name="copy" size={20} />
                   )}
                 </button>
                 <button
@@ -215,7 +215,7 @@ export function InvitesPanel({
                   className="p-2 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
                   aria-label={t("common.delete")}
                 >
-                  <JtIcon name="trash2" size={16} />
+                  <JtIcon name="trash2" size={20} />
                 </button>
               </li>
             );

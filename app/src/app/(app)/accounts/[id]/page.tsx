@@ -107,7 +107,7 @@ export default async function AccountDetailPage({
         href="/accounts"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
-        <JtIcon name="arrow-left" size={16} />
+        <JtIcon name="arrow-left" size={20} />
         {t("accounts.backToList")}
       </Link>
 
@@ -137,9 +137,9 @@ export default async function AccountDetailPage({
             }}
           >
             {account.icon ? (
-              <EmojiOrIcon value={account.icon} size={28} />
+              <EmojiOrIcon value={account.icon} size={32} />
             ) : (
-              <JtIcon name={typeIcon} size={28} />
+              <JtIcon name={typeIcon} size={32} />
             )}
           </span>
           <div className="flex-1 min-w-0">
@@ -156,7 +156,7 @@ export default async function AccountDetailPage({
               )}
               {account.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                  <JtIcon name="archive" size={12} />
+                  <JtIcon name="archive" size={16} />
                   {t("accounts.archivedBadge")}
                 </span>
               )}
@@ -248,7 +248,7 @@ export default async function AccountDetailPage({
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold flex items-center gap-2">
-              <JtIcon name="arrow-left-right" size={16} className="text-(--muted)" />
+              <JtIcon name="arrow-left-right" size={20} className="text-(--muted)" />
               {t("transfers.heading")}
             </h2>
             {canManage && !account.archived && (
@@ -282,7 +282,7 @@ export default async function AccountDetailPage({
               href="/transfers/new"
               className="text-sm text-(--accent) hover:underline"
             >
-              <JtIcon name="arrow-left-right" size={14} className="inline mr-1" />
+              <JtIcon name="arrow-left-right" size={18} className="inline mr-1" />
               {t("transfers.newButton")}
             </Link>
           )}

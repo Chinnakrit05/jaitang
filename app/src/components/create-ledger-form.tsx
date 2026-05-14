@@ -31,7 +31,7 @@ export function CreateLedgerForm() {
         onClick={() => setOpen(true)}
         className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-(--border) bg-(--card)/30 hover:bg-(--card) hover:border-(--accent) px-4 py-5 text-(--muted) hover:text-(--foreground) transition font-medium"
       >
-        <JtIcon name="plus-fab" size={18} />
+        <JtIcon name="plus-fab" size={22} />
         {t("ledgers.createNew")}
       </button>
     );

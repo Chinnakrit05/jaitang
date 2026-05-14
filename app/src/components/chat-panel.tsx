@@ -97,7 +97,7 @@ export function ChatPanel({
         {pending && (
           <div className="flex gap-2 items-end">
             <span className="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-full bg-(--accent)/10 text-(--accent)">
-              <JtIcon name="bot" size={14} />
+              <JtIcon name="bot" size={18} />
             </span>
             <div className="rounded-2xl rounded-tl-sm bg-(--background) border border-(--border) px-3 py-2.5 text-sm">
               <span className="inline-flex gap-1 items-center text-(--muted)">
@@ -141,7 +141,7 @@ export function ChatPanel({
           className="px-4 py-3 rounded-2xl bg-(--accent) text-(--accent-foreground) font-semibold text-sm disabled:opacity-50 cta-primary inline-flex items-center gap-1.5"
           aria-label={t("chat.sendAria")}
         >
-          <JtIcon name="send" size={14} />
+          <JtIcon name="send" size={18} />
           <span className="hidden sm:inline">{t("chat.send")}</span>
         </button>
       </form>
@@ -186,7 +186,7 @@ function Bubble({
     <div className={`flex gap-2 ${isUser ? "justify-end" : ""}`}>
       {!isUser && (
         <span className="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-full bg-(--accent)/10 text-(--accent)">
-          <JtIcon name="bot" size={14} />
+          <JtIcon name="bot" size={18} />
         </span>
       )}
       <div
@@ -200,7 +200,7 @@ function Bubble({
       </div>
       {isUser && (
         <span className="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-full bg-(--background) border border-(--border) text-(--muted)">
-          <JtIcon name="user" size={14} />
+          <JtIcon name="user" size={18} />
         </span>
       )}
     </div>

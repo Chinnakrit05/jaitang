@@ -39,7 +39,7 @@ export function DesktopSidebar({ items }: { items: NavItem[] }) {
                 className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r-full bg-(--accent)"
               />
             )}
-            <JtIcon name={icon} size={18} />
+            <JtIcon name={icon} size={22} />
             {label}
           </Link>
         );

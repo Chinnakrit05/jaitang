@@ -151,7 +151,7 @@ function Section({
             <span className="text-sm">
               {b.debtorId === currentUserId ? t("common.you") : b.debtorName ?? "?"}
             </span>
-            <JtIcon name="arrow-right" size={14} className="text-(--muted) shrink-0" />
+            <JtIcon name="arrow-right" size={18} className="text-(--muted) shrink-0" />
             <Avatar name={b.payerName} image={b.payerImage} />
             <span className="text-sm">
               {b.payerId === currentUserId ? t("common.you") : b.payerName ?? "?"}
@@ -166,7 +166,7 @@ function Section({
               className="inline-flex items-center gap-1 text-xs text-(--accent) hover:underline disabled:opacity-50 shrink-0"
               aria-label={t("balances.settle")}
             >
-              <JtIcon name="check-circle-2" size={14} />
+              <JtIcon name="check-circle-2" size={18} />
               {t("balances.settle")}
             </button>
           </li>

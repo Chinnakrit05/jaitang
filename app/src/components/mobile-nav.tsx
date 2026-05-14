@@ -93,7 +93,7 @@ export function MobileNav({
                     className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 -mt-2 rounded-full bg-(--accent)"
                   />
                 )}
-                <JtIcon name={icon} size={20} />
+                <JtIcon name={icon} size={24} />
                 {label}
               </Link>
             );
@@ -104,7 +104,7 @@ export function MobileNav({
             className="flex flex-col items-center gap-0.5 px-3 py-1 text-xs text-(--muted) hover:text-(--foreground)"
             aria-label={moreLabel}
           >
-            <JtIcon name="more" size={20} />
+            <JtIcon name="more" size={24} />
             {moreLabel}
           </button>
         </div>
@@ -127,7 +127,7 @@ export function MobileNav({
                 className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background)"
                 aria-label="close"
               >
-                <JtIcon name="x" size={18} />
+                <JtIcon name="x" size={22} />
               </button>
             </div>
             <div className="grid grid-cols-3 gap-2 p-4">
@@ -139,7 +139,7 @@ export function MobileNav({
                     onClick={() => setOpen(false)}
                     className="flex flex-col items-center gap-2 p-3 rounded-xl bg-(--background) border border-(--border) hover:border-(--accent) hover:bg-(--accent)/5 transition text-center"
                   >
-                    <JtIcon name={icon} size={22} className="text-(--accent)" />
+                    <JtIcon name={icon} size={26} className="text-(--accent)" />
                     <span className="text-xs font-medium leading-tight">
                       {label}
                     </span>

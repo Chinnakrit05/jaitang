@@ -139,7 +139,7 @@ export function CreateAccountForm({
                   : "border-(--border) bg-(--background) hover:bg-(--card)"
               )}
             >
-              <JtIcon name={ic} size={22} />
+              <JtIcon name={ic} size={26} />
             </button>
           ))}
         </div>

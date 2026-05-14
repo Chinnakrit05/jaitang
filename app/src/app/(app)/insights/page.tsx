@@ -76,7 +76,7 @@ export default async function InsightsPage({
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <JtIcon name="sparkles" size={20} className="text-(--accent)" />
+            <JtIcon name="sparkles" size={24} className="text-(--accent)" />
             {t("insights.title")}
           </h1>
           <p className="text-sm text-(--muted) mt-1">{t("insights.subtitle")}</p>
@@ -85,7 +85,7 @@ export default async function InsightsPage({
           href={`/insights/year/${year}`}
           className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
         >
-          <JtIcon name="calendar" size={14} />
+          <JtIcon name="calendar" size={18} />
           {t("yearReport.cta", { year })}
         </Link>
       </div>
@@ -96,7 +96,7 @@ export default async function InsightsPage({
           href={`/insights?ym=${prev}`}
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
         >
-          <JtIcon name="chevron-left" size={14} />
+          <JtIcon name="chevron-left" size={18} />
           {t("calendar.prev")}
         </Link>
         <h2 className="font-semibold text-lg">{monthLabel}</h2>
@@ -105,14 +105,14 @@ export default async function InsightsPage({
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
         >
           {t("calendar.next")}
-          <JtIcon name="chevron-right" size={14} />
+          <JtIcon name="chevron-right" size={18} />
         </Link>
       </div>
 
       {/* AI summary */}
       <section className="rounded-2xl border border-(--accent)/40 bg-(--accent)/5 p-5 space-y-2">
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <JtIcon name="sparkles" size={14} className="text-(--accent)" />
+          <JtIcon name="sparkles" size={18} className="text-(--accent)" />
           {t("insights.aiHeading")}
         </div>
         {!aiEnabled ? (
@@ -152,7 +152,7 @@ export default async function InsightsPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <MoverColumn
           heading={t("insights.upHeading")}
-          icon={<JtIcon name="trending-up" size={14} className="text-(--expense)" />}
+          icon={<JtIcon name="trending-up" size={18} className="text-(--expense)" />}
           rows={compare.expenseUp}
           tone="up"
           currency={currency}
@@ -162,7 +162,7 @@ export default async function InsightsPage({
         />
         <MoverColumn
           heading={t("insights.downHeading")}
-          icon={<JtIcon name="trending-down" size={14} className="text-(--income)" />}
+          icon={<JtIcon name="trending-down" size={18} className="text-(--income)" />}
           rows={compare.expenseDown}
           tone="down"
           currency={currency}
@@ -269,7 +269,7 @@ function MoverColumn({
               className="flex items-center justify-between gap-3 text-sm"
             >
               <span className="flex items-center gap-2 min-w-0">
-                <span className="shrink-0"><EmojiOrIcon value={d.icon} fallback="sparkle" size={18} /></span>
+                <span className="shrink-0"><EmojiOrIcon value={d.icon} fallback="sparkle" size={22} /></span>
                 <span className="truncate">{d.name}</span>
               </span>
               <span className="text-right shrink-0 tabular-nums">

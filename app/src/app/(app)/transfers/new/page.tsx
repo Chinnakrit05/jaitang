@@ -45,13 +45,13 @@ export default async function NewTransferPage({
         href="/accounts"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
-        <JtIcon name="arrow-left" size={16} />
+        <JtIcon name="arrow-left" size={20} />
         {t("accounts.backToList")}
       </Link>
 
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <JtIcon name="arrow-left-right" size={22} className="text-(--accent)" />
+          <JtIcon name="arrow-left-right" size={26} className="text-(--accent)" />
           {t("transfers.newTitle")}
         </h1>
         <p className="text-sm text-(--muted) mt-1">

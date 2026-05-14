@@ -62,7 +62,7 @@ export default async function YearReportPage({
           href="/insights"
           className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
         >
-          <JtIcon name="arrow-left" size={16} />
+          <JtIcon name="arrow-left" size={20} />
           {t("yearReport.backToInsights")}
         </Link>
         <PrintButton label={t("yearReport.exportPdf")} />
@@ -70,7 +70,7 @@ export default async function YearReportPage({
 
       <div className="rounded-2xl border border-(--border) bg-(--card) p-6 print:border-0 print:p-0 print:bg-transparent">
         <div className="flex items-center gap-3 mb-3">
-          <JtIcon name="calendar" size={20} className="text-(--accent) print:hidden" />
+          <JtIcon name="calendar" size={24} className="text-(--accent) print:hidden" />
           <h1 className="text-3xl font-bold tracking-tight">
             {t("yearReport.title", { year })}
           </h1>
@@ -194,7 +194,7 @@ export default async function YearReportPage({
           {/* AI commentary */}
           <section className="rounded-2xl border border-(--accent)/20 bg-(--accent)/5 p-6 print:border print:bg-transparent">
             <h2 className="font-semibold mb-3 flex items-center gap-2">
-              <JtIcon name="sparkles" size={16} className="text-(--accent)" />
+              <JtIcon name="sparkles" size={20} className="text-(--accent)" />
               {t("yearReport.aiHeading")}
             </h2>
             {commentary ? (
