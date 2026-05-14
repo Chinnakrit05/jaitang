@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, iconNameToEmoji } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -468,7 +468,7 @@ function RowEditor({
         </option>
         {visible.map((c) => (
           <option key={c.id} value={c.id}>
-            {c.icon} {c.name}
+            {iconNameToEmoji(c.icon)} {c.name}
           </option>
         ))}
         <option value="__new__">

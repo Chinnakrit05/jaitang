@@ -4,8 +4,20 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { createGoalAction } from "@/app/(app)/goals/actions";
+import { JtIcon, type IconName } from "@/components/icons";
 
-const ICON_CHOICES = ["🎯", "✈️", "🏖️", "🏠", "🚗", "💍", "🎓", "💻", "🎮", "🛒"];
+const ICON_CHOICES: IconName[] = [
+  "bullseye",
+  "airplane",
+  "beach",
+  "house",
+  "car",
+  "ring",
+  "graduation-cap",
+  "laptop",
+  "game-controller",
+  "shopping-cart",
+];
 const COLOR_CHOICES = [
   "#10b981",
   "#06b6d4",
@@ -97,13 +109,13 @@ export function CreateGoalForm({ ledgerCurrency }: { ledgerCurrency: string }) {
               type="button"
               onClick={() => setIcon(ic)}
               className={cn(
-                "h-9 w-9 rounded-lg border text-lg flex items-center justify-center transition",
+                "h-9 w-9 rounded-lg border flex items-center justify-center transition",
                 icon === ic
                   ? "border-(--accent) bg-(--accent)/10"
                   : "border-(--border) bg-(--background) hover:bg-(--card)"
               )}
             >
-              {ic}
+              <JtIcon name={ic} size={22} />
             </button>
           ))}
         </div>

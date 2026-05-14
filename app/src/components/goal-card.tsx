@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
 
 import { cn, formatCurrency } from "@/lib/utils";
@@ -45,7 +45,7 @@ export function GoalCard({
     >
       <Link href={`/goals/${goal.id}`} className="block space-y-3">
         <div className="flex items-start gap-3">
-          <span className="text-3xl shrink-0">{goal.icon ?? "🎯"}</span>
+          <EmojiOrIcon value={goal.icon} fallback="bullseye" size={28} className="shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-semibold truncate">{goal.name}</h3>

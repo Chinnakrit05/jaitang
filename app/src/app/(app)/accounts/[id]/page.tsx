@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { JtIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 
 import { getLocale, getTranslations } from "next-intl/server";
@@ -23,7 +22,7 @@ import {
 } from "@/app/(app)/accounts/actions";
 import type { AccountType } from "@/lib/types";
 
-import type { IconName } from "@/components/icons";
+import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
 
 const TYPE_ICONS: Record<AccountType, IconName> = {
   cash: "banknote",
@@ -137,7 +136,11 @@ export default async function AccountDetailPage({
               color: account.color ?? "var(--foreground)",
             }}
           >
-            {account.icon ?? <JtIcon name={typeIcon} size={28} />}
+            {account.icon ? (
+              <EmojiOrIcon value={account.icon} size={28} />
+            ) : (
+              <JtIcon name={typeIcon} size={28} />
+            )}
           </span>
           <div className="flex-1 min-w-0">
             <h1

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 
 import { getTranslations } from "next-intl/server";
 import { formatCurrency } from "@/lib/utils";
@@ -121,7 +121,7 @@ export async function DashboardAccountBalances({
                       : "var(--card)",
                   }}
                 >
-                  {a.icon ?? "💰"}
+                  <EmojiOrIcon value={a.icon} fallback="money-bag" size={20} />
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{a.name}</div>

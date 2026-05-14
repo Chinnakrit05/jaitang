@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -19,10 +19,27 @@ const PRESET_COLORS = [
   "#22c55e", "#84cc16", "#14b8a6", "#06b6d4",
 ];
 
-const PRESET_ICONS = [
-  "🍜", "☕", "🚗", "🛒", "🎮", "💊", "🏠", "📚",
-  "✈️", "👕", "🐶", "🎁", "💰", "📈", "🏷️", "✨",
+// 14 of the original 16 emoji map to Sticker Pop JtIcons; the two outliers
+// (shirt 👕, dog 🐶) don't have an equivalent yet so we drop them from the
+// picker. Old categories that picked those values still render fine via
+// EmojiOrIcon at display time.
+const PRESET_ICONS: IconName[] = [
+  "ramen",
+  "coffee",
+  "car",
+  "shopping-cart",
+  "game-controller",
+  "pill",
+  "house",
+  "books",
+  "airplane",
+  "gift",
+  "money-bag",
+  "trending-up",
+  "tag",
+  "sparkle",
 ];
+const DEFAULT_CATEGORY_ICON: IconName = "sparkle";
 
 export function CategoryManager({ initial }: { initial: Category[] }) {
   const t = useTranslations();
@@ -82,7 +99,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState("");
-  const [icon, setIcon] = useState("✨");
+  const [icon, setIcon] = useState<string>(DEFAULT_CATEGORY_ICON);
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,13 +130,13 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
         <button
           type="button"
           aria-label={t("ledgers.icon")}
-          className="text-2xl px-3 py-2 rounded-lg border border-(--border) hover:bg-(--background)"
+          className="px-3 py-2 rounded-lg border border-(--border) hover:bg-(--background) flex items-center justify-center"
           onClick={() => {
-            const idx = PRESET_ICONS.indexOf(icon);
+            const idx = PRESET_ICONS.indexOf(icon as IconName);
             setIcon(PRESET_ICONS[(idx + 1) % PRESET_ICONS.length]);
           }}
         >
-          {icon}
+          <EmojiOrIcon value={icon} size={24} />
         </button>
         <input
           value={name}
@@ -166,7 +183,7 @@ function CategoryRow({ category }: { category: Category }) {
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(category.name);
-  const [icon, setIcon] = useState(category.icon ?? "✨");
+  const [icon, setIcon] = useState(category.icon ?? DEFAULT_CATEGORY_ICON);
 
   function save() {
     const fd = new FormData();
@@ -197,12 +214,12 @@ function CategoryRow({ category }: { category: Category }) {
           <button
             type="button"
             onClick={() => {
-              const idx = PRESET_ICONS.indexOf(icon);
+              const idx = PRESET_ICONS.indexOf(icon as IconName);
               setIcon(PRESET_ICONS[(idx + 1) % PRESET_ICONS.length]);
             }}
-            className="text-2xl px-2 py-1 rounded-lg border border-(--border)"
+            className="px-2 py-1 rounded-lg border border-(--border) flex items-center justify-center"
           >
-            {icon}
+            <EmojiOrIcon value={icon} size={22} />
           </button>
           <input
             value={name}
@@ -225,7 +242,7 @@ function CategoryRow({ category }: { category: Category }) {
             onClick={() => {
               setEditing(false);
               setName(category.name);
-              setIcon(category.icon ?? "✨");
+              setIcon(category.icon ?? DEFAULT_CATEGORY_ICON);
             }}
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
             aria-label={t("common.cancel")}
@@ -235,7 +252,7 @@ function CategoryRow({ category }: { category: Category }) {
         </>
       ) : (
         <>
-          <span className="text-2xl">{category.icon ?? "✨"}</span>
+          <EmojiOrIcon value={category.icon} fallback={DEFAULT_CATEGORY_ICON} size={24} />
           <span className="flex-1 font-medium">{category.name}</span>
           <span
             className="h-3 w-3 rounded-full"

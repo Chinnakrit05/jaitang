@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { compareMonths } from "@/lib/insights";
@@ -269,7 +269,7 @@ function MoverColumn({
               className="flex items-center justify-between gap-3 text-sm"
             >
               <span className="flex items-center gap-2 min-w-0">
-                <span className="text-lg shrink-0">{d.icon ?? "✨"}</span>
+                <span className="shrink-0"><EmojiOrIcon value={d.icon} fallback="sparkle" size={18} /></span>
                 <span className="truncate">{d.name}</span>
               </span>
               <span className="text-right shrink-0 tabular-nums">

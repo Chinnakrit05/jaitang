@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { JtIcon, type IconName } from "@/components/icons";
+import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
 import { useTranslations } from "next-intl";
 
 import { cn, formatCurrency } from "@/lib/utils";
@@ -58,7 +58,11 @@ export function AccountCard({
               color: account.color ?? "var(--foreground)",
             }}
           >
-            {account.icon ?? <JtIcon name={typeIcon} size={20} />}
+            {account.icon ? (
+              <EmojiOrIcon value={account.icon} size={20} />
+            ) : (
+              <JtIcon name={typeIcon} size={20} />
+            )}
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
