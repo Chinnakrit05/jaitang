@@ -10,10 +10,11 @@ import {
   YAxis,
 } from "recharts";
 import { useLocale, useTranslations } from "next-intl";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrency } from "@/lib/utils";
 import type { NetWorthPoint } from "@/lib/net-worth";
+import { JtIcon } from "@/components/icons";
 
 /**
  * Net worth chart with headline + month-over-month delta. Foreign
@@ -85,11 +86,11 @@ export function NetWorthChart({
             className={`inline-flex items-center gap-1 text-sm font-medium tabular-nums ${trendCls}`}
           >
             {trend === "up" ? (
-              <TrendingUp size={14} />
+              <JtIcon name="trending-up" size={14} />
             ) : trend === "down" ? (
-              <TrendingDown size={14} />
+              <JtIcon name="trending-down" size={14} />
             ) : (
-              <Minus size={14} />
+              <JtIcon name="minus" size={14} />
             )}
             <span>
               {trend === "down" ? "−" : trend === "up" ? "+" : ""}

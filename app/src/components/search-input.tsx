@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Search, X } from "lucide-react";
+import { JtIcon } from "@/components/icons";
+
 import { useRouter, useSearchParams } from "next/navigation";
 
 /**
@@ -49,7 +50,8 @@ export function SearchInput({ placeholder }: { placeholder: string }) {
 
   return (
     <div className="relative w-full sm:max-w-xs">
-      <Search
+      <JtIcon
+        name="search"
         size={14}
         className="absolute left-3 top-1/2 -translate-y-1/2 text-(--muted) pointer-events-none"
       />
@@ -67,7 +69,7 @@ export function SearchInput({ placeholder }: { placeholder: string }) {
           className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-(--muted) hover:text-(--foreground)"
           aria-label="clear"
         >
-          <X size={12} />
+          <JtIcon name="x" size={12} />
         </button>
       )}
     </div>

@@ -1,9 +1,10 @@
 "use client";
 
 import { useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Check, Globe } from "lucide-react";
+
 import { LOCALES, LOCALE_LABELS, type Locale } from "@/i18n/locales";
 import { setLocaleAction } from "@/app/(app)/settings/locale-action";
 import { cn } from "@/lib/utils";
@@ -23,7 +24,7 @@ export function LanguageSwitcher() {
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <Globe size={16} className="text-(--muted)" />
+      <JtIcon name="globe" size={16} className="text-(--muted)" />
       {LOCALES.map((loc) => (
         <button
           key={loc}
@@ -38,7 +39,7 @@ export function LanguageSwitcher() {
             pending && "opacity-60"
           )}
         >
-          {current === loc && <Check size={14} className="text-(--accent)" />}
+          {current === loc && <JtIcon name="check" size={14} className="text-(--accent)" />}
           {LOCALE_LABELS[loc]}
         </button>
       ))}

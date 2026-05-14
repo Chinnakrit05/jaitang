@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
+import { JtIcon } from "@/components/icons";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+
 import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
 import { getServerSupabase } from "@/lib/supabase/server";
@@ -51,7 +52,7 @@ export default async function MembersPage({
         href="/ledgers"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
-        <ArrowLeft size={16} />
+        <JtIcon name="arrow-left" size={16} />
         {t("members.back")}
       </Link>
 

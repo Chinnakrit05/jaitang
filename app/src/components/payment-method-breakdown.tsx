@@ -1,5 +1,5 @@
-import { Banknote, HelpCircle, Landmark } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { JtIcon } from "@/components/icons";
 import type { MonthSummary, PaymentMethodTotals } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 
@@ -40,7 +40,7 @@ export async function PaymentMethodBreakdown({
       ) : (
         <div className="space-y-3">
           <Row
-            icon={<Banknote size={18} />}
+            icon={<JtIcon name="banknote" size={18} />}
             label={t("transactions.paymentCash")}
             totals={cash}
             currency={currency}
@@ -49,7 +49,7 @@ export async function PaymentMethodBreakdown({
             expenseLabel={t("transactions.totalExpense")}
           />
           <Row
-            icon={<Landmark size={18} />}
+            icon={<JtIcon name="landmark" size={18} />}
             label={t("transactions.paymentTransfer")}
             totals={transfer}
             currency={currency}
@@ -59,7 +59,7 @@ export async function PaymentMethodBreakdown({
           />
           {hasUnspecified && (
             <Row
-              icon={<HelpCircle size={18} />}
+              icon={<JtIcon name="help-circle" size={18} />}
               label={t("dashboard.paymentMethodUnspecified")}
               totals={unspecified}
               currency={currency}

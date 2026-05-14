@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/session";
+import { JtIcon } from "@/components/icons";
 import { getTranslations } from "next-intl/server";
 import { ThemeControls } from "@/components/theme-controls";
 import { PushToggle } from "@/components/push-toggle";
@@ -6,7 +7,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { BackupSection } from "@/components/backup-section";
 import { DangerZoneSection } from "@/components/danger-zone-section";
 import { signOut } from "@/auth";
-import { AlertTriangle, LogOut } from "lucide-react";
+
 
 export default async function SettingsPage() {
   const { user, ledger, role } = await requireSession();
@@ -49,7 +50,7 @@ export default async function SettingsPage() {
               type="submit"
               className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-3 py-2 text-sm"
             >
-              <LogOut size={14} />
+              <JtIcon name="logout" size={14} />
               {t("common.logoutFull")}
             </button>
           </form>
@@ -84,7 +85,7 @@ export default async function SettingsPage() {
 
       <section className="rounded-2xl border border-(--expense)/40 bg-(--expense)/5 p-5 space-y-3">
         <h2 className="font-semibold flex items-center gap-2 text-(--expense)">
-          <AlertTriangle size={16} />
+          <JtIcon name="alert-triangle" size={16} />
           {t("settings.dangerSection")}
         </h2>
         <p className="text-sm text-(--muted)">{t("settings.dangerHint")}</p>

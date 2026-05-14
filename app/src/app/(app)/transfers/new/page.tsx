@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { redirect } from "next/navigation";
-import { ArrowLeft, ArrowLeftRight } from "lucide-react";
+
 import { getTranslations } from "next-intl/server";
 import { requireSession, assertWritable } from "@/lib/session";
 import { listAccounts } from "@/lib/accounts";
@@ -44,13 +45,13 @@ export default async function NewTransferPage({
         href="/accounts"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
-        <ArrowLeft size={16} />
+        <JtIcon name="arrow-left" size={16} />
         {t("accounts.backToList")}
       </Link>
 
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ArrowLeftRight size={22} className="text-(--accent)" />
+          <JtIcon name="arrow-left-right" size={22} className="text-(--accent)" />
           {t("transfers.newTitle")}
         </h1>
         <p className="text-sm text-(--muted) mt-1">

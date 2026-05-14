@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Sparkles, Calendar } from "lucide-react";
+
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { getGoal, listContributions } from "@/lib/goals";
@@ -70,7 +71,7 @@ export default async function GoalDetailPage({
         href="/goals"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
-        <ArrowLeft size={16} />
+        <JtIcon name="arrow-left" size={16} />
         {t("goals.backToList")}
       </Link>
 
@@ -92,7 +93,7 @@ export default async function GoalDetailPage({
               {goal.name}
               {goal.achieved && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--income) bg-(--income)/10 border border-(--income)/30 rounded-full px-2 py-0.5">
-                  <CheckCircle2 size={12} />
+                  <JtIcon name="check-circle-2" size={12} />
                   {t("goals.achievedBadge")}
                 </span>
               )}
@@ -104,7 +105,7 @@ export default async function GoalDetailPage({
             </h1>
             {deadlineLabel && (
               <p className="text-sm text-(--muted) mt-1 flex items-center gap-1.5">
-                <Calendar size={12} />
+                <JtIcon name="calendar" size={12} />
                 {t("goals.deadlineLabel", { date: deadlineLabel })}
               </p>
             )}
@@ -175,7 +176,7 @@ export default async function GoalDetailPage({
       {!goal.archived && (
         <section className="rounded-2xl border border-(--accent)/40 bg-(--accent)/5 p-4 space-y-1.5">
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <Sparkles size={14} className="text-(--accent)" />
+            <JtIcon name="sparkles" size={14} className="text-(--accent)" />
             {t("goals.aiHeading")}
           </div>
           {!aiEnabled ? (

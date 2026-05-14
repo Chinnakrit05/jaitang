@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { JtIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
-import { EyeOff, GripVertical, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import {
   DndContext,
   KeyboardSensor,
@@ -113,12 +114,12 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
         >
           {editing ? (
             <>
-              <X size={14} />
+              <JtIcon name="x" size={14} />
               {t("dashboard.layoutDone")}
             </>
           ) : (
             <>
-              <Pencil size={14} />
+              <JtIcon name="pencil" size={14} />
               {t("dashboard.layoutEdit")}
             </>
           )}
@@ -129,7 +130,7 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
             onClick={reset}
             className="inline-flex items-center gap-1 text-xs text-(--muted) hover:text-(--foreground) px-2 py-1 rounded-md hover:bg-(--card)"
           >
-            <RotateCcw size={12} />
+            <JtIcon name="rotate-ccw" size={12} />
             {t("dashboard.layoutReset")}
           </button>
         )}
@@ -176,7 +177,7 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
                 onClick={() => toggle(item.id, true)}
                 className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) transition"
               >
-                <Plus size={14} />
+                <JtIcon name="plus-fab" size={14} />
                 {widgetLabel[item.id]}
               </button>
             ))}
@@ -243,7 +244,7 @@ function SortableWidget({
             title={hideLabel}
             className="inline-flex items-center justify-center h-7 w-7 rounded-md text-(--muted) hover:text-(--expense) hover:bg-(--background)"
           >
-            <EyeOff size={14} />
+            <JtIcon name="eye-off" size={14} />
           </button>
         </div>
       )}
@@ -262,4 +263,3 @@ function SortableWidget({
     </div>
   );
 }
-

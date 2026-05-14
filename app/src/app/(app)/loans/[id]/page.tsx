@@ -1,12 +1,7 @@
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  ArrowDownLeft,
-  AlertTriangle,
-  CheckCircle2,
-} from "lucide-react";
+
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { getLoan, listRepayments } from "@/lib/loans";
@@ -60,7 +55,7 @@ export default async function LoanDetailPage({
         href="/loans"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
-        <ArrowLeft size={16} />
+        <JtIcon name="arrow-left" size={16} />
         {t("loans.backToList")}
       </Link>
 
@@ -69,19 +64,19 @@ export default async function LoanDetailPage({
           <span
             className={`shrink-0 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-(--background) ${directionColor}`}
           >
-            {isLent ? <ArrowUpRight size={28} /> : <ArrowDownLeft size={28} />}
+            {isLent ? <JtIcon name="arrow-up-right" size={28} /> : <JtIcon name="arrow-down-left" size={28} />}
           </span>
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold flex items-center gap-2 flex-wrap">
               {loan.counterparty}
               {settled ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--income) bg-(--income)/10 rounded-full px-2 py-0.5">
-                  <CheckCircle2 size={12} />
+                  <JtIcon name="check-circle-2" size={12} />
                   {t("loans.settledBadge")}
                 </span>
               ) : loan.overdue ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--expense) bg-(--expense)/10 rounded-full px-2 py-0.5">
-                  <AlertTriangle size={12} />
+                  <JtIcon name="alert-triangle" size={12} />
                   {t("loans.overdueBadge")}
                 </span>
               ) : null}

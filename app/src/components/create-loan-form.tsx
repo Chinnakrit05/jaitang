@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+
 import { cn, toLocalDateTimeInput } from "@/lib/utils";
 import { CurrencyPicker } from "@/components/currency-picker";
 import { createLoanAction } from "@/app/(app)/loans/actions";
@@ -70,7 +71,7 @@ export function CreateLoanForm({ ledgerCurrency }: { ledgerCurrency: string }) {
               : "text-(--muted) hover:text-(--foreground)"
           )}
         >
-          <ArrowUpRight size={16} />
+          <JtIcon name="arrow-up-right" size={16} />
           {t("loans.directionLent")}
         </button>
         <button
@@ -83,7 +84,7 @@ export function CreateLoanForm({ ledgerCurrency }: { ledgerCurrency: string }) {
               : "text-(--muted) hover:text-(--foreground)"
           )}
         >
-          <ArrowDownLeft size={16} />
+          <JtIcon name="arrow-down-left" size={16} />
           {t("loans.directionBorrowed")}
         </button>
       </div>

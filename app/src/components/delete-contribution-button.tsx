@@ -1,8 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+
 import { deleteContributionAction } from "@/app/(app)/goals/actions";
 
 /**
@@ -37,7 +38,7 @@ export function DeleteContributionButton({
       aria-label={aria}
       title={aria}
     >
-      <Trash2 size={14} />
+      <JtIcon name="trash2" size={14} />
     </button>
   );
 }

@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ArrowRight, PiggyBank, Users, BarChart3 } from "lucide-react";
+
 
 export default async function Home() {
   const session = await auth();
@@ -34,17 +35,17 @@ export default async function Home() {
           href="/login"
           className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-6 py-3 font-semibold hover:opacity-90 transition"
         >
-          {t("landing.getStarted")} <ArrowRight size={18} />
+          {t("landing.getStarted")} <JtIcon name="arrow-right" size={18} />
         </Link>
 
         <div className="grid sm:grid-cols-3 gap-6 mt-16 max-w-3xl w-full">
-          <Feature icon={<PiggyBank size={24} />} title={t("landing.feature1Title")}>
+          <Feature icon={<JtIcon name="budgets" size={24} />} title={t("landing.feature1Title")}>
             {t("landing.feature1Body")}
           </Feature>
-          <Feature icon={<BarChart3 size={24} />} title={t("landing.feature2Title")}>
+          <Feature icon={<JtIcon name="bar-chart-3" size={24} />} title={t("landing.feature2Title")}>
             {t("landing.feature2Body")}
           </Feature>
-          <Feature icon={<Users size={24} />} title={t("landing.feature3Title")}>
+          <Feature icon={<JtIcon name="users" size={24} />} title={t("landing.feature3Title")}>
             {t("landing.feature3Body")}
           </Feature>
         </div>

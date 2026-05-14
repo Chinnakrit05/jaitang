@@ -1,7 +1,8 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Calendar, Layers } from "lucide-react";
+import { JtIcon } from "@/components/icons";
+
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { computeNextRun, type RecurringRule } from "@/lib/recurring";
@@ -92,7 +93,7 @@ export function SubscriptionStats({
             <span className="font-medium">
               {t("subscriptions.monthlyCost")}
             </span>
-            <Layers size={14} className="text-(--expense) opacity-70" />
+            <JtIcon name="layers" size={14} className="text-(--expense) opacity-70" />
           </div>
           {expenseEntries.length === 0 ? (
             <div className="text-sm text-(--muted)">
@@ -121,7 +122,7 @@ export function SubscriptionStats({
               <span className="font-medium">
                 {t("subscriptions.monthlyIncome")}
               </span>
-              <Layers size={14} className="text-(--income) opacity-70" />
+              <JtIcon name="layers" size={14} className="text-(--income) opacity-70" />
             </div>
             <div className="space-y-0.5">
               {incomeEntries.map(([cur, sum]) => (
@@ -141,7 +142,7 @@ export function SubscriptionStats({
       {upcoming.length > 0 && (
         <div className="rounded-2xl border border-(--border) bg-(--card) p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Calendar size={14} className="text-(--accent)" />
+            <JtIcon name="calendar" size={14} className="text-(--accent)" />
             <h3 className="text-sm font-semibold">
               {t("subscriptions.upcomingHeading", { days: windowDays })}
             </h3>

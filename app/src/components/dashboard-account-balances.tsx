@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Wallet, ChevronRight } from "lucide-react";
+import { JtIcon } from "@/components/icons";
+
 import { getTranslations } from "next-intl/server";
 import { formatCurrency } from "@/lib/utils";
 import type { AccountWithBalance } from "@/lib/accounts";
@@ -31,7 +32,7 @@ export async function DashboardAccountBalances({
       <section className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Wallet size={18} className="text-(--muted)" />
+            <JtIcon name="accounts" size={18} className="text-(--muted)" />
             <h2 className="font-semibold text-sm">
               {t("accounts.dashboardHeading")}
             </h2>
@@ -41,7 +42,7 @@ export async function DashboardAccountBalances({
             className="text-sm text-(--accent) hover:underline inline-flex items-center gap-1"
           >
             {t("accounts.dashboardCtaCreate")}
-            <ChevronRight size={14} />
+            <JtIcon name="chevron-right" size={14} />
           </Link>
         </div>
         <p className="text-xs text-(--muted) mt-2">
@@ -73,7 +74,7 @@ export async function DashboardAccountBalances({
     <section className="rounded-2xl border border-(--border) bg-(--card) p-5 card-hover">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
-          <Wallet size={18} className="text-(--accent)" />
+          <JtIcon name="accounts" size={18} className="text-(--accent)" />
           <h2 className="font-semibold">{t("accounts.dashboardHeading")}</h2>
         </div>
         <Link
@@ -81,7 +82,7 @@ export async function DashboardAccountBalances({
           className="text-sm text-(--accent) hover:underline inline-flex items-center gap-1"
         >
           {t("accounts.dashboardCtaAll")}
-          <ChevronRight size={14} />
+          <JtIcon name="chevron-right" size={14} />
         </Link>
       </div>
 

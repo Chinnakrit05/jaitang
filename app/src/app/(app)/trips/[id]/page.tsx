@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Archive, Plane } from "lucide-react";
+
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession, assertWritable } from "@/lib/session";
 import { getTrip } from "@/lib/trips";
@@ -97,7 +98,7 @@ export default async function TripDetailPage({
         href="/trips"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
-        <ArrowLeft size={16} />
+        <JtIcon name="arrow-left" size={16} />
         {t("trips.backToList")}
       </Link>
 
@@ -125,13 +126,13 @@ export default async function TripDetailPage({
               )}
               {trip.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                  <Archive size={12} />
+                  <JtIcon name="archive" size={12} />
                   {t("trips.archivedBadge")}
                 </span>
               )}
               {isActive && !trip.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--accent-foreground) bg-(--accent) rounded-full px-2 py-0.5">
-                  <Plane size={12} />
+                  <JtIcon name="trips" size={12} />
                   {t("trips.activeBadge")}
                 </span>
               )}

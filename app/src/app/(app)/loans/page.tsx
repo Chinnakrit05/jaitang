@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Plus, ArrowUpRight, ArrowDownLeft, HandCoins } from "lucide-react";
+import { JtIcon } from "@/components/icons";
+
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { listLoans } from "@/lib/loans";
@@ -48,7 +49,7 @@ export default async function LoansPage() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <HandCoins size={22} className="text-(--accent)" />
+          <JtIcon name="loans" size={22} className="text-(--accent)" />
           {t("loans.title")}
         </h1>
         <p className="text-sm text-(--muted) mt-1">{t("loans.subtitle")}</p>
@@ -58,7 +59,7 @@ export default async function LoansPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <SummaryCard
           label={t("loans.totalLent")}
-          icon={<ArrowUpRight size={18} />}
+          icon={<JtIcon name="arrow-up-right" size={18} />}
           tone="income"
           totals={lentByCurrency}
           fallbackCurrency={ledger.currency}
@@ -66,7 +67,7 @@ export default async function LoansPage() {
         />
         <SummaryCard
           label={t("loans.totalBorrowed")}
-          icon={<ArrowDownLeft size={18} />}
+          icon={<JtIcon name="arrow-down-left" size={18} />}
           tone="expense"
           totals={borrowedByCurrency}
           fallbackCurrency={ledger.currency}
@@ -111,7 +112,7 @@ export default async function LoansPage() {
       {/* Create */}
       <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
         <h2 className="font-semibold flex items-center gap-2">
-          <Plus size={16} />
+          <JtIcon name="plus-fab" size={16} />
           {t("loans.createTitle")}
         </h2>
         <p className="text-sm text-(--muted)">{t("loans.createHint")}</p>

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Archive, Check, Plane } from "lucide-react";
+
 import { cn, formatCurrency } from "@/lib/utils";
 import { setActiveTripAction } from "@/app/(app)/trips/actions";
 import type { TripStats } from "@/lib/trips";
@@ -65,7 +66,7 @@ export function TripCard({
               <>
                 <span>•</span>
                 <span className="inline-flex items-center gap-1">
-                  <Archive size={11} />
+                  <JtIcon name="archive" size={11} />
                   {t("trips.archivedBadge")}
                 </span>
               </>
@@ -73,12 +74,12 @@ export function TripCard({
           </div>
         </div>
         {isActive && !trip.archived && (
-          <Check size={18} className="text-(--accent) shrink-0" />
+          <JtIcon name="check" size={18} className="text-(--accent) shrink-0" />
         )}
       </div>
       <div className="mt-3 flex items-center justify-between text-sm tabular-nums">
         <span className="text-(--muted) text-xs flex items-center gap-1">
-          <Plane size={12} />
+          <JtIcon name="trips" size={12} />
           {t("trips.tripSpend")}
         </span>
         <span className="font-semibold text-(--expense)">

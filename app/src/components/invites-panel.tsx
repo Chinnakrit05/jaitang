@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Copy, Check, Trash2, Plus, Link as LinkIcon } from "lucide-react";
 import {
   createInviteAction,
   deleteInviteAction,
@@ -59,7 +59,7 @@ export function InvitesPanel({
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition"
         >
-          <Plus size={16} />
+          <JtIcon name="plus-fab" size={16} />
           {t("invites.createNew")}
         </button>
       ) : (
@@ -160,7 +160,7 @@ export function InvitesPanel({
                 key={inv.id}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition"
               >
-                <LinkIcon size={18} className="text-(--muted) shrink-0" />
+                <JtIcon name="link-2" size={18} className="text-(--muted) shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-sm font-semibold">
@@ -197,9 +197,9 @@ export function InvitesPanel({
                   aria-label={t("common.more")}
                 >
                   {copiedCode === inv.code ? (
-                    <Check size={16} className="text-(--income)" />
+                    <JtIcon name="check" size={16} className="text-(--income)" />
                   ) : (
-                    <Copy size={16} />
+                    <JtIcon name="copy" size={16} />
                   )}
                 </button>
                 <button
@@ -215,7 +215,7 @@ export function InvitesPanel({
                   className="p-2 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
                   aria-label={t("common.delete")}
                 >
-                  <Trash2 size={16} />
+                  <JtIcon name="trash2" size={16} />
                 </button>
               </li>
             );

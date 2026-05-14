@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Scale, X, CheckCircle2, AlertTriangle } from "lucide-react";
+
 import { reconcileAccountAction } from "@/app/(app)/accounts/actions";
 import { formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
@@ -118,7 +119,7 @@ export function ReconcileModal({
         className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
         title={t("reconcile.button")}
       >
-        <Scale size={14} />
+        <JtIcon name="scale-domain" size={14} />
         <span className="hidden sm:inline">{t("reconcile.button")}</span>
       </button>
 
@@ -137,7 +138,7 @@ export function ReconcileModal({
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-lg flex items-center gap-2">
-                <Scale size={18} className="text-(--accent)" />
+                <JtIcon name="scale-domain" size={18} className="text-(--accent)" />
                 {t("reconcile.title")}
               </h2>
               <button
@@ -146,7 +147,7 @@ export function ReconcileModal({
                 className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background)"
                 aria-label="close"
               >
-                <X size={18} />
+                <JtIcon name="x" size={18} />
               </button>
             </div>
 
@@ -221,7 +222,7 @@ export function ReconcileModal({
                     <span className="text-xs font-semibold flex items-center gap-1">
                       {result.diff === 0 ? (
                         <>
-                          <CheckCircle2
+                          <JtIcon name="check-circle-2"
                             size={14}
                             className="text-(--income)"
                           />
@@ -229,7 +230,7 @@ export function ReconcileModal({
                         </>
                       ) : (
                         <>
-                          <AlertTriangle
+                          <JtIcon name="alert-triangle"
                             size={14}
                             className="text-(--accent)"
                           />
@@ -256,7 +257,7 @@ export function ReconcileModal({
                   </div>
                   {result.committed && (
                     <p className="mt-2 text-xs text-(--income) flex items-center gap-1">
-                      <CheckCircle2 size={12} />
+                      <JtIcon name="check-circle-2" size={12} />
                       {t("reconcile.committed")}
                     </p>
                   )}

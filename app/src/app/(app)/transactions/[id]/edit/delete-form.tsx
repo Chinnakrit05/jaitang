@@ -1,7 +1,8 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+
 import { useRouter } from "next/navigation";
+import { JtIcon } from "@/components/icons";
 import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 
@@ -29,7 +30,7 @@ export function DeleteForm({
       }}
       className="inline-flex items-center gap-2 text-sm text-(--expense) hover:underline disabled:opacity-50"
     >
-      <Trash2 size={16} />
+      <JtIcon name="trash2" size={16} />
       {t("transactions.deleteThisItem")}
     </button>
   );

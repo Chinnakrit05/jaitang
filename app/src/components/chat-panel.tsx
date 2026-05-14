@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
-import { Send, Bot, User } from "lucide-react";
+
 import { sendChatMessageAction } from "@/app/(app)/chat/actions";
 import type { ChatMessage } from "@/lib/chat-ai";
 import { EmptyIllustration } from "@/components/empty-illustration";
@@ -96,7 +97,7 @@ export function ChatPanel({
         {pending && (
           <div className="flex gap-2 items-end">
             <span className="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-full bg-(--accent)/10 text-(--accent)">
-              <Bot size={14} />
+              <JtIcon name="bot" size={14} />
             </span>
             <div className="rounded-2xl rounded-tl-sm bg-(--background) border border-(--border) px-3 py-2.5 text-sm">
               <span className="inline-flex gap-1 items-center text-(--muted)">
@@ -140,7 +141,7 @@ export function ChatPanel({
           className="px-4 py-3 rounded-2xl bg-(--accent) text-(--accent-foreground) font-semibold text-sm disabled:opacity-50 cta-primary inline-flex items-center gap-1.5"
           aria-label={t("chat.sendAria")}
         >
-          <Send size={14} />
+          <JtIcon name="send" size={14} />
           <span className="hidden sm:inline">{t("chat.send")}</span>
         </button>
       </form>
@@ -185,7 +186,7 @@ function Bubble({
     <div className={`flex gap-2 ${isUser ? "justify-end" : ""}`}>
       {!isUser && (
         <span className="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-full bg-(--accent)/10 text-(--accent)">
-          <Bot size={14} />
+          <JtIcon name="bot" size={14} />
         </span>
       )}
       <div
@@ -199,7 +200,7 @@ function Bubble({
       </div>
       {isUser && (
         <span className="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-full bg-(--background) border border-(--border) text-(--muted)">
-          <User size={14} />
+          <JtIcon name="user" size={14} />
         </span>
       )}
     </div>

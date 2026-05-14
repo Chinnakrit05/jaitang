@@ -4,33 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import {
-  MoreHorizontal,
-  X,
-  CalendarDays,
-  LayoutDashboard,
-  LineChart,
-  ListOrdered,
-  FolderTree,
-  BookOpen,
-  PiggyBank,
-  Plane,
-  Repeat,
-  Scale,
-  Settings,
-  Sparkles,
-  Target,
-  Upload,
-  Wallet,
-  HandCoins,
-  MessageCircle,
-  type LucideIcon,
-} from "lucide-react";
+import { JtIcon } from "@/components/icons";
 
 /**
- * Icon names are passed by string from the server component because Lucide
- * icon components are functions (React.forwardRef) and the RSC payload can't
- * serialize functions across the server→client boundary.
+ * Nav routes the app exposes. The server passes only the string name across
+ * the RSC boundary — JtIcon resolves it to the right `<symbol>` in the sprite
+ * at render time.
  */
 export type IconName =
   | "home"
@@ -50,26 +29,6 @@ export type IconName =
   | "settings"
   | "quick"
   | "import";
-
-const ICONS: Record<IconName, LucideIcon> = {
-  home: LayoutDashboard,
-  transactions: ListOrdered,
-  calendar: CalendarDays,
-  insights: LineChart,
-  categories: FolderTree,
-  ledgers: BookOpen,
-  budgets: PiggyBank,
-  recurring: Repeat,
-  balances: Scale,
-  trips: Plane,
-  goals: Target,
-  accounts: Wallet,
-  loans: HandCoins,
-  chat: MessageCircle,
-  settings: Settings,
-  quick: Sparkles,
-  import: Upload,
-};
 
 export type NavItem = {
   href: string;
@@ -112,7 +71,6 @@ export function MobileNav({
       <nav className="md:hidden border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20">
         <div className="flex justify-around py-2">
           {primary.map(({ href, label, icon }) => {
-            const Icon = ICONS[icon];
             const active = isActive(href);
             return (
               <Link
@@ -135,7 +93,7 @@ export function MobileNav({
                     className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 -mt-2 rounded-full bg-(--accent)"
                   />
                 )}
-                <Icon size={20} />
+                <JtIcon name={icon} size={20} />
                 {label}
               </Link>
             );
@@ -146,7 +104,7 @@ export function MobileNav({
             className="flex flex-col items-center gap-0.5 px-3 py-1 text-xs text-(--muted) hover:text-(--foreground)"
             aria-label={moreLabel}
           >
-            <MoreHorizontal size={20} />
+            <JtIcon name="more" size={20} />
             {moreLabel}
           </button>
         </div>
@@ -169,12 +127,11 @@ export function MobileNav({
                 className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background)"
                 aria-label="close"
               >
-                <X size={18} />
+                <JtIcon name="x" size={18} />
               </button>
             </div>
             <div className="grid grid-cols-3 gap-2 p-4">
               {all.map(({ href, label, icon }) => {
-                const Icon = ICONS[icon];
                 return (
                   <Link
                     key={href}
@@ -182,7 +139,7 @@ export function MobileNav({
                     onClick={() => setOpen(false)}
                     className="flex flex-col items-center gap-2 p-3 rounded-xl bg-(--background) border border-(--border) hover:border-(--accent) hover:bg-(--accent)/5 transition text-center"
                   >
-                    <Icon size={22} className="text-(--accent)" />
+                    <JtIcon name={icon} size={22} className="text-(--accent)" />
                     <span className="text-xs font-medium leading-tight">
                       {label}
                     </span>

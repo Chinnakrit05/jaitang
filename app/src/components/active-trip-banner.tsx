@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Plane, X } from "lucide-react";
+
 import { clearActiveTripAction } from "@/app/(app)/trips/actions";
 
 /**
@@ -59,7 +60,7 @@ export function ActiveTripBanner({
           className="pulse-ring inline-block h-2 w-2 rounded-full shrink-0"
           style={{ background: accent }}
         />
-        <Plane
+        <JtIcon name="trips"
           size={14}
           className="shrink-0"
           style={{ color: accent }}
@@ -80,7 +81,7 @@ export function ActiveTripBanner({
           title={t("trips.deactivate")}
           className="ml-1 sm:ml-2 p-1 rounded-md text-(--muted) hover:bg-(--card) hover:text-(--foreground) disabled:opacity-50"
         >
-          <X size={14} />
+          <JtIcon name="x" size={14} />
         </button>
       </Link>
     </div>

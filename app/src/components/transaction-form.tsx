@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
-import { Banknote, Landmark, Plane, Sparkles, Users, Wallet } from "lucide-react";
+
 import { CurrencyPicker } from "@/components/currency-picker";
 import { getFxRateAction } from "@/app/(app)/transactions/fx-actions";
 import { suggestCategoryAction } from "@/app/(app)/transactions/categorize-action";
@@ -391,7 +392,7 @@ export function TransactionForm({
           <input type="hidden" name="splitWith" value={splitParam} />
           <label className="flex items-center justify-between gap-3 cursor-pointer">
             <span className="flex items-center gap-2 text-sm font-medium">
-              <Users size={16} className="text-(--accent)" />
+              <JtIcon name="users" size={16} className="text-(--accent)" />
               {t("transactions.splitTitle")}
             </span>
             <input
@@ -476,7 +477,7 @@ export function TransactionForm({
           {!initial && activeTrip ? (
             <label className="flex items-center justify-between gap-3 cursor-pointer">
               <span className="flex items-center gap-2 text-sm font-medium">
-                <Plane size={16} className="text-(--accent)" />
+                <JtIcon name="trips" size={16} className="text-(--accent)" />
                 {t("trips.addToTripLabel", {
                   name: `${activeTrip.icon ?? "✈️"} ${activeTrip.name}`,
                 })}
@@ -493,7 +494,7 @@ export function TransactionForm({
           ) : (
             <div className="space-y-1.5">
               <label className="block text-sm font-medium flex items-center gap-2">
-                <Plane size={16} className="text-(--accent)" />
+                <JtIcon name="trips" size={16} className="text-(--accent)" />
                 {t("trips.tripField")}
               </label>
               <select
@@ -540,7 +541,7 @@ export function TransactionForm({
             <input type="hidden" name="accountId" value={accountId ?? ""} />
             <div className="space-y-1.5">
               <label className="block text-sm font-medium flex items-center gap-2">
-                <Wallet size={16} className="text-(--accent)" />
+                <JtIcon name="accounts" size={16} className="text-(--accent)" />
                 {t("accounts.accountField")}
               </label>
               <select
@@ -599,7 +600,7 @@ export function TransactionForm({
             }
             className="inline-flex items-center gap-1 text-xs font-medium text-(--accent) hover:bg-(--accent)/10 px-2 py-1 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Sparkles
+            <JtIcon name="sparkles"
               size={13}
               className={aiCategorize.loading ? "animate-pulse" : ""}
             />
@@ -645,7 +646,7 @@ export function TransactionForm({
                 : "text-(--muted) hover:text-(--foreground)"
             )}
           >
-            <Banknote size={16} />
+            <JtIcon name="banknote" size={16} />
             {t("transactions.paymentCash")}
           </button>
           <button
@@ -658,7 +659,7 @@ export function TransactionForm({
                 : "text-(--muted) hover:text-(--foreground)"
             )}
           >
-            <Landmark size={16} />
+            <JtIcon name="landmark" size={16} />
             {t("transactions.paymentTransfer")}
           </button>
         </div>

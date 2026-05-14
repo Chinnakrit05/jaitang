@@ -1,9 +1,10 @@
 "use client";
 
 import { useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Trash2 } from "lucide-react";
+
 import type { Member } from "@/lib/members";
 import {
   removeMemberAction,
@@ -103,7 +104,7 @@ export function MembersPanel({
                   className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
                   aria-label={t("common.delete")}
                 >
-                  <Trash2 size={16} />
+                  <JtIcon name="trash2" size={16} />
                 </button>
               </>
             )}

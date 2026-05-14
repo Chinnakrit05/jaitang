@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2, Pencil, X, Check } from "lucide-react";
+
 import type { Category, TxKind } from "@/lib/types";
 import {
   createCategoryAction,
@@ -136,7 +137,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
           disabled={pending || !name.trim()}
           className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) font-medium text-sm disabled:opacity-50"
         >
-          <Plus size={16} /> {t("categories.addButton")}
+          <JtIcon name="plus-fab" size={16} /> {t("categories.addButton")}
         </button>
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -217,7 +218,7 @@ function CategoryRow({ category }: { category: Category }) {
             className="p-1.5 rounded-lg text-(--income) hover:bg-(--income)/10"
             aria-label={t("common.save")}
           >
-            <Check size={18} />
+            <JtIcon name="check" size={18} />
           </button>
           <button
             type="button"
@@ -229,7 +230,7 @@ function CategoryRow({ category }: { category: Category }) {
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
             aria-label={t("common.cancel")}
           >
-            <X size={18} />
+            <JtIcon name="x" size={18} />
           </button>
         </>
       ) : (
@@ -246,7 +247,7 @@ function CategoryRow({ category }: { category: Category }) {
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
             aria-label={t("common.edit")}
           >
-            <Pencil size={16} />
+            <JtIcon name="pencil" size={16} />
           </button>
           <button
             type="button"
@@ -255,7 +256,7 @@ function CategoryRow({ category }: { category: Category }) {
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
             aria-label={t("common.delete")}
           >
-            <Trash2 size={16} />
+            <JtIcon name="trash2" size={16} />
           </button>
         </>
       )}

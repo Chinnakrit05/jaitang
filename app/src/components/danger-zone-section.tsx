@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AlertTriangle, CheckCircle2, Eraser, Loader2, Trash2 } from "lucide-react";
+
 import {
   wipeActiveLedgerTransactionsAction,
   wipeAllMyDataAction,
@@ -110,12 +111,12 @@ export function DangerZoneSection({ ledgerName, isOwnerOfActiveLedger }: Props) 
             >
               {pending ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <JtIcon name="loader-2" size={16} className="animate-spin" />
                   {t("settings.wipeWorking")}
                 </>
               ) : (
                 <>
-                  <Eraser size={16} />
+                  <JtIcon name="eraser" size={16} />
                   {t("settings.wipeLedgerButton")}
                 </>
               )}
@@ -125,7 +126,7 @@ export function DangerZoneSection({ ledgerName, isOwnerOfActiveLedger }: Props) 
 
         {done && (
           <div className="rounded-xl border border-(--income)/40 bg-(--income)/5 p-3 flex items-start gap-3 text-sm">
-            <CheckCircle2 size={18} className="text-(--income) shrink-0 mt-0.5" />
+            <JtIcon name="check-circle-2" size={18} className="text-(--income) shrink-0 mt-0.5" />
             <span>
               {t("settings.wipeLedgerDone", {
                 count: done.count,
@@ -158,12 +159,12 @@ export function DangerZoneSection({ ledgerName, isOwnerOfActiveLedger }: Props) 
         >
           {pending ? (
             <>
-              <Loader2 size={16} className="animate-spin" />
+              <JtIcon name="loader-2" size={16} className="animate-spin" />
               {t("settings.wipeWorking")}
             </>
           ) : (
             <>
-              <Trash2 size={16} />
+              <JtIcon name="trash2" size={16} />
               {t("settings.wipeAllButton")}
             </>
           )}
@@ -172,7 +173,7 @@ export function DangerZoneSection({ ledgerName, isOwnerOfActiveLedger }: Props) 
 
       {error && (
         <div className="rounded-xl border border-(--expense)/40 bg-(--expense)/5 p-3 flex items-start gap-3 text-sm text-(--expense)">
-          <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+          <JtIcon name="alert-triangle" size={18} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
