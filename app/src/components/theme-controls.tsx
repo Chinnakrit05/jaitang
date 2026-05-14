@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { JtIcon } from "@/components/icons";
+import {
+  JtIcon,
+  ICON_STYLES,
+  ICON_STYLE_LABELS,
+  useIconStyle,
+  useSetIconStyle,
+} from "@/components/icons";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { Monitor } from "lucide-react";
@@ -247,6 +253,55 @@ export function ThemeControls() {
           })}
         </div>
       </Section>
+
+      {/* Icon style — switches which sprite all <JtIcon> components load
+          from. Same icon names across every style, so the UI just looks
+          different. */}
+      <Section title={t("theme.iconStyleTitle")} hint={t("theme.iconStyleHint")}>
+        <IconStyleSwitcher />
+      </Section>
+    </div>
+  );
+}
+
+function IconStyleSwitcher() {
+  const active = useIconStyle();
+  const setStyle = useSetIconStyle();
+  // 4 preview icons that read well in every style.
+  const PREVIEW = ["home", "money-bag", "airplane", "ramen"] as const;
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {ICON_STYLES.map((s) => {
+          const isActive = active === s;
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setStyle(s)}
+              className={cn(
+                "rounded-xl border px-3 py-2.5 transition flex flex-col items-center gap-1.5",
+                isActive
+                  ? "border-(--foreground) bg-(--background)"
+                  : "border-(--border) bg-(--card) hover:bg-(--background)"
+              )}
+              aria-pressed={isActive}
+            >
+              <div className="flex items-center gap-1">
+                {PREVIEW.map((name) => (
+                  <JtIcon
+                    key={name}
+                    name={name}
+                    size={20}
+                    styleOverride={s}
+                  />
+                ))}
+              </div>
+              <span className="text-xs font-medium">{ICON_STYLE_LABELS[s]}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

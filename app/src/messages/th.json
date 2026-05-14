@@ -30,7 +30,9 @@
       "loyKrathong": "ลอยกระทง",
       "chineseNewYear": "ตรุษจีน",
       "christmas": "คริสต์มาส"
-    }
+    },
+    "iconStyleTitle": "สไตล์ไอคอน",
+    "iconStyleHint": "เลือกหน้าตาไอคอนทั่วทั้งแอป"
   },
   "common": {
     "save": "บันทึก",

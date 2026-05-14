@@ -1,4 +1,5 @@
-import { ICON_NAMES, JtIcon, type IconName } from "./JtIcon";
+import { ICON_NAMES, type IconName } from "./icon-names";
+import { JtIcon } from "./JtIcon";
 
 const ICON_NAME_SET = new Set<string>(ICON_NAMES);
 

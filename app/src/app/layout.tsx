@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Noto_Sans_Thai } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { ThemeProvider, themeBootScript } from "@/components/theme-provider";
+import { IconStyleProvider } from "@/components/icons";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,7 +56,9 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <IconStyleProvider>{children}</IconStyleProvider>
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -30,7 +30,9 @@
       "loyKrathong": "ロイクラトン",
       "chineseNewYear": "春節",
       "christmas": "クリスマス"
-    }
+    },
+    "iconStyleTitle": "アイコンスタイル",
+    "iconStyleHint": "アプリ全体のアイコンの見た目を選ぶ"
   },
   "common": {
     "save": "保存",
