@@ -18,6 +18,24 @@ const SECTIONS = [
   '02-action.html',
   '03-status.html',
   '04-domain.html',
+  // Section 5 has no master sprite — its icons come from per-pair mini files.
+  // Order doesn't matter functionally but Account / Trip / Goal / Category
+  // groups the picker palettes the same way the UI exposes them.
+  '05-emoji-account-mini-a.html',
+  '05-emoji-account-mini-b.html',
+  '05-emoji-account-mini-c.html',
+  '05-emoji-account-mini-d.html',
+  '05-emoji-trip-mini-a.html',
+  '05-emoji-trip-mini-b.html',
+  '05-emoji-trip-mini-c.html',
+  '05-emoji-trip-mini-d.html',
+  '05-emoji-trip-mini-e.html',
+  '05-emoji-goal-mini-a.html',
+  '05-emoji-goal-mini-b.html',
+  '05-emoji-goal-mini-c.html',
+  '05-emoji-goal-mini-d.html',
+  '05-emoji-category-mini-a.html',
+  '05-emoji-category-mini-b.html',
   '06-future.html',
 ];
 
