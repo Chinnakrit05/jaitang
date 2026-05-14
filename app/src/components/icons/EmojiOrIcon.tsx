@@ -68,7 +68,7 @@ type Props = {
  * value matches a known sprite symbol we resolve it via `<JtIcon>`,
  * otherwise we render it inline as text (works for emoji + plain text).
  */
-export function EmojiOrIcon({ value, size = 20, fallback, className }: Props) {
+export function EmojiOrIcon({ value, size = 24, fallback, className }: Props) {
   const v = value ?? fallback ?? "";
   if (!v) return null;
   if (ICON_NAME_SET.has(v)) {

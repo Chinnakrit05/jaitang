@@ -52,7 +52,7 @@ export function SearchInput({ placeholder }: { placeholder: string }) {
     <div className="relative w-full sm:max-w-xs">
       <JtIcon
         name="search"
-        size={14}
+        size={18}
         className="absolute left-3 top-1/2 -translate-y-1/2 text-(--muted) pointer-events-none"
       />
       <input
@@ -69,7 +69,7 @@ export function SearchInput({ placeholder }: { placeholder: string }) {
           className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-(--muted) hover:text-(--foreground)"
           aria-label="clear"
         >
-          <JtIcon name="x" size={12} />
+          <JtIcon name="x" size={16} />
         </button>
       )}
     </div>

@@ -152,7 +152,7 @@ export async function DashboardShell({
               className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground) transition"
               aria-label={t("common.logoutFull")}
             >
-              <JtIcon name="logout" size={16} />
+              <JtIcon name="logout" size={20} />
               <span className="hidden sm:inline">{t("common.logout")}</span>
             </button>
           </form>

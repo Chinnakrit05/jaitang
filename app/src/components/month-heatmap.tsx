@@ -302,9 +302,9 @@ export function MonthHeatmap({
                             <span>•</span>
                             <span className="inline-flex items-center gap-0.5">
                               {tx.payment_method === "cash" ? (
-                                <JtIcon name="banknote" size={10} />
+                                <JtIcon name="banknote" size={14} />
                               ) : (
-                                <JtIcon name="landmark" size={10} />
+                                <JtIcon name="landmark" size={14} />
                               )}
                             </span>
                           </>
@@ -313,7 +313,7 @@ export function MonthHeatmap({
                           <>
                             <span>•</span>
                             <span className="inline-flex items-center gap-0.5">
-                              <JtIcon name="trips" size={10} />
+                              <JtIcon name="trips" size={14} />
                               <span className="truncate">{tx.trip.name}</span>
                             </span>
                           </>
@@ -342,7 +342,7 @@ export function MonthHeatmap({
                       aria-label={t("common.edit")}
                       title={t("common.edit")}
                     >
-                      <JtIcon name="pencil" size={12} />
+                      <JtIcon name="pencil" size={16} />
                     </Link>
                   </li>
                 ))}

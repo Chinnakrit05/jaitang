@@ -24,7 +24,7 @@ export function LanguageSwitcher() {
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <JtIcon name="globe" size={16} className="text-(--muted)" />
+      <JtIcon name="globe" size={20} className="text-(--muted)" />
       {LOCALES.map((loc) => (
         <button
           key={loc}
@@ -39,7 +39,7 @@ export function LanguageSwitcher() {
             pending && "opacity-60"
           )}
         >
-          {current === loc && <JtIcon name="check" size={14} className="text-(--accent)" />}
+          {current === loc && <JtIcon name="check" size={18} className="text-(--accent)" />}
           {LOCALE_LABELS[loc]}
         </button>
       ))}

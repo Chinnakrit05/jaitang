@@ -76,7 +76,7 @@ export function NavbarStat({
         <span className="text-(--expense) font-semibold">
           −{formatCurrency(expense, currency, fmtLocale)}
         </span>
-        <JtIcon name="chevron-down" size={14} className="text-(--muted)" />
+        <JtIcon name="chevron-down" size={18} className="text-(--muted)" />
       </button>
 
       {open && (
@@ -90,7 +90,7 @@ export function NavbarStat({
             >
               <span>{ICONS[p]}</span>
               <span className="flex-1">{t(`navbarStat.periods.${p}`)}</span>
-              {p === period && <JtIcon name="check" size={14} className="text-(--accent)" />}
+              {p === period && <JtIcon name="check" size={18} className="text-(--accent)" />}
             </button>
           ))}
         </div>

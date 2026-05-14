@@ -108,7 +108,7 @@ export function InstallPrompt() {
       <div className="rounded-2xl border border-(--accent)/30 bg-(--card) shadow-xl p-4">
         <div className="flex items-start gap-3">
           <span className="shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-xl bg-(--accent)/10 text-(--accent)">
-            <JtIcon name="smartphone" size={18} />
+            <JtIcon name="smartphone" size={22} />
           </span>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm">
@@ -119,10 +119,10 @@ export function InstallPrompt() {
             </p>
             {iosHint && (
               <div className="mt-2 flex items-center gap-1.5 text-xs text-(--muted)">
-                <JtIcon name="share" size={12} />
+                <JtIcon name="share" size={16} />
                 <span>{t("install.iosStep1")}</span>
                 <span className="text-(--muted)/60">→</span>
-                <JtIcon name="plus-fab" size={12} />
+                <JtIcon name="plus-fab" size={16} />
                 <span>{t("install.iosStep2")}</span>
               </div>
             )}
@@ -151,7 +151,7 @@ export function InstallPrompt() {
             className="shrink-0 p-1 rounded-md text-(--muted) hover:bg-(--background)"
             aria-label={t("install.dismissAria")}
           >
-            <JtIcon name="x" size={14} />
+            <JtIcon name="x" size={18} />
           </button>
         </div>
       </div>

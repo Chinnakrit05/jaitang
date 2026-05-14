@@ -392,7 +392,7 @@ export function TransactionForm({
           <input type="hidden" name="splitWith" value={splitParam} />
           <label className="flex items-center justify-between gap-3 cursor-pointer">
             <span className="flex items-center gap-2 text-sm font-medium">
-              <JtIcon name="users" size={16} className="text-(--accent)" />
+              <JtIcon name="users" size={20} className="text-(--accent)" />
               {t("transactions.splitTitle")}
             </span>
             <input
@@ -477,7 +477,7 @@ export function TransactionForm({
           {!initial && activeTrip ? (
             <label className="flex items-center justify-between gap-3 cursor-pointer">
               <span className="flex items-center gap-2 text-sm font-medium">
-                <JtIcon name="trips" size={16} className="text-(--accent)" />
+                <JtIcon name="trips" size={20} className="text-(--accent)" />
                 {t("trips.addToTripLabel", {
                   name: `${activeTrip.icon ?? "✈️"} ${activeTrip.name}`,
                 })}
@@ -494,7 +494,7 @@ export function TransactionForm({
           ) : (
             <div className="space-y-1.5">
               <label className="block text-sm font-medium flex items-center gap-2">
-                <JtIcon name="trips" size={16} className="text-(--accent)" />
+                <JtIcon name="trips" size={20} className="text-(--accent)" />
                 {t("trips.tripField")}
               </label>
               <select
@@ -541,7 +541,7 @@ export function TransactionForm({
             <input type="hidden" name="accountId" value={accountId ?? ""} />
             <div className="space-y-1.5">
               <label className="block text-sm font-medium flex items-center gap-2">
-                <JtIcon name="accounts" size={16} className="text-(--accent)" />
+                <JtIcon name="accounts" size={20} className="text-(--accent)" />
                 {t("accounts.accountField")}
               </label>
               <select
@@ -646,7 +646,7 @@ export function TransactionForm({
                 : "text-(--muted) hover:text-(--foreground)"
             )}
           >
-            <JtIcon name="banknote" size={16} />
+            <JtIcon name="banknote" size={20} />
             {t("transactions.paymentCash")}
           </button>
           <button
@@ -659,7 +659,7 @@ export function TransactionForm({
                 : "text-(--muted) hover:text-(--foreground)"
             )}
           >
-            <JtIcon name="landmark" size={16} />
+            <JtIcon name="landmark" size={20} />
             {t("transactions.paymentTransfer")}
           </button>
         </div>
@@ -757,7 +757,7 @@ function CategoryRadio({
         required
       />
       <div className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition peer-checked:border-(--accent) peer-checked:bg-(--accent)/5 peer-checked:ring-2 peer-checked:ring-(--accent)/30">
-        <EmojiOrIcon value={category.icon} fallback="sparkle" size={24} />
+        <EmojiOrIcon value={category.icon} fallback="sparkle" size={28} />
         <span className="text-xs font-medium">{category.name}</span>
       </div>
     </label>

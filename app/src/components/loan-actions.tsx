@@ -51,7 +51,7 @@ export function LoanActions({
           }}
           className="inline-flex items-center gap-2 rounded-xl bg-(--income) text-white px-4 py-2 text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
         >
-          <JtIcon name="check-circle-2" size={14} />
+          <JtIcon name="check-circle-2" size={18} />
           {pending ? labels.working : labels.settle}
         </button>
       ) : (
@@ -61,7 +61,7 @@ export function LoanActions({
           onClick={() => run(onReopen)}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          <JtIcon name="rotate-ccw" size={14} />
+          <JtIcon name="rotate-ccw" size={18} />
           {pending ? labels.working : labels.reopen}
         </button>
       )}
@@ -74,7 +74,7 @@ export function LoanActions({
         }}
         className="inline-flex items-center gap-2 rounded-xl border border-(--expense)/40 bg-(--expense)/10 text-(--expense) hover:bg-(--expense)/20 px-4 py-2 text-sm font-medium disabled:opacity-50"
       >
-        <JtIcon name="trash2" size={14} />
+        <JtIcon name="trash2" size={18} />
         {labels.delete}
       </button>
     </div>

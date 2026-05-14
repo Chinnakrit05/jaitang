@@ -75,7 +75,7 @@ export function RecurringPanel({
           onClick={() => setShowForm((v) => !v)}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition"
         >
-          <JtIcon name="plus-fab" size={16} />
+          <JtIcon name="plus-fab" size={20} />
           {t("recurring.addButton")}
         </button>
         <button
@@ -84,7 +84,7 @@ export function RecurringPanel({
           disabled={pending}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition disabled:opacity-50"
         >
-          <JtIcon name="refresh" size={16} className={pending ? "animate-spin" : ""} />
+          <JtIcon name="refresh" size={20} className={pending ? "animate-spin" : ""} />
           {t("recurring.runDue")}
         </button>
       </div>
@@ -277,7 +277,7 @@ function CreateRecurringForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium mb-1 text-(--muted) flex items-center gap-1">
-            <JtIcon name="accounts" size={12} />
+            <JtIcon name="accounts" size={16} />
             {t("accounts.accountField")}
           </label>
           <select
@@ -297,7 +297,7 @@ function CreateRecurringForm({
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-(--muted) flex items-center gap-1">
-            <JtIcon name="trips" size={12} />
+            <JtIcon name="trips" size={16} />
             {t("trips.tripField")}
           </label>
           <select
@@ -400,7 +400,7 @@ function RuleRow({
           <span>{rule.category?.name ?? t("common.uncategorizedFull")}</span>
           {rule.account && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-1.5 py-0.5">
-              <JtIcon name="accounts" size={10} />
+              <JtIcon name="accounts" size={14} />
               {rule.account.name}
             </span>
           )}
@@ -446,7 +446,7 @@ function RuleRow({
         aria-label={t("common.edit")}
         title={t("common.edit")}
       >
-        <JtIcon name="pencil" size={16} />
+        <JtIcon name="pencil" size={20} />
       </button>
       <button
         type="button"
@@ -460,7 +460,7 @@ function RuleRow({
         className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground) shrink-0"
         aria-label={rule.active ? t("common.cancel") : t("common.confirm")}
       >
-        {rule.active ? <JtIcon name="pause" size={16} /> : <JtIcon name="play" size={16} />}
+        {rule.active ? <JtIcon name="pause" size={20} /> : <JtIcon name="play" size={20} />}
       </button>
       <button
         type="button"
@@ -475,7 +475,7 @@ function RuleRow({
         className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense) shrink-0"
         aria-label={t("common.delete")}
       >
-        <JtIcon name="trash2" size={16} />
+        <JtIcon name="trash2" size={20} />
       </button>
     </li>
   );

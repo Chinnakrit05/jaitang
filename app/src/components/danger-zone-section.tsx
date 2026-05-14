@@ -111,12 +111,12 @@ export function DangerZoneSection({ ledgerName, isOwnerOfActiveLedger }: Props) 
             >
               {pending ? (
                 <>
-                  <JtIcon name="loader-2" size={16} className="animate-spin" />
+                  <JtIcon name="loader-2" size={20} className="animate-spin" />
                   {t("settings.wipeWorking")}
                 </>
               ) : (
                 <>
-                  <JtIcon name="eraser" size={16} />
+                  <JtIcon name="eraser" size={20} />
                   {t("settings.wipeLedgerButton")}
                 </>
               )}
@@ -126,7 +126,7 @@ export function DangerZoneSection({ ledgerName, isOwnerOfActiveLedger }: Props) 
 
         {done && (
           <div className="rounded-xl border border-(--income)/40 bg-(--income)/5 p-3 flex items-start gap-3 text-sm">
-            <JtIcon name="check-circle-2" size={18} className="text-(--income) shrink-0 mt-0.5" />
+            <JtIcon name="check-circle-2" size={22} className="text-(--income) shrink-0 mt-0.5" />
             <span>
               {t("settings.wipeLedgerDone", {
                 count: done.count,
@@ -159,12 +159,12 @@ export function DangerZoneSection({ ledgerName, isOwnerOfActiveLedger }: Props) 
         >
           {pending ? (
             <>
-              <JtIcon name="loader-2" size={16} className="animate-spin" />
+              <JtIcon name="loader-2" size={20} className="animate-spin" />
               {t("settings.wipeWorking")}
             </>
           ) : (
             <>
-              <JtIcon name="trash2" size={16} />
+              <JtIcon name="trash2" size={20} />
               {t("settings.wipeAllButton")}
             </>
           )}
@@ -173,7 +173,7 @@ export function DangerZoneSection({ ledgerName, isOwnerOfActiveLedger }: Props) 
 
       {error && (
         <div className="rounded-xl border border-(--expense)/40 bg-(--expense)/5 p-3 flex items-start gap-3 text-sm text-(--expense)">
-          <JtIcon name="alert-triangle" size={18} className="shrink-0 mt-0.5" />
+          <JtIcon name="alert-triangle" size={22} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}

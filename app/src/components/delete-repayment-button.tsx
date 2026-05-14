@@ -34,7 +34,7 @@ export function DeleteRepaymentButton({
       aria-label={aria}
       title={aria}
     >
-      <JtIcon name="trash2" size={14} />
+      <JtIcon name="trash2" size={18} />
     </button>
   );
 }

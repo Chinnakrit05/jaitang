@@ -133,12 +133,12 @@ export function ImportWizard({ ledgerCurrency }: { ledgerCurrency: string }) {
         <label className="inline-flex items-center gap-2 rounded-xl bg-(--accent) text-(--accent-foreground) px-5 py-2.5 text-sm font-semibold cursor-pointer disabled:opacity-50">
           {pending ? (
             <>
-              <JtIcon name="loader-2" size={16} className="animate-spin" />
+              <JtIcon name="loader-2" size={20} className="animate-spin" />
               {t("import.processing")}
             </>
           ) : (
             <>
-              <JtIcon name="upload" size={16} />
+              <JtIcon name="upload" size={20} />
               {t("import.chooseFile")}
             </>
           )}
@@ -163,7 +163,7 @@ export function ImportWizard({ ledgerCurrency }: { ledgerCurrency: string }) {
 
       {error && (
         <div className="rounded-2xl border border-(--expense)/40 bg-(--expense)/5 p-4 flex items-start gap-3">
-          <JtIcon name="alert-circle" size={20} className="text-(--expense) shrink-0 mt-0.5" />
+          <JtIcon name="alert-circle" size={24} className="text-(--expense) shrink-0 mt-0.5" />
           <div className="text-sm text-(--expense)">{error}</div>
         </div>
       )}
@@ -330,7 +330,7 @@ function PreviewStep({
       {/* Rows */}
       <div className="rounded-2xl border border-(--border) bg-(--card) overflow-hidden">
         <div className="px-4 py-2.5 border-b border-(--border) text-sm font-semibold flex items-center gap-2">
-          <JtIcon name="sparkles" size={14} className="text-(--accent)" />
+          <JtIcon name="sparkles" size={18} className="text-(--accent)" />
           {t("import.previewTitle")}
         </div>
         <ul className="divide-y divide-(--border) max-h-[480px] overflow-y-auto">
@@ -350,7 +350,7 @@ function PreviewStep({
 
       {error && (
         <div className="rounded-2xl border border-(--expense)/40 bg-(--expense)/5 p-4 flex items-start gap-3">
-          <JtIcon name="alert-circle" size={20} className="text-(--expense) shrink-0 mt-0.5" />
+          <JtIcon name="alert-circle" size={24} className="text-(--expense) shrink-0 mt-0.5" />
           <div className="text-sm text-(--expense)">{error}</div>
         </div>
       )}
@@ -372,7 +372,7 @@ function PreviewStep({
         >
           {pending ? (
             <>
-              <JtIcon name="loader-2" size={16} className="animate-spin" />
+              <JtIcon name="loader-2" size={20} className="animate-spin" />
               {t("import.applying")}
             </>
           ) : (

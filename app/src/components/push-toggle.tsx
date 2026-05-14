@@ -108,7 +108,7 @@ export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }
             disabled={pending}
             className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium disabled:opacity-50"
           >
-            {pending ? <JtIcon name="loader-2" size={16} className="animate-spin" /> : <JtIcon name="bell-off" size={16} />}
+            {pending ? <JtIcon name="loader-2" size={20} className="animate-spin" /> : <JtIcon name="bell-off" size={20} />}
             {t("push.turnOff")}
           </button>
         ) : (
@@ -118,7 +118,7 @@ export function PushToggle({ vapidPublicKey }: { vapidPublicKey: string | null }
             disabled={pending}
             className="inline-flex items-center gap-2 rounded-xl bg-(--accent) text-(--accent-foreground) hover:opacity-90 px-4 py-2.5 text-sm font-semibold disabled:opacity-50"
           >
-            {pending ? <JtIcon name="loader-2" size={16} className="animate-spin" /> : <JtIcon name="bell" size={16} />}
+            {pending ? <JtIcon name="loader-2" size={20} className="animate-spin" /> : <JtIcon name="bell" size={20} />}
             {t("push.turnOn")}
           </button>
         )}

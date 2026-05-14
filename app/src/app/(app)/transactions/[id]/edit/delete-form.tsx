@@ -30,7 +30,7 @@ export function DeleteForm({
       }}
       className="inline-flex items-center gap-2 text-sm text-(--expense) hover:underline disabled:opacity-50"
     >
-      <JtIcon name="trash2" size={16} />
+      <JtIcon name="trash2" size={20} />
       {t("transactions.deleteThisItem")}
     </button>
   );

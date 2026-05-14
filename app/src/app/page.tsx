@@ -35,17 +35,17 @@ export default async function Home() {
           href="/login"
           className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-6 py-3 font-semibold hover:opacity-90 transition"
         >
-          {t("landing.getStarted")} <JtIcon name="arrow-right" size={18} />
+          {t("landing.getStarted")} <JtIcon name="arrow-right" size={22} />
         </Link>
 
         <div className="grid sm:grid-cols-3 gap-6 mt-16 max-w-3xl w-full">
-          <Feature icon={<JtIcon name="budgets" size={24} />} title={t("landing.feature1Title")}>
+          <Feature icon={<JtIcon name="budgets" size={28} />} title={t("landing.feature1Title")}>
             {t("landing.feature1Body")}
           </Feature>
-          <Feature icon={<JtIcon name="bar-chart-3" size={24} />} title={t("landing.feature2Title")}>
+          <Feature icon={<JtIcon name="bar-chart-3" size={28} />} title={t("landing.feature2Title")}>
             {t("landing.feature2Body")}
           </Feature>
-          <Feature icon={<JtIcon name="users" size={24} />} title={t("landing.feature3Title")}>
+          <Feature icon={<JtIcon name="users" size={28} />} title={t("landing.feature3Title")}>
             {t("landing.feature3Body")}
           </Feature>
         </div>

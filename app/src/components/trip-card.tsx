@@ -49,7 +49,7 @@ export function TripCard({
       onClick={activate}
     >
       <div className="flex items-start gap-3">
-        <EmojiOrIcon value={trip.icon} fallback="airplane" size={28} className="shrink-0" />
+        <EmojiOrIcon value={trip.icon} fallback="airplane" size={32} className="shrink-0" />
         <div className="flex-1 min-w-0">
           <Link
             href={`/trips/${trip.id}`}
@@ -74,12 +74,12 @@ export function TripCard({
           </div>
         </div>
         {isActive && !trip.archived && (
-          <JtIcon name="check" size={18} className="text-(--accent) shrink-0" />
+          <JtIcon name="check" size={22} className="text-(--accent) shrink-0" />
         )}
       </div>
       <div className="mt-3 flex items-center justify-between text-sm tabular-nums">
         <span className="text-(--muted) text-xs flex items-center gap-1">
-          <JtIcon name="trips" size={12} />
+          <JtIcon name="trips" size={16} />
           {t("trips.tripSpend")}
         </span>
         <span className="font-semibold text-(--expense)">

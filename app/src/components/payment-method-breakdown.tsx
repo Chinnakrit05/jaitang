@@ -40,7 +40,7 @@ export async function PaymentMethodBreakdown({
       ) : (
         <div className="space-y-3">
           <Row
-            icon={<JtIcon name="banknote" size={18} />}
+            icon={<JtIcon name="banknote" size={22} />}
             label={t("transactions.paymentCash")}
             totals={cash}
             currency={currency}
@@ -49,7 +49,7 @@ export async function PaymentMethodBreakdown({
             expenseLabel={t("transactions.totalExpense")}
           />
           <Row
-            icon={<JtIcon name="landmark" size={18} />}
+            icon={<JtIcon name="landmark" size={22} />}
             label={t("transactions.paymentTransfer")}
             totals={transfer}
             currency={currency}
@@ -59,7 +59,7 @@ export async function PaymentMethodBreakdown({
           />
           {hasUnspecified && (
             <Row
-              icon={<JtIcon name="help-circle" size={18} />}
+              icon={<JtIcon name="help-circle" size={22} />}
               label={t("dashboard.paymentMethodUnspecified")}
               totals={unspecified}
               currency={currency}

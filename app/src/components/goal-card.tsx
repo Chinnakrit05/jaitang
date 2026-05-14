@@ -45,19 +45,19 @@ export function GoalCard({
     >
       <Link href={`/goals/${goal.id}`} className="block space-y-3">
         <div className="flex items-start gap-3">
-          <EmojiOrIcon value={goal.icon} fallback="bullseye" size={28} className="shrink-0" />
+          <EmojiOrIcon value={goal.icon} fallback="bullseye" size={32} className="shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-semibold truncate">{goal.name}</h3>
               {goal.achieved && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--income) bg-(--income)/10 border border-(--income)/30 rounded-full px-2 py-0.5">
-                  <JtIcon name="check-circle-2" size={12} />
+                  <JtIcon name="check-circle-2" size={16} />
                   {t("goals.achievedBadge")}
                 </span>
               )}
               {goal.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                  <JtIcon name="archive" size={12} />
+                  <JtIcon name="archive" size={16} />
                   {t("goals.archivedBadge")}
                 </span>
               )}

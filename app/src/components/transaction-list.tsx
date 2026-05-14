@@ -131,7 +131,7 @@ export function TransactionList({
                         : "var(--expense)",
                   }}
                 >
-                  <span className="pl-1"><EmojiOrIcon value={tx.category?.icon} fallback="sparkle" size={24} /></span>
+                  <span className="pl-1"><EmojiOrIcon value={tx.category?.icon} fallback="sparkle" size={28} /></span>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">
                       {tx.category?.name ?? t("common.uncategorizedFull")}
@@ -162,9 +162,9 @@ export function TransactionList({
                           <span>•</span>
                           <span className="inline-flex items-center gap-1">
                             {tx.payment_method === "cash" ? (
-                              <JtIcon name="banknote" size={12} />
+                              <JtIcon name="banknote" size={16} />
                             ) : (
-                              <JtIcon name="landmark" size={12} />
+                              <JtIcon name="landmark" size={16} />
                             )}
                             <span>
                               {tx.payment_method === "cash"
@@ -222,7 +222,7 @@ export function TransactionList({
                                 : undefined
                             }
                           >
-                            <EmojiOrIcon value={tx.trip.icon} fallback="airplane" size={12} />
+                            <EmojiOrIcon value={tx.trip.icon} fallback="airplane" size={16} />
                             <span>{tx.trip.name}</span>
                           </Link>
                         </>
@@ -257,7 +257,7 @@ export function TransactionList({
                         aria-label={t("trips.removeFromTrip")}
                         title={t("trips.removeFromTrip")}
                       >
-                        <JtIcon name="x" size={16} />
+                        <JtIcon name="x" size={20} />
                       </button>
                     )}
                     <Link
@@ -265,7 +265,7 @@ export function TransactionList({
                       className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
                       aria-label={t("common.edit")}
                     >
-                      <JtIcon name="pencil" size={16} />
+                      <JtIcon name="pencil" size={20} />
                     </Link>
                     <button
                       type="button"
@@ -280,7 +280,7 @@ export function TransactionList({
                       className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
                       aria-label={t("common.delete")}
                     >
-                      <JtIcon name="trash2" size={16} />
+                      <JtIcon name="trash2" size={20} />
                     </button>
                   </div>
                 </li>

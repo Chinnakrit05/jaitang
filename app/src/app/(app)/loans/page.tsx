@@ -49,7 +49,7 @@ export default async function LoansPage() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <JtIcon name="loans" size={22} className="text-(--accent)" />
+          <JtIcon name="loans" size={26} className="text-(--accent)" />
           {t("loans.title")}
         </h1>
         <p className="text-sm text-(--muted) mt-1">{t("loans.subtitle")}</p>
@@ -59,7 +59,7 @@ export default async function LoansPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <SummaryCard
           label={t("loans.totalLent")}
-          icon={<JtIcon name="arrow-up-right" size={18} />}
+          icon={<JtIcon name="arrow-up-right" size={22} />}
           tone="income"
           totals={lentByCurrency}
           fallbackCurrency={ledger.currency}
@@ -67,7 +67,7 @@ export default async function LoansPage() {
         />
         <SummaryCard
           label={t("loans.totalBorrowed")}
-          icon={<JtIcon name="arrow-down-left" size={18} />}
+          icon={<JtIcon name="arrow-down-left" size={22} />}
           tone="expense"
           totals={borrowedByCurrency}
           fallbackCurrency={ledger.currency}
@@ -112,7 +112,7 @@ export default async function LoansPage() {
       {/* Create */}
       <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
         <h2 className="font-semibold flex items-center gap-2">
-          <JtIcon name="plus-fab" size={16} />
+          <JtIcon name="plus-fab" size={20} />
           {t("loans.createTitle")}
         </h2>
         <p className="text-sm text-(--muted)">{t("loans.createHint")}</p>

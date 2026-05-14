@@ -72,7 +72,7 @@ export default async function AcceptInvitePage({
                     type="submit"
                     className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-(--accent) text-(--accent-foreground) py-3 font-semibold hover:opacity-90 transition"
                   >
-                    {t("invites.joinButton")} <JtIcon name="arrow-right" size={18} />
+                    {t("invites.joinButton")} <JtIcon name="arrow-right" size={22} />
                   </button>
                 </form>
               ) : (

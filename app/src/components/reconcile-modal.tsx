@@ -119,7 +119,7 @@ export function ReconcileModal({
         className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
         title={t("reconcile.button")}
       >
-        <JtIcon name="scale-domain" size={14} />
+        <JtIcon name="scale-domain" size={18} />
         <span className="hidden sm:inline">{t("reconcile.button")}</span>
       </button>
 
@@ -138,7 +138,7 @@ export function ReconcileModal({
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-lg flex items-center gap-2">
-                <JtIcon name="scale-domain" size={18} className="text-(--accent)" />
+                <JtIcon name="scale-domain" size={22} className="text-(--accent)" />
                 {t("reconcile.title")}
               </h2>
               <button
@@ -147,7 +147,7 @@ export function ReconcileModal({
                 className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background)"
                 aria-label="close"
               >
-                <JtIcon name="x" size={18} />
+                <JtIcon name="x" size={22} />
               </button>
             </div>
 
@@ -223,7 +223,7 @@ export function ReconcileModal({
                       {result.diff === 0 ? (
                         <>
                           <JtIcon name="check-circle-2"
-                            size={14}
+                            size={18}
                             className="text-(--income)"
                           />
                           {t("reconcile.matchLabel")}
@@ -231,7 +231,7 @@ export function ReconcileModal({
                       ) : (
                         <>
                           <JtIcon name="alert-triangle"
-                            size={14}
+                            size={18}
                             className="text-(--accent)"
                           />
                           {t("reconcile.diffLabel")}
@@ -257,7 +257,7 @@ export function ReconcileModal({
                   </div>
                   {result.committed && (
                     <p className="mt-2 text-xs text-(--income) flex items-center gap-1">
-                      <JtIcon name="check-circle-2" size={12} />
+                      <JtIcon name="check-circle-2" size={16} />
                       {t("reconcile.committed")}
                     </p>
                   )}

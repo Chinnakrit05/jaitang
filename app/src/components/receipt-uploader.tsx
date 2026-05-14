@@ -74,7 +74,7 @@ export function ReceiptUploader({ onParsed }: Props) {
     <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/50 p-4 space-y-3">
       <div className="flex items-start gap-3">
         <div className="text-(--accent) shrink-0 mt-0.5">
-          <JtIcon name="camera" size={22} />
+          <JtIcon name="camera" size={26} />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm">{t("ocr.title")}</h3>
@@ -104,12 +104,12 @@ export function ReceiptUploader({ onParsed }: Props) {
         >
           {pending ? (
             <>
-              <JtIcon name="loader-2" size={16} className="animate-spin" />
+              <JtIcon name="loader-2" size={20} className="animate-spin" />
               {t("ocr.reading")}
             </>
           ) : (
             <>
-              <JtIcon name="camera" size={16} />
+              <JtIcon name="camera" size={20} />
               {t("ocr.selectImage")}
             </>
           )}
@@ -125,7 +125,7 @@ export function ReceiptUploader({ onParsed }: Props) {
                 : "text-(--muted)"
             }`}
           >
-            <JtIcon name="check-circle-2" size={14} />
+            <JtIcon name="check-circle-2" size={18} />
             {confidence === "high"
               ? t("ocr.confidenceHigh")
               : confidence === "medium"
@@ -137,7 +137,7 @@ export function ReceiptUploader({ onParsed }: Props) {
 
       {error && (
         <div className="flex items-start gap-2 text-sm text-(--expense) bg-(--expense)/10 rounded-lg px-3 py-2">
-          <JtIcon name="alert-circle" size={16} className="shrink-0 mt-0.5" />
+          <JtIcon name="alert-circle" size={20} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}

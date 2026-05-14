@@ -71,7 +71,7 @@ export function CreateLoanForm({ ledgerCurrency }: { ledgerCurrency: string }) {
               : "text-(--muted) hover:text-(--foreground)"
           )}
         >
-          <JtIcon name="arrow-up-right" size={16} />
+          <JtIcon name="arrow-up-right" size={20} />
           {t("loans.directionLent")}
         </button>
         <button
@@ -84,7 +84,7 @@ export function CreateLoanForm({ ledgerCurrency }: { ledgerCurrency: string }) {
               : "text-(--muted) hover:text-(--foreground)"
           )}
         >
-          <JtIcon name="arrow-down-left" size={16} />
+          <JtIcon name="arrow-down-left" size={20} />
           {t("loans.directionBorrowed")}
         </button>
       </div>

@@ -53,7 +53,7 @@ export function ContributeForm({
       className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-2.5"
     >
       <h3 className="text-sm font-semibold flex items-center gap-2">
-        <JtIcon name="plus-fab" size={14} />
+        <JtIcon name="plus-fab" size={18} />
         {t("goals.contributeTitle")}
       </h3>
       <div className="flex gap-2">

@@ -45,19 +45,19 @@ export function LoanCard({
           <span
             className={`shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-(--background) ${directionColor}`}
           >
-            {isLent ? <JtIcon name="arrow-up-right" size={20} /> : <JtIcon name="arrow-down-left" size={20} />}
+            {isLent ? <JtIcon name="arrow-up-right" size={24} /> : <JtIcon name="arrow-down-left" size={24} />}
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-semibold truncate">{loan.counterparty}</h3>
               {settled ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--income) bg-(--income)/10 rounded-full px-2 py-0.5">
-                  <JtIcon name="check-circle-2" size={12} />
+                  <JtIcon name="check-circle-2" size={16} />
                   {t("loans.settledBadge")}
                 </span>
               ) : loan.overdue ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--expense) bg-(--expense)/10 rounded-full px-2 py-0.5">
-                  <JtIcon name="alert-triangle" size={12} />
+                  <JtIcon name="alert-triangle" size={16} />
                   {t("loans.overdueBadge")}
                 </span>
               ) : null}

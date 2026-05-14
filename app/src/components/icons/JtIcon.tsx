@@ -12,7 +12,7 @@ type JtIconProps = Omit<ComponentPropsWithoutRef<'svg'>, 'width' | 'height'> & {
 
 const SPRITE = '/icons-sticker.svg';
 
-export function JtIcon({ name, size = 18, className, style, ...rest }: JtIconProps) {
+export function JtIcon({ name, size = 22, className, style, ...rest }: JtIconProps) {
   return (
     <svg
       width={size}

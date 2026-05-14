@@ -226,7 +226,7 @@ export function CreateTransferForm({
 
       {/* Visual arrow */}
       <div className="flex items-center justify-center text-(--muted)">
-        <JtIcon name="arrow-right" size={16} />
+        <JtIcon name="arrow-right" size={20} />
       </div>
 
       {/* To */}

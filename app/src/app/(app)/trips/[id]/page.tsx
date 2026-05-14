@@ -98,7 +98,7 @@ export default async function TripDetailPage({
         href="/trips"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground)"
       >
-        <JtIcon name="arrow-left" size={16} />
+        <JtIcon name="arrow-left" size={20} />
         {t("trips.backToList")}
       </Link>
 
@@ -126,13 +126,13 @@ export default async function TripDetailPage({
               )}
               {trip.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                  <JtIcon name="archive" size={12} />
+                  <JtIcon name="archive" size={16} />
                   {t("trips.archivedBadge")}
                 </span>
               )}
               {isActive && !trip.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--accent-foreground) bg-(--accent) rounded-full px-2 py-0.5">
-                  <JtIcon name="trips" size={12} />
+                  <JtIcon name="trips" size={16} />
                   {t("trips.activeBadge")}
                 </span>
               )}

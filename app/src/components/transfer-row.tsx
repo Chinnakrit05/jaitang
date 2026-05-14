@@ -71,7 +71,7 @@ export function TransferRow({
           <span className="text-(--muted)">
             {isOutgoing ? t("transfers.toLabel") : t("transfers.fromLabel")}
           </span>
-          <JtIcon name="arrow-right" size={12} className="text-(--muted) shrink-0" />
+          <JtIcon name="arrow-right" size={16} className="text-(--muted) shrink-0" />
           <span className="truncate">{otherName}</span>
         </div>
         {transfer.note && (
@@ -106,7 +106,7 @@ export function TransferRow({
             title={t("transfers.delete")}
             className="mt-0.5 inline-flex items-center justify-center h-6 w-6 rounded-md text-(--muted) hover:text-(--expense) hover:bg-(--expense)/10 disabled:opacity-50"
           >
-            <JtIcon name="trash2" size={12} />
+            <JtIcon name="trash2" size={16} />
           </button>
         )}
       </div>

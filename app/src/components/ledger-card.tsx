@@ -61,7 +61,7 @@ export function LedgerCard({
             <span>{ROLE_LABEL[ledger.role]}</span>
           </div>
         </div>
-        {isActive && <JtIcon name="check" size={18} className="text-(--accent) shrink-0" />}
+        {isActive && <JtIcon name="check" size={22} className="text-(--accent) shrink-0" />}
       </div>
 
       {!ledger.is_personal && ledger.role === "owner" && (
@@ -71,7 +71,7 @@ export function LedgerCard({
           className="absolute top-3 right-3 text-(--muted) hover:text-(--foreground) p-1 rounded-md hover:bg-(--card)"
           aria-label={t("members.subtitle")}
         >
-          <JtIcon name="settings" size={16} />
+          <JtIcon name="settings" size={20} />
         </Link>
       )}
     </li>

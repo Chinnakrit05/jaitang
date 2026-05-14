@@ -85,14 +85,14 @@ export default async function TransactionsPage({
             href={exportHref}
             className="inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 font-medium text-sm transition"
           >
-            <JtIcon name="download" size={16} />
+            <JtIcon name="download" size={20} />
             <span className="hidden sm:inline">{t("transactions.csv")}</span>
           </a>
           <Link
             href="/transactions/new"
             className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm cta-primary"
           >
-            <JtIcon name="plus-fab" size={18} />
+            <JtIcon name="plus-fab" size={22} />
             {t("transactions.addNew")}
           </Link>
         </div>
