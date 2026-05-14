@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { getTranslations } from "next-intl/server";
 import { signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -104,7 +104,7 @@ export async function DashboardShell({
             href="/ledgers"
             className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) transition text-sm min-w-0"
           >
-            <span className="shrink-0">{activeLedger.icon ?? "📒"}</span>
+            <span className="shrink-0"><EmojiOrIcon value={activeLedger.icon} fallback="users" size={20} /></span>
             <span className="font-medium truncate max-w-[140px]">
               {activeLedger.name}
             </span>

@@ -1,14 +1,28 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, type IconName } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { createSharedLedgerAction } from "@/app/(app)/ledgers/actions";
 import { cn } from "@/lib/utils";
 
-const ICONS = ["👥", "🏠", "✈️", "💕", "🍽️", "🎉", "🐶", "📚", "🛒"];
+// Shared-ledger themes. Original set had 💕 and 🐶 emoji we don't have
+// JtIcon equivalents for; replaced with ring (couples) and skipped pet.
+const ICONS: IconName[] = [
+  "users",
+  "house",
+  "airplane",
+  "ring",
+  "ramen",
+  "party",
+  "gift",
+  "books",
+  "shopping-cart",
+  "money-bag",
+];
+const DEFAULT_LEDGER_ICON: IconName = "users";
 const COLORS = [
   "#a855f7", "#ec4899", "#3b82f6", "#10b981",
   "#f59e0b", "#06b6d4", "#84cc16", "#ef4444",
@@ -20,7 +34,7 @@ export function CreateLedgerForm() {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState("");
-  const [icon, setIcon] = useState("👥");
+  const [icon, setIcon] = useState<IconName>(DEFAULT_LEDGER_ICON);
   const [color, setColor] = useState(COLORS[0]);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,13 +94,13 @@ export function CreateLedgerForm() {
               type="button"
               onClick={() => setIcon(i)}
               className={cn(
-                "h-10 w-10 rounded-lg border text-2xl transition",
+                "h-10 w-10 rounded-lg border flex items-center justify-center transition",
                 icon === i
                   ? "border-(--accent) bg-(--accent)/10"
                   : "border-(--border) hover:bg-(--background)"
               )}
             >
-              {i}
+              <JtIcon name={i} size={26} />
             </button>
           ))}
         </div>
