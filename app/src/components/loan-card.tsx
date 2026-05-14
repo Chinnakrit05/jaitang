@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
-import { ArrowDownLeft, ArrowUpRight, AlertTriangle, CheckCircle2 } from "lucide-react";
+
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import type { LoanWithStats } from "@/lib/loans";
 
@@ -44,19 +45,19 @@ export function LoanCard({
           <span
             className={`shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-(--background) ${directionColor}`}
           >
-            {isLent ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+            {isLent ? <JtIcon name="arrow-up-right" size={20} /> : <JtIcon name="arrow-down-left" size={20} />}
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-semibold truncate">{loan.counterparty}</h3>
               {settled ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--income) bg-(--income)/10 rounded-full px-2 py-0.5">
-                  <CheckCircle2 size={12} />
+                  <JtIcon name="check-circle-2" size={12} />
                   {t("loans.settledBadge")}
                 </span>
               ) : loan.overdue ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--expense) bg-(--expense)/10 rounded-full px-2 py-0.5">
-                  <AlertTriangle size={12} />
+                  <JtIcon name="alert-triangle" size={12} />
                   {t("loans.overdueBadge")}
                 </span>
               ) : null}

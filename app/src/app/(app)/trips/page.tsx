@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Plus, Archive, Plane } from "lucide-react";
+import { JtIcon } from "@/components/icons";
+
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { listTrips } from "@/lib/trips";
@@ -25,7 +26,7 @@ export default async function TripsPage() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Plane size={22} className="text-(--accent)" />
+          <JtIcon name="trips" size={22} className="text-(--accent)" />
           {t("trips.title")}
         </h1>
         <p className="text-sm text-(--muted) mt-1">{t("trips.subtitle")}</p>
@@ -59,7 +60,7 @@ export default async function TripsPage() {
       {/* Create form */}
       <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
         <h2 className="font-semibold flex items-center gap-2">
-          <Plus size={16} />
+          <JtIcon name="plus-fab" size={16} />
           {t("trips.createTitle")}
         </h2>
         <p className="text-sm text-(--muted)">{t("trips.createHint")}</p>
@@ -70,7 +71,7 @@ export default async function TripsPage() {
       {archived.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-sm font-semibold text-(--muted) uppercase tracking-wide flex items-center gap-2">
-            <Archive size={14} />
+            <JtIcon name="archive" size={14} />
             {t("trips.archivedSection", { count: archived.length })}
           </h2>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">

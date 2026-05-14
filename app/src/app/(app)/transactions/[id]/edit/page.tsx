@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/session";
+import { JtIcon } from "@/components/icons";
 import { listCategories } from "@/lib/categories";
 import {
   TransactionForm,
@@ -15,7 +16,7 @@ import { listDistinctNotes } from "@/lib/transactions";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+
 import { DeleteForm } from "./delete-form";
 
 export default async function EditTransactionPage({
@@ -92,7 +93,7 @@ export default async function EditTransactionPage({
         href="/transactions"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground) mb-4"
       >
-        <ArrowLeft size={16} />
+        <JtIcon name="arrow-left" size={16} />
         {t("common.back")}
       </Link>
       <h1 className="text-2xl font-bold mb-6">{t("transactions.editTitle")}</h1>

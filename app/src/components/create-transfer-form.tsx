@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowRight } from "lucide-react";
+
 import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { createTransferAction } from "@/app/(app)/accounts/actions";
@@ -225,7 +226,7 @@ export function CreateTransferForm({
 
       {/* Visual arrow */}
       <div className="flex items-center justify-center text-(--muted)">
-        <ArrowRight size={16} />
+        <JtIcon name="arrow-right" size={16} />
       </div>
 
       {/* To */}

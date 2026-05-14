@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { auth, signIn } from "@/auth";
-import { ArrowRight } from "lucide-react";
+
 import { getLocale, getTranslations } from "next-intl/server";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getInviteByCode } from "@/lib/invites";
@@ -71,7 +72,7 @@ export default async function AcceptInvitePage({
                     type="submit"
                     className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-(--accent) text-(--accent-foreground) py-3 font-semibold hover:opacity-90 transition"
                   >
-                    {t("invites.joinButton")} <ArrowRight size={18} />
+                    {t("invites.joinButton")} <JtIcon name="arrow-right" size={18} />
                   </button>
                 </form>
               ) : (

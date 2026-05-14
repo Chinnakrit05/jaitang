@@ -1,9 +1,10 @@
 "use client";
 
 import { useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Banknote, Landmark, Pencil, Trash2, X } from "lucide-react";
+
 import type { TransactionWithCategory } from "@/lib/types";
 import {
   formatDate,
@@ -161,9 +162,9 @@ export function TransactionList({
                           <span>•</span>
                           <span className="inline-flex items-center gap-1">
                             {tx.payment_method === "cash" ? (
-                              <Banknote size={12} />
+                              <JtIcon name="banknote" size={12} />
                             ) : (
-                              <Landmark size={12} />
+                              <JtIcon name="landmark" size={12} />
                             )}
                             <span>
                               {tx.payment_method === "cash"
@@ -258,7 +259,7 @@ export function TransactionList({
                         aria-label={t("trips.removeFromTrip")}
                         title={t("trips.removeFromTrip")}
                       >
-                        <X size={16} />
+                        <JtIcon name="x" size={16} />
                       </button>
                     )}
                     <Link
@@ -266,7 +267,7 @@ export function TransactionList({
                       className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
                       aria-label={t("common.edit")}
                     >
-                      <Pencil size={16} />
+                      <JtIcon name="pencil" size={16} />
                     </Link>
                     <button
                       type="button"
@@ -281,7 +282,7 @@ export function TransactionList({
                       className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
                       aria-label={t("common.delete")}
                     >
-                      <Trash2 size={16} />
+                      <JtIcon name="trash2" size={16} />
                     </button>
                   </div>
                 </li>

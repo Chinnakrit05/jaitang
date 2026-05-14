@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { JtIcon } from "@/components/icons";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Banknote, Landmark, Plane, Pencil } from "lucide-react";
+
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import type { MonthSummary, TransactionWithCategory } from "@/lib/types";
 
@@ -301,9 +302,9 @@ export function MonthHeatmap({
                             <span>•</span>
                             <span className="inline-flex items-center gap-0.5">
                               {tx.payment_method === "cash" ? (
-                                <Banknote size={10} />
+                                <JtIcon name="banknote" size={10} />
                               ) : (
-                                <Landmark size={10} />
+                                <JtIcon name="landmark" size={10} />
                               )}
                             </span>
                           </>
@@ -312,7 +313,7 @@ export function MonthHeatmap({
                           <>
                             <span>•</span>
                             <span className="inline-flex items-center gap-0.5">
-                              <Plane size={10} />
+                              <JtIcon name="trips" size={10} />
                               <span className="truncate">{tx.trip.name}</span>
                             </span>
                           </>
@@ -341,7 +342,7 @@ export function MonthHeatmap({
                       aria-label={t("common.edit")}
                       title={t("common.edit")}
                     >
-                      <Pencil size={12} />
+                      <JtIcon name="pencil" size={12} />
                     </Link>
                   </li>
                 ))}

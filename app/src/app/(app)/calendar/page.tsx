@@ -1,13 +1,6 @@
 import Link from "next/link";
-import {
-  ChevronLeft,
-  ChevronRight,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
-  CalendarCheck,
-  Flame,
-} from "lucide-react";
+import { JtIcon } from "@/components/icons";
+
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { getMonthSummary, listTransactions } from "@/lib/transactions";
@@ -108,7 +101,7 @@ export default async function CalendarPage({
           href={`/calendar?ym=${prev}`}
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
         >
-          <ChevronLeft size={14} />
+          <JtIcon name="chevron-left" size={14} />
           {t("calendar.prev")}
         </Link>
         <h2 className="font-semibold text-lg">{monthLabel}</h2>
@@ -117,7 +110,7 @@ export default async function CalendarPage({
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
         >
           {t("calendar.next")}
-          <ChevronRight size={14} />
+          <JtIcon name="chevron-right" size={14} />
         </Link>
       </div>
 
@@ -127,7 +120,7 @@ export default async function CalendarPage({
         <StatTile
           label={t("calendar.statIncome")}
           value={formatCurrency(summary.income, ledger.currency, fmtLocale)}
-          icon={<TrendingUp size={14} />}
+          icon={<JtIcon name="trending-up" size={14} />}
           tone="income"
           showSign
           rawValue={summary.income}
@@ -135,7 +128,7 @@ export default async function CalendarPage({
         <StatTile
           label={t("calendar.statExpense")}
           value={formatCurrency(summary.expense, ledger.currency, fmtLocale)}
-          icon={<TrendingDown size={14} />}
+          icon={<JtIcon name="trending-down" size={14} />}
           tone="expense"
           showSign
           rawValue={summary.expense}
@@ -143,7 +136,7 @@ export default async function CalendarPage({
         <StatTile
           label={t("calendar.statAvg")}
           value={formatCurrency(avgDailyExpense, ledger.currency, fmtLocale)}
-          icon={<Wallet size={14} />}
+          icon={<JtIcon name="accounts" size={14} />}
           tone="balance"
         />
         <StatTile
@@ -152,7 +145,7 @@ export default async function CalendarPage({
             active: activeDays,
             total: daysInMonth,
           })}
-          icon={<CalendarCheck size={14} />}
+          icon={<JtIcon name="calendar-check" size={14} />}
           tone="balance"
           isText
         />
@@ -172,7 +165,7 @@ export default async function CalendarPage({
       {topDays.length > 0 && (
         <section className="rounded-2xl border border-(--border) bg-(--card) p-4">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
-            <Flame size={14} className="text-(--expense)" />
+            <JtIcon name="flame" size={14} className="text-(--expense)" />
             {t("calendar.topDaysHeading")}
           </h3>
           <ol className="space-y-2">

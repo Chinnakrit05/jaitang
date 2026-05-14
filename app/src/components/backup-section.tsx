@@ -1,15 +1,10 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  Download,
-  Upload,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+
 import {
   restoreBackupAction,
 } from "@/app/(app)/settings/backup-actions";
@@ -48,7 +43,7 @@ export function BackupSection() {
           download
           className="inline-flex items-center gap-2 rounded-xl bg-(--accent) text-(--accent-foreground) px-4 py-2.5 text-sm font-semibold hover:opacity-90"
         >
-          <Download size={16} />
+          <JtIcon name="download" size={16} />
           {t("backup.downloadButton")}
         </a>
         <p className="text-xs text-(--muted) mt-2">{t("backup.downloadHint")}</p>
@@ -81,12 +76,12 @@ export function BackupSection() {
         >
           {pending ? (
             <>
-              <Loader2 size={16} className="animate-spin" />
+              <JtIcon name="loader-2" size={16} className="animate-spin" />
               {t("backup.restoring")}
             </>
           ) : (
             <>
-              <Upload size={16} />
+              <JtIcon name="upload" size={16} />
               {t("backup.restoreButton")}
             </>
           )}
@@ -97,7 +92,7 @@ export function BackupSection() {
       {/* Result */}
       {summary && (
         <div className="rounded-xl border border-(--income)/40 bg-(--income)/5 p-3 flex items-start gap-3">
-          <CheckCircle2 size={18} className="text-(--income) shrink-0 mt-0.5" />
+          <JtIcon name="check-circle-2" size={18} className="text-(--income) shrink-0 mt-0.5" />
           <div className="text-sm">
             <div className="font-medium">{t("backup.restoreDoneTitle")}</div>
             <div className="text-(--muted) text-xs mt-1">
@@ -118,7 +113,7 @@ export function BackupSection() {
 
       {error && (
         <div className="rounded-xl border border-(--expense)/40 bg-(--expense)/5 p-3 flex items-start gap-3">
-          <AlertCircle size={18} className="text-(--expense) shrink-0 mt-0.5" />
+          <JtIcon name="alert-circle" size={18} className="text-(--expense) shrink-0 mt-0.5" />
           <div className="text-sm text-(--expense)">{error}</div>
         </div>
       )}

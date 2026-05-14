@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { JtIcon, type IconName } from "@/components/icons";
 import { useTranslations } from "next-intl";
-import { Archive, Banknote, CreditCard, Landmark, Smartphone } from "lucide-react";
+
 import { cn, formatCurrency } from "@/lib/utils";
 import type { AccountWithBalance } from "@/lib/accounts";
 
-const TYPE_ICONS = {
-  cash: Banknote,
-  bank: Landmark,
-  credit_card: CreditCard,
-  e_wallet: Smartphone,
-} as const;
+const TYPE_ICONS: Record<AccountWithBalance["type"], IconName> = {
+  cash: "banknote",
+  bank: "landmark",
+  credit_card: "credit-card",
+  e_wallet: "smartphone",
+};
 
 /**
  * Card on the /accounts list. Click → account detail. Shows current
@@ -28,7 +29,7 @@ export function AccountCard({
   fmtLocale: string;
 }) {
   const t = useTranslations();
-  const Icon = TYPE_ICONS[account.type];
+  const typeIcon = TYPE_ICONS[account.type];
   const accountCurrency = account.currency ?? ledgerCurrency;
   const balanceColor =
     account.balance < 0
@@ -57,7 +58,7 @@ export function AccountCard({
               color: account.color ?? "var(--foreground)",
             }}
           >
-            {account.icon ?? <Icon size={20} />}
+            {account.icon ?? <JtIcon name={typeIcon} size={20} />}
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -69,7 +70,7 @@ export function AccountCard({
               )}
               {account.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                  <Archive size={12} />
+                  <JtIcon name="archive" size={12} />
                   {t("accounts.archivedBadge")}
                 </span>
               )}

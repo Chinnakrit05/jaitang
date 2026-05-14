@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { JtIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
-import { Archive, CheckCircle2 } from "lucide-react";
+
 import { cn, formatCurrency } from "@/lib/utils";
 import { GoalProgressBar } from "@/components/goal-progress-bar";
 import type { GoalStats } from "@/lib/goals";
@@ -50,13 +51,13 @@ export function GoalCard({
               <h3 className="font-semibold truncate">{goal.name}</h3>
               {goal.achieved && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--income) bg-(--income)/10 border border-(--income)/30 rounded-full px-2 py-0.5">
-                  <CheckCircle2 size={12} />
+                  <JtIcon name="check-circle-2" size={12} />
                   {t("goals.achievedBadge")}
                 </span>
               )}
               {goal.archived && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-2 py-0.5">
-                  <Archive size={12} />
+                  <JtIcon name="archive" size={12} />
                   {t("goals.archivedBadge")}
                 </span>
               )}

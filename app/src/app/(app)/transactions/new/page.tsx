@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/session";
+import { JtIcon } from "@/components/icons";
 import { listCategories } from "@/lib/categories";
 import { NewTransactionPage } from "@/components/new-transaction-page";
 import { createTransactionAction } from "../actions";
@@ -13,7 +14,7 @@ import type {
 } from "@/components/transaction-form";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+
 
 export default async function NewTransaction() {
   const ocrEnabled = !!process.env.ANTHROPIC_API_KEY;
@@ -84,7 +85,7 @@ export default async function NewTransaction() {
         href="/transactions"
         className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground) mb-4"
       >
-        <ArrowLeft size={16} />
+        <JtIcon name="arrow-left" size={16} />
         {t("common.back")}
       </Link>
       <h1 className="text-2xl font-bold mb-6">{t("transactions.newTitle")}</h1>

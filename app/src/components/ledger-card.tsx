@@ -1,10 +1,11 @@
 "use client";
 
 import { useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Check, Settings } from "lucide-react";
+
 import type { LedgerSummary } from "@/lib/ledgers";
 import { switchLedgerAction } from "@/app/(app)/ledgers/actions";
 import { cn } from "@/lib/utils";
@@ -60,7 +61,7 @@ export function LedgerCard({
             <span>{ROLE_LABEL[ledger.role]}</span>
           </div>
         </div>
-        {isActive && <Check size={18} className="text-(--accent) shrink-0" />}
+        {isActive && <JtIcon name="check" size={18} className="text-(--accent) shrink-0" />}
       </div>
 
       {!ledger.is_personal && ledger.role === "owner" && (
@@ -70,7 +71,7 @@ export function LedgerCard({
           className="absolute top-3 right-3 text-(--muted) hover:text-(--foreground) p-1 rounded-md hover:bg-(--card)"
           aria-label={t("members.subtitle")}
         >
-          <Settings size={16} />
+          <JtIcon name="settings" size={16} />
         </Link>
       )}
     </li>

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Plus } from "lucide-react";
+
 import { addContributionAction } from "@/app/(app)/goals/actions";
 
 /**
@@ -52,7 +53,7 @@ export function ContributeForm({
       className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-2.5"
     >
       <h3 className="text-sm font-semibold flex items-center gap-2">
-        <Plus size={14} />
+        <JtIcon name="plus-fab" size={14} />
         {t("goals.contributeTitle")}
       </h3>
       <div className="flex gap-2">

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Pencil, X } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { CurrencyPicker } from "@/components/currency-picker";
 import { updateAccountDetailsAction } from "@/app/(app)/accounts/actions";
@@ -93,7 +94,7 @@ export function EditAccountModal({
         title={t("accounts.editAccount")}
         className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
       >
-        <Pencil size={14} />
+        <JtIcon name="pencil" size={14} />
         <span className="hidden sm:inline">{t("accounts.editAccount")}</span>
       </button>
 
@@ -120,7 +121,7 @@ export function EditAccountModal({
                 className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background)"
                 aria-label="close"
               >
-                <X size={18} />
+                <JtIcon name="x" size={18} />
               </button>
             </div>
 

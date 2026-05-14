@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { JtIcon } from "@/components/icons";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
-import { Monitor, Moon, Sun, Check } from "lucide-react";
+import { Monitor } from "lucide-react";
 import {
   ACCENTS,
   ACCENT_LABELS,
@@ -121,13 +122,13 @@ export function ThemeControls() {
           <ModeButton
             active={theme === "light"}
             onClick={() => setTheme("light")}
-            icon={<Sun size={16} />}
+            icon={<JtIcon name="sun" size={16} />}
             label={t("theme.mode.light")}
           />
           <ModeButton
             active={theme === "dark"}
             onClick={() => setTheme("dark")}
-            icon={<Moon size={16} />}
+            icon={<JtIcon name="moon" size={16} />}
             label={t("theme.mode.dark")}
           />
           <ModeButton
@@ -184,7 +185,7 @@ export function ThemeControls() {
                   style={{ backgroundColor: ACCENT_SWATCHES[a] }}
                 />
                 {t(meta.nameKey)}
-                {isActive && <Check size={14} />}
+                {isActive && <JtIcon name="check" size={14} />}
               </button>
             );
           })}
@@ -240,7 +241,7 @@ export function ThemeControls() {
                     style={{ backgroundColor: swatch }}
                   />
                 )}
-                {isActive && <Check size={14} />}
+                {isActive && <JtIcon name="check" size={14} />}
               </button>
             );
           })}

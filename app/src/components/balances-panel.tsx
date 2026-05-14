@@ -1,9 +1,10 @@
 "use client";
 
 import { useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+
 import type { Balance } from "@/lib/splits";
 import { settleBetweenAction } from "@/app/(app)/balances/actions";
 import { formatCurrency } from "@/lib/utils";
@@ -150,7 +151,7 @@ function Section({
             <span className="text-sm">
               {b.debtorId === currentUserId ? t("common.you") : b.debtorName ?? "?"}
             </span>
-            <ArrowRight size={14} className="text-(--muted) shrink-0" />
+            <JtIcon name="arrow-right" size={14} className="text-(--muted) shrink-0" />
             <Avatar name={b.payerName} image={b.payerImage} />
             <span className="text-sm">
               {b.payerId === currentUserId ? t("common.you") : b.payerName ?? "?"}
@@ -165,7 +166,7 @@ function Section({
               className="inline-flex items-center gap-1 text-xs text-(--accent) hover:underline disabled:opacity-50 shrink-0"
               aria-label={t("balances.settle")}
             >
-              <CheckCircle2 size={14} />
+              <JtIcon name="check-circle-2" size={14} />
               {t("balances.settle")}
             </button>
           </li>

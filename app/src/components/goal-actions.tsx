@@ -1,8 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
-import { Archive, ArchiveRestore, Trash2 } from "lucide-react";
+
 
 type Labels = {
   archive: string;
@@ -54,7 +55,7 @@ export function GoalActions({
           }}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          <Archive size={14} />
+          <JtIcon name="archive" size={14} />
           {pending ? labels.working : labels.archive}
         </button>
       )}
@@ -65,7 +66,7 @@ export function GoalActions({
           onClick={() => run(onUnarchive)}
           className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
-          <ArchiveRestore size={14} />
+          <JtIcon name="archive-restore" size={14} />
           {pending ? labels.working : labels.unarchive}
         </button>
       )}
@@ -78,7 +79,7 @@ export function GoalActions({
         }}
         className="inline-flex items-center gap-2 rounded-xl border border-(--expense)/40 bg-(--expense)/10 text-(--expense) hover:bg-(--expense)/20 px-4 py-2 text-sm font-medium disabled:opacity-50"
       >
-        <Trash2 size={14} />
+        <JtIcon name="trash2" size={14} />
         {labels.delete}
       </button>
     </div>

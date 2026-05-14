@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Check, X, Pencil } from "lucide-react";
+
 import type { Category } from "@/lib/types";
 import type { Budget } from "@/lib/budgets";
 import { setBudgetAction } from "@/app/(app)/budgets/actions";
@@ -71,7 +72,7 @@ export function BudgetRow({
                   className="p-1.5 rounded-lg text-(--income) hover:bg-(--income)/10"
                   aria-label="บันทึก"
                 >
-                  <Check size={16} />
+                  <JtIcon name="check" size={16} />
                 </button>
                 <button
                   type="button"
@@ -82,7 +83,7 @@ export function BudgetRow({
                   className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
                   aria-label="ยกเลิก"
                 >
-                  <X size={16} />
+                  <JtIcon name="x" size={16} />
                 </button>
               </div>
             ) : amount > 0 ? (
@@ -93,7 +94,7 @@ export function BudgetRow({
               >
                 {formatCurrency(spent, currency, fmtLocale)} /{" "}
                 {formatCurrency(amount, currency, fmtLocale)}
-                <Pencil size={12} />
+                <JtIcon name="pencil" size={12} />
               </button>
             ) : (
               <button
