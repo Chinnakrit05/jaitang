@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -49,7 +49,7 @@ export function TripCard({
       onClick={activate}
     >
       <div className="flex items-start gap-3">
-        <span className="text-3xl shrink-0">{trip.icon ?? "✈️"}</span>
+        <EmojiOrIcon value={trip.icon} fallback="airplane" size={28} className="shrink-0" />
         <div className="flex-1 min-w-0">
           <Link
             href={`/trips/${trip.id}`}

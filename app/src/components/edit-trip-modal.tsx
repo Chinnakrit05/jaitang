@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -10,7 +10,19 @@ import { CurrencyPicker } from "@/components/currency-picker";
 import { updateTripDetailsAction } from "@/app/(app)/trips/actions";
 import type { Trip } from "@/lib/types";
 
-const ICON_CHOICES = ["✈️", "🏖️", "🏔️", "🍜", "🎉", "🎒", "🚗", "🛳️", "🏕️", "🎁"];
+const ICON_CHOICES: IconName[] = [
+  "airplane",
+  "beach",
+  "mountain",
+  "ramen",
+  "party",
+  "backpack",
+  "car",
+  "cruise-ship",
+  "camping",
+  "gift",
+];
+const DEFAULT_TRIP_ICON: IconName = "airplane";
 const COLOR_CHOICES = [
   "#3b82f6",
   "#06b6d4",
@@ -44,14 +56,14 @@ export function EditTripModal({
   // user who clicks "edit", types, then cancels gets a clean slate
   // next time.
   const [name, setName] = useState(trip.name);
-  const [icon, setIcon] = useState(trip.icon ?? "✈️");
+  const [icon, setIcon] = useState(trip.icon ?? DEFAULT_TRIP_ICON);
   const [color, setColor] = useState(trip.color ?? "#3b82f6");
   const [currency, setCurrency] = useState(trip.currency ?? ledgerCurrency);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   function openModal() {
     setName(trip.name);
-    setIcon(trip.icon ?? "✈️");
+    setIcon(trip.icon ?? DEFAULT_TRIP_ICON);
     setColor(trip.color ?? "#3b82f6");
     setCurrency(trip.currency ?? ledgerCurrency);
     setError(null);
@@ -149,16 +161,22 @@ export function EditTripModal({
                       type="button"
                       onClick={() => setIcon(ic)}
                       className={cn(
-                        "h-9 w-9 rounded-lg border text-lg flex items-center justify-center transition",
+                        "h-9 w-9 rounded-lg border flex items-center justify-center transition",
                         icon === ic
                           ? "border-(--accent) bg-(--accent)/10"
                           : "border-(--border) bg-(--background) hover:bg-(--card)"
                       )}
                     >
-                      {ic}
+                      <JtIcon name={ic} size={22} />
                     </button>
                   ))}
                 </div>
+                {!ICON_CHOICES.includes(icon as IconName) && icon && (
+                  <div className="mt-2 inline-flex items-center gap-2 text-xs text-(--muted)">
+                    <EmojiOrIcon value={icon} size={18} />
+                    <span>(legacy emoji)</span>
+                  </div>
+                )}
               </div>
 
               <div>

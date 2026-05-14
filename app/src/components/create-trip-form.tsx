@@ -5,8 +5,20 @@ import { useTranslations } from "next-intl";
 import { cn, toLocalDateTimeInput } from "@/lib/utils";
 import { createTripAction } from "@/app/(app)/trips/actions";
 import { CurrencyPicker } from "@/components/currency-picker";
+import { JtIcon, type IconName } from "@/components/icons";
 
-const ICON_CHOICES = ["✈️", "🏖️", "🏔️", "🍜", "🎉", "🎒", "🚗", "🛳️", "🏕️", "🎁"];
+const ICON_CHOICES: IconName[] = [
+  "airplane",
+  "beach",
+  "mountain",
+  "ramen",
+  "party",
+  "backpack",
+  "car",
+  "cruise-ship",
+  "camping",
+  "gift",
+];
 const COLOR_CHOICES = [
   "#3b82f6",
   "#06b6d4",
@@ -85,13 +97,13 @@ export function CreateTripForm({ ledgerCurrency }: { ledgerCurrency: string }) {
               type="button"
               onClick={() => setIcon(ic)}
               className={cn(
-                "h-9 w-9 rounded-lg border text-lg flex items-center justify-center transition",
+                "h-9 w-9 rounded-lg border flex items-center justify-center transition",
                 icon === ic
                   ? "border-(--accent) bg-(--accent)/10"
                   : "border-(--border) bg-(--background) hover:bg-(--card)"
               )}
             >
-              {ic}
+              <JtIcon name={ic} size={22} />
             </button>
           ))}
         </div>

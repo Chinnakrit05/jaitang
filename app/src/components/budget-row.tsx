@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -49,7 +49,7 @@ export function BudgetRow({
   return (
     <li className="px-4 py-3 hover:bg-(--background) transition">
       <div className="flex items-center gap-3">
-        <span className="text-2xl">{category.icon ?? "✨"}</span>
+        <EmojiOrIcon value={category.icon} fallback="sparkle" size={24} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-3">
             <div className="font-medium truncate">{category.name}</div>

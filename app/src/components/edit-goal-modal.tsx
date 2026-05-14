@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -9,7 +9,19 @@ import { cn, toLocalDateTimeInput } from "@/lib/utils";
 import { updateGoalDetailsAction } from "@/app/(app)/goals/actions";
 import type { Goal } from "@/lib/types";
 
-const ICON_CHOICES = ["🎯", "✈️", "🏖️", "🏠", "🚗", "💍", "🎓", "💻", "🎮", "🛒"];
+const ICON_CHOICES: IconName[] = [
+  "bullseye",
+  "airplane",
+  "beach",
+  "house",
+  "car",
+  "ring",
+  "graduation-cap",
+  "laptop",
+  "game-controller",
+  "shopping-cart",
+];
+const DEFAULT_GOAL_ICON: IconName = "bullseye";
 const COLOR_CHOICES = [
   "#10b981",
   "#06b6d4",
@@ -39,7 +51,7 @@ export function EditGoalModal({
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState(goal.name);
-  const [icon, setIcon] = useState(goal.icon ?? "🎯");
+  const [icon, setIcon] = useState(goal.icon ?? DEFAULT_GOAL_ICON);
   const [color, setColor] = useState(goal.color ?? "#10b981");
   const [target, setTarget] = useState(String(goal.target_amount));
   const [deadline, setDeadline] = useState(
@@ -48,7 +60,7 @@ export function EditGoalModal({
 
   function openModal() {
     setName(goal.name);
-    setIcon(goal.icon ?? "🎯");
+    setIcon(goal.icon ?? DEFAULT_GOAL_ICON);
     setColor(goal.color ?? "#10b981");
     setTarget(String(goal.target_amount));
     setDeadline(goal.deadline ? toLocalDateTimeInput(goal.deadline) : "");
@@ -175,16 +187,22 @@ export function EditGoalModal({
                       type="button"
                       onClick={() => setIcon(ic)}
                       className={cn(
-                        "h-9 w-9 rounded-lg border text-lg flex items-center justify-center transition",
+                        "h-9 w-9 rounded-lg border flex items-center justify-center transition",
                         icon === ic
                           ? "border-(--accent) bg-(--accent)/10"
                           : "border-(--border) bg-(--background) hover:bg-(--card)"
                       )}
                     >
-                      {ic}
+                      <JtIcon name={ic} size={22} />
                     </button>
                   ))}
                 </div>
+                {!ICON_CHOICES.includes(icon as IconName) && icon && (
+                  <div className="mt-2 inline-flex items-center gap-2 text-xs text-(--muted)">
+                    <EmojiOrIcon value={icon} size={18} />
+                    <span>(legacy emoji)</span>
+                  </div>
+                )}
               </div>
 
               <div>

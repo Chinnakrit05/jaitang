@@ -5,7 +5,61 @@
  */
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
+
+const ACCOUNT_PALETTE: IconName[] = [
+  "cash-stack",
+  "piggy-bank",
+  "credit-card",
+  "phone-wallet",
+  "money-bag",
+  "coin-purse",
+  "atm",
+  "gold-coin",
+];
+
+const TRIP_PALETTE: IconName[] = [
+  "airplane",
+  "beach",
+  "mountain",
+  "ramen",
+  "party",
+  "backpack",
+  "car",
+  "cruise-ship",
+  "camping",
+  "gift",
+];
+
+const GOAL_PALETTE: IconName[] = [
+  "bullseye",
+  "airplane",
+  "beach",
+  "house",
+  "car",
+  "ring",
+  "graduation-cap",
+  "laptop",
+  "game-controller",
+  "shopping-cart",
+];
+
+const CATEGORY_PALETTE: IconName[] = [
+  "ramen",
+  "coffee",
+  "car",
+  "shopping-cart",
+  "game-controller",
+  "pill",
+  "house",
+  "books",
+  "airplane",
+  "gift",
+  "money-bag",
+  "trending-up",
+  "tag",
+  "sparkle",
+];
 
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: "home" },
@@ -121,6 +175,24 @@ export default function MenuPreviewPage() {
           </div>
         </section>
 
+        <section className="space-y-4 pt-8">
+          <h2 className="text-sm font-medium text-(--muted) uppercase tracking-wider">
+            Phase 4 — Emoji palettes (pickers + display)
+          </h2>
+
+          <PalettePreview label="Account picker (8)" palette={ACCOUNT_PALETTE} />
+          <PalettePreview label="Trip picker (10)" palette={TRIP_PALETTE} />
+          <PalettePreview label="Goal picker (10)" palette={GOAL_PALETTE} />
+          <PalettePreview label="Category picker (14)" palette={CATEGORY_PALETTE} />
+
+          <div className="text-xs text-(--muted) pt-2">
+            Legacy emoji values (e.g. <EmojiOrIcon value="💵" size={14} />,{" "}
+            <EmojiOrIcon value="✈️" size={14} />,{" "}
+            <EmojiOrIcon value="🎯" size={14} />) still render via{" "}
+            <code>EmojiOrIcon</code> for old DB rows.
+          </div>
+        </section>
+
         <section className="space-y-3 pt-12">
           <h2 className="text-sm font-medium text-(--muted) uppercase tracking-wider">
             Mobile bottom nav (preview only — fixed bar lives at viewport bottom on mobile)
@@ -130,6 +202,30 @@ export default function MenuPreviewPage() {
           </div>
         </section>
       </main>
+    </div>
+  );
+}
+
+function PalettePreview({
+  label,
+  palette,
+}: {
+  label: string;
+  palette: IconName[];
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="text-xs text-(--muted) font-medium">{label}</div>
+      <div className="flex flex-wrap gap-1.5">
+        {palette.map((name) => (
+          <span
+            key={name}
+            className="inline-flex items-center justify-center h-10 w-10 rounded-lg border border-(--border) bg-(--card)"
+          >
+            <JtIcon name={name} size={24} />
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
