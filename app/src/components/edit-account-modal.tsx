@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -11,7 +11,18 @@ import { updateAccountDetailsAction } from "@/app/(app)/accounts/actions";
 import type { Account, AccountType } from "@/lib/types";
 
 const TYPES: AccountType[] = ["cash", "bank", "credit_card", "e_wallet"];
-const ICON_CHOICES = ["💵", "🏦", "💳", "📱", "💰", "👛", "🏧", "🪙"];
+const ICON_CHOICES: IconName[] = [
+  "cash-stack",
+  "piggy-bank",
+  "credit-card",
+  "phone-wallet",
+  "money-bag",
+  "coin-purse",
+  "atm",
+  "gold-coin",
+];
+// Default seed for accounts that pre-date the picker switch (or new rows).
+const DEFAULT_ACCOUNT_ICON: IconName = "cash-stack";
 const COLOR_CHOICES = [
   "#10b981",
   "#06b6d4",
@@ -38,7 +49,7 @@ export function EditAccountModal({
 
   const [name, setName] = useState(account.name);
   const [type, setType] = useState<AccountType>(account.type);
-  const [icon, setIcon] = useState(account.icon ?? "💵");
+  const [icon, setIcon] = useState(account.icon ?? DEFAULT_ACCOUNT_ICON);
   const [color, setColor] = useState(account.color ?? "#10b981");
   const [initialBalance, setInitialBalance] = useState(
     String(account.initial_balance)
@@ -48,7 +59,7 @@ export function EditAccountModal({
   function openModal() {
     setName(account.name);
     setType(account.type);
-    setIcon(account.icon ?? "💵");
+    setIcon(account.icon ?? DEFAULT_ACCOUNT_ICON);
     setColor(account.color ?? "#10b981");
     setInitialBalance(String(account.initial_balance));
     setCurrency(account.currency ?? ledgerCurrency);
@@ -189,16 +200,24 @@ export function EditAccountModal({
                       type="button"
                       onClick={() => setIcon(ic)}
                       className={cn(
-                        "h-9 w-9 rounded-lg border text-lg flex items-center justify-center transition",
+                        "h-9 w-9 rounded-lg border flex items-center justify-center transition",
                         icon === ic
                           ? "border-(--accent) bg-(--accent)/10"
                           : "border-(--border) bg-(--background) hover:bg-(--card)"
                       )}
                     >
-                      {ic}
+                      <JtIcon name={ic} size={22} />
                     </button>
                   ))}
                 </div>
+                {/* If the account's saved value is a legacy emoji char,
+                    show it so the user can see what's currently stored. */}
+                {!ICON_CHOICES.includes(icon as IconName) && icon && (
+                  <div className="mt-2 inline-flex items-center gap-2 text-xs text-(--muted)">
+                    <EmojiOrIcon value={icon} size={18} />
+                    <span>(legacy emoji)</span>
+                  </div>
+                )}
               </div>
 
               <div>

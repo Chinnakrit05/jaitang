@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type { Category, TxKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SearchInput } from "@/components/search-input";
+import { iconNameToEmoji } from "@/components/icons";
 
 type TripOption = {
   id: string;
@@ -91,7 +92,7 @@ export function TransactionFilters({
           <option value="">{t("transactions.filters.allCategories")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.icon} {c.name} (
+              {iconNameToEmoji(c.icon)} {c.name} (
               {c.kind === "income" ? t("common.incomeShort") : t("common.expenseShort")})
             </option>
           ))}

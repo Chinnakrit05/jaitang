@@ -4,11 +4,23 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { CurrencyPicker } from "@/components/currency-picker";
+import { JtIcon, type IconName } from "@/components/icons";
 import { createAccountAction } from "@/app/(app)/accounts/actions";
 import type { AccountType } from "@/lib/types";
 
 const TYPES: AccountType[] = ["cash", "bank", "credit_card", "e_wallet"];
-const ICON_CHOICES = ["💵", "🏦", "💳", "📱", "💰", "👛", "🏧", "🪙"];
+// Account-palette icons (Sticker Pop). Stored as the JtIcon name, not the
+// emoji char. EmojiOrIcon at display-time still renders legacy emoji values.
+const ICON_CHOICES: IconName[] = [
+  "cash-stack",
+  "piggy-bank",
+  "credit-card",
+  "phone-wallet",
+  "money-bag",
+  "coin-purse",
+  "atm",
+  "gold-coin",
+];
 const COLOR_CHOICES = [
   "#10b981",
   "#06b6d4",
@@ -121,13 +133,13 @@ export function CreateAccountForm({
               type="button"
               onClick={() => setIcon(ic)}
               className={cn(
-                "h-9 w-9 rounded-lg border text-lg flex items-center justify-center transition",
+                "h-9 w-9 rounded-lg border flex items-center justify-center transition",
                 icon === ic
                   ? "border-(--accent) bg-(--accent)/10"
                   : "border-(--border) bg-(--background) hover:bg-(--card)"
               )}
             >
-              {ic}
+              <JtIcon name={ic} size={22} />
             </button>
           ))}
         </div>

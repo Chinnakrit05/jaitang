@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -131,7 +131,7 @@ export function TransactionList({
                         : "var(--expense)",
                   }}
                 >
-                  <span className="text-2xl pl-1">{tx.category?.icon ?? "✨"}</span>
+                  <span className="pl-1"><EmojiOrIcon value={tx.category?.icon} fallback="sparkle" size={24} /></span>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">
                       {tx.category?.name ?? t("common.uncategorizedFull")}
@@ -222,9 +222,7 @@ export function TransactionList({
                                 : undefined
                             }
                           >
-                            <span className="text-[10px]">
-                              {tx.trip.icon ?? "✈️"}
-                            </span>
+                            <EmojiOrIcon value={tx.trip.icon} fallback="airplane" size={12} />
                             <span>{tx.trip.name}</span>
                           </Link>
                         </>

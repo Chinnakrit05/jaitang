@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 
 import { getLocale, getTranslations } from "next-intl/server";
@@ -113,7 +113,7 @@ export default async function TripDetailPage({
           </div>
         )}
         <div className="flex items-start gap-4">
-          <span className="text-5xl shrink-0">{trip.icon ?? "✈️"}</span>
+          <EmojiOrIcon value={trip.icon} fallback="airplane" size={48} className="shrink-0" />
           <div className="flex-1 min-w-0">
             {/* Reserve room on the right for the absolute-positioned edit
                 button so the title doesn't run under it. */}

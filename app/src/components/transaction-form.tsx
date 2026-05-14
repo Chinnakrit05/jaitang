@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
@@ -757,7 +757,7 @@ function CategoryRadio({
         required
       />
       <div className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition peer-checked:border-(--accent) peer-checked:bg-(--accent)/5 peer-checked:ring-2 peer-checked:ring-(--accent)/30">
-        <span className="text-2xl">{category.icon ?? "✨"}</span>
+        <EmojiOrIcon value={category.icon} fallback="sparkle" size={24} />
         <span className="text-xs font-medium">{category.name}</span>
       </div>
     </label>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, iconNameToEmoji } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -265,7 +265,7 @@ function CreateRecurringForm({
           <option value="">{t("recurring.selectCategory")}</option>
           {visibleCats.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.icon} {c.name}
+              {iconNameToEmoji(c.icon)} {c.name}
             </option>
           ))}
         </select>
@@ -406,7 +406,7 @@ function RuleRow({
           )}
           {rule.trip && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-1.5 py-0.5">
-              {rule.trip.icon ?? "✈️"}
+              {iconNameToEmoji(rule.trip.icon) || "✈️"}
               {rule.trip.name}
             </span>
           )}
@@ -616,7 +616,7 @@ function EditRecurringModal({
             <option value="">{t("recurring.selectCategory")}</option>
             {visibleCats.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.icon} {c.name}
+                {iconNameToEmoji(c.icon)} {c.name}
               </option>
             ))}
           </select>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, iconNameToEmoji } from "@/components/icons";
 import { notFound } from "next/navigation";
 
 import { getLocale, getTranslations } from "next-intl/server";
@@ -384,7 +384,7 @@ function CategoryList({
             <div key={`${c.category_id}-${c.name}`}>
               <div className="flex items-center justify-between text-xs">
                 <span className="truncate">
-                  {c.icon ? `${c.icon} ` : ""}
+                  {c.icon ? `${iconNameToEmoji(c.icon)} ` : ""}
                   {c.name || "—"}
                 </span>
                 <span className={`tabular-nums font-medium ${textCls}`}>
