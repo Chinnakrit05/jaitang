@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import Link from "next/link";
 
 import { auth } from "@/auth";
@@ -57,7 +57,7 @@ export default async function MembersPage({
       </Link>
 
       <div className="flex items-center gap-3">
-        <span className="text-3xl">{ledger.icon ?? "📒"}</span>
+        <EmojiOrIcon value={ledger.icon} fallback="users" size={32} />
         <div>
           <h1 className="text-2xl font-bold">{ledger.name}</h1>
           <p className="text-sm text-(--muted)">{t("members.subtitle")}</p>

@@ -3,6 +3,7 @@ import { computeLedgerBalances } from "@/lib/splits";
 import { BalancesPanel } from "@/components/balances-panel";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { EmojiOrIcon } from "@/components/icons";
 
 export default async function BalancesPage() {
   const [{ ledgerId, userId, ledger }, t] = await Promise.all([
@@ -38,7 +39,7 @@ export default async function BalancesPage() {
     <div className="space-y-5 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          {ledger.icon ?? "👥"} {t("balances.title")}
+          <EmojiOrIcon value={ledger.icon} fallback="users" size={26} /> {t("balances.title")}
         </h1>
         <p className="text-sm text-(--muted) mt-1">
           {t("balances.subtitleShared", { name: ledger.name })}

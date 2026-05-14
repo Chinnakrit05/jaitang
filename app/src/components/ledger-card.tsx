@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -48,10 +48,10 @@ export function LedgerCard({
     >
       <div className="flex items-start gap-3">
         <span
-          className="text-3xl shrink-0"
+          className="shrink-0"
           style={{ filter: pending ? "grayscale(1)" : undefined }}
         >
-          {ledger.icon ?? "📒"}
+          <EmojiOrIcon value={ledger.icon} fallback="users" size={32} />
         </span>
         <div className="flex-1 min-w-0">
           <div className="font-semibold truncate">{ledger.name}</div>
