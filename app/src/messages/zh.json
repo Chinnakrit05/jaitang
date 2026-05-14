@@ -30,7 +30,9 @@
       "loyKrathong": "水灯节",
       "chineseNewYear": "春节",
       "christmas": "圣诞节"
-    }
+    },
+    "iconStyleTitle": "图标样式",
+    "iconStyleHint": "选择全局图标外观"
   },
   "common": {
     "save": "保存",

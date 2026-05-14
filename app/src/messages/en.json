@@ -30,7 +30,9 @@
       "loyKrathong": "Loy Krathong",
       "chineseNewYear": "Chinese New Year",
       "christmas": "Christmas"
-    }
+    },
+    "iconStyleTitle": "Icon style",
+    "iconStyleHint": "Pick the visual look for all icons across the app."
   },
   "common": {
     "save": "Save",
