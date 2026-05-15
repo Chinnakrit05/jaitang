@@ -240,6 +240,7 @@
     "frequencyDaily": "每天",
     "frequencyWeekly": "每周",
     "frequencyMonthly": "每月",
+    "frequencyYearly": "每年",
     "categoryLabel": "分类",
     "selectCategory": "选择分类",
     "startDate": "首次运行时间",

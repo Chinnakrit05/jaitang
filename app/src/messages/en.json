@@ -240,6 +240,7 @@
     "frequencyDaily": "Daily",
     "frequencyWeekly": "Weekly",
     "frequencyMonthly": "Monthly",
+    "frequencyYearly": "Yearly",
     "categoryLabel": "Category",
     "selectCategory": "Choose a category",
     "startDate": "First run",

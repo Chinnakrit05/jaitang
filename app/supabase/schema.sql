@@ -253,7 +253,12 @@ for each row execute function set_updated_at();
 -- ============================================================
 -- Recurring transactions (รายการประจำ — เช่น ค่าเช่า ค่าเน็ต)
 -- ============================================================
-create type recur_period as enum ('daily', 'weekly', 'monthly');
+create type recur_period as enum ('daily', 'weekly', 'monthly', 'yearly');
+-- Existing deployments (created before 'yearly' was added) need this:
+do $$ begin
+  alter type recur_period add value if not exists 'yearly';
+exception when duplicate_object then null;
+end $$;
 
 create table if not exists public.recurring_transactions (
   id uuid primary key default uuid_generate_v4(),

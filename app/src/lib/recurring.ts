@@ -2,7 +2,7 @@ import { getServerSupabase } from "@/lib/supabase/server";
 import { fetchFxRate } from "@/lib/fx";
 import type { TxKind } from "@/lib/types";
 
-export type RecurPeriod = "daily" | "weekly" | "monthly";
+export type RecurPeriod = "daily" | "weekly" | "monthly" | "yearly";
 
 export type RecurringRule = {
   id: string;
@@ -52,6 +52,17 @@ export function computeNextRun(rule: {
   if (rule.period === "weekly") {
     cur.setDate(cur.getDate() + 7);
     return cur;
+  }
+  if (rule.period === "yearly") {
+    // Same calendar date, one year ahead. Feb 29 → Feb 28 in non-leap years
+    // because setDate(29) on Feb in a non-leap year rolls to Mar 1, so we
+    // clamp explicitly.
+    const next = new Date(cur);
+    next.setFullYear(next.getFullYear() + 1);
+    if (rule.day_of_month) {
+      next.setDate(clampDayOfMonth(next.getFullYear(), next.getMonth(), rule.day_of_month));
+    }
+    return next;
   }
   // monthly
   const next = new Date(cur);
