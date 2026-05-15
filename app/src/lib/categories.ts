@@ -45,10 +45,15 @@ export function nestCategories(flat: Category[]): CategoryWithChildren[] {
  * Re-order a flat category list so each parent is immediately followed by
  * its subs. Useful for rendering dropdowns / lists that don't support
  * nested groups but want to preserve the parent → sub relationship.
+ *
+ * Generic over the row shape because some callers (e.g. import-wizard) use
+ * a `Pick<Category, ...>` projection rather than the full row.
  */
-export function sortByHierarchy(flat: Category[]): Category[] {
-  const subsByParent = new Map<string, Category[]>();
-  const roots: Category[] = [];
+export function sortByHierarchy<T extends { id: string; parent_id: string | null }>(
+  flat: T[],
+): T[] {
+  const subsByParent = new Map<string, T[]>();
+  const roots: T[] = [];
   for (const c of flat) {
     if (c.parent_id) {
       if (!subsByParent.has(c.parent_id))
@@ -58,7 +63,7 @@ export function sortByHierarchy(flat: Category[]): Category[] {
       roots.push(c);
     }
   }
-  const out: Category[] = [];
+  const out: T[] = [];
   for (const root of roots) {
     out.push(root);
     const subs = subsByParent.get(root.id);

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { JtIcon, iconNameToEmoji } from "@/components/icons";
+import { sortByHierarchy } from "@/lib/categories";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -151,7 +152,11 @@ function CreateRecurringForm({
   const [tripId, setTripId] = useState<string>("");
   const [currency, setCurrency] = useState(homeCurrency);
   const [error, setError] = useState<string | null>(null);
-  const visibleCats = categories.filter((c) => c.kind === kind);
+  // Subs follow their parent in the dropdown so the user reads top-down
+  // as a tree even though `<option>` can't render real groups.
+  const visibleCats = sortByHierarchy(
+    categories.filter((c) => c.kind === kind),
+  );
 
   const startRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -269,6 +274,7 @@ function CreateRecurringForm({
           <option value="">{t("recurring.selectCategory")}</option>
           {visibleCats.map((c) => (
             <option key={c.id} value={c.id}>
+              {c.parent_id ? "  ↳ " : ""}
               {iconNameToEmoji(c.icon)} {c.name}
             </option>
           ))}
@@ -528,7 +534,11 @@ function EditRecurringModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const visibleCats = categories.filter((c) => c.kind === kind);
+  // Subs follow their parent in the dropdown so the user reads top-down
+  // as a tree even though `<option>` can't render real groups.
+  const visibleCats = sortByHierarchy(
+    categories.filter((c) => c.kind === kind),
+  );
 
   function submit() {
     setError(null);

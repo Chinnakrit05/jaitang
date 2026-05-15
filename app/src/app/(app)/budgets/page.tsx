@@ -16,13 +16,22 @@ export default async function BudgetsPage() {
     getMonthSummary(ledgerId, now.getFullYear(), now.getMonth() + 1),
   ]);
 
-  const expenseCats = categories.filter((c) => c.kind === "expense");
-  const budgetByCat = new Map(budgets.map((b) => [b.category_id, b]));
-  const spentByCat = new Map(
-    summary.byCategory
-      .filter((c) => c.kind === "expense" && c.category_id)
-      .map((c) => [c.category_id as string, c.total])
+  // Budgets are parent-only — the rollup combines a parent's direct spend
+  // with every sub's spend so the limit covers the whole branch.
+  const expenseCats = categories.filter(
+    (c) => c.kind === "expense" && c.parent_id === null,
   );
+  const parentByChild = new Map<string, string>();
+  for (const c of categories) {
+    if (c.parent_id) parentByChild.set(c.id, c.parent_id);
+  }
+  const budgetByCat = new Map(budgets.map((b) => [b.category_id, b]));
+  const spentByCat = new Map<string, number>();
+  for (const c of summary.byCategory) {
+    if (c.kind !== "expense" || !c.category_id) continue;
+    const rollupId = parentByChild.get(c.category_id) ?? c.category_id;
+    spentByCat.set(rollupId, (spentByCat.get(rollupId) ?? 0) + c.total);
+  }
 
   return (
     <div className="space-y-5 max-w-3xl">

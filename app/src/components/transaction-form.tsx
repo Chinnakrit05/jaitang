@@ -5,6 +5,7 @@ import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
+import { sortByHierarchy } from "@/lib/categories";
 import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 
@@ -228,7 +229,11 @@ export function TransactionForm({
       : toLocalDateTimeInput(new Date().toISOString());
   }, [initial?.occurredAt]);
 
-  const visibleCats = categories.filter((c) => c.kind === kind);
+  // Subs render right after their parent so the picker reads top-down as
+  // a tree even though it's still a flat grid.
+  const visibleCats = sortByHierarchy(
+    categories.filter((c) => c.kind === kind),
+  );
   const canSplit = !!splitMembers && splitMembers.length > 1 && kind === "expense";
 
   const splitIds = Array.from(splitSelected);
@@ -746,6 +751,7 @@ function CategoryRadio({
   category: Category;
   defaultChecked: boolean;
 }) {
+  const isSub = category.parent_id !== null;
   return (
     <label className="cursor-pointer">
       <input
@@ -756,9 +762,28 @@ function CategoryRadio({
         className="peer sr-only"
         required
       />
-      <div className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition peer-checked:border-(--accent) peer-checked:bg-(--accent)/5 peer-checked:ring-2 peer-checked:ring-(--accent)/30">
-        <EmojiOrIcon value={category.icon} fallback="sparkle" size={28} />
-        <span className="text-xs font-medium">{category.name}</span>
+      <div
+        className={cn(
+          "flex flex-col items-center gap-1 px-3 py-3 rounded-xl border transition peer-checked:border-(--accent) peer-checked:bg-(--accent)/5 peer-checked:ring-2 peer-checked:ring-(--accent)/30",
+          isSub
+            ? "border-(--border)/60 bg-(--background) hover:bg-(--card)"
+            : "border-(--border) bg-(--card) hover:bg-(--background)",
+        )}
+      >
+        <EmojiOrIcon
+          value={category.icon}
+          fallback="sparkle"
+          size={isSub ? 24 : 28}
+        />
+        <span
+          className={cn(
+            "font-medium text-center leading-tight",
+            isSub ? "text-[11px] text-(--muted)" : "text-xs",
+          )}
+        >
+          {isSub && <span className="opacity-60">↳ </span>}
+          {category.name}
+        </span>
       </div>
     </label>
   );

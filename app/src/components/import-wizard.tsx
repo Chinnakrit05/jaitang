@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { JtIcon, iconNameToEmoji } from "@/components/icons";
+import { sortByHierarchy } from "@/lib/categories";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -400,7 +401,9 @@ function RowEditor({
   onRemove: () => void;
 }) {
   const t = useTranslations();
-  const visible = categories.filter((c) => c.kind === row.kind);
+  const visible = sortByHierarchy(
+    categories.filter((c) => c.kind === row.kind),
+  );
   const d = new Date(row.occurredAt);
   const dateLabel = new Intl.DateTimeFormat(fmtLocale, {
     month: "short",
@@ -468,6 +471,7 @@ function RowEditor({
         </option>
         {visible.map((c) => (
           <option key={c.id} value={c.id}>
+            {c.parent_id ? "  ↳ " : ""}
             {iconNameToEmoji(c.icon)} {c.name}
           </option>
         ))}
