@@ -10,6 +10,10 @@ export type Category = {
   color: string | null;
   kind: TxKind;
   sort_order: number;
+  /** null = top-level (parent). Non-null = subcategory of that parent.
+   *  Hierarchy is at most two levels deep — a subcategory cannot itself
+   *  have children. Enforced at the action layer. */
+  parent_id: string | null;
 };
 
 export type Trip = {

@@ -11,9 +11,12 @@ import {
 
 const CategorySchema = z.object({
   name: z.string().min(1).max(50),
-  icon: z.string().min(1).max(8).optional(),
+  // Icons can be JtIcon names (kebab-case, longer than 8 chars), so we widen
+  // the cap. Keeping a soft upper bound to avoid pathological input.
+  icon: z.string().min(1).max(64).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   kind: z.enum(["income", "expense"]),
+  parentId: z.string().uuid().nullable().optional(),
 });
 
 function refresh() {
@@ -30,32 +33,44 @@ export async function createCategoryAction(formData: FormData) {
     icon: formData.get("icon") || undefined,
     color: formData.get("color") || undefined,
     kind: formData.get("kind"),
+    parentId: formData.get("parentId") || null,
   });
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  await createCategory(ledgerId, parsed.data);
+  try {
+    await createCategory(ledgerId, parsed.data);
+  } catch (e) {
+    return { ok: false as const, error: e instanceof Error ? e.message : "Failed" };
+  }
   refresh();
   return { ok: true as const };
 }
 
 export async function updateCategoryAction(id: string, formData: FormData) {
   await requireSession();
+  const rawParent = formData.get("parentId");
   const parsed = z
     .object({
       name: z.string().min(1).max(50).optional(),
-      icon: z.string().min(1).max(8).optional(),
+      icon: z.string().min(1).max(64).optional(),
       color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+      parent_id: z.string().uuid().nullable().optional(),
     })
     .safeParse({
       name: formData.get("name") || undefined,
       icon: formData.get("icon") || undefined,
       color: formData.get("color") || undefined,
+      parent_id: rawParent === "" || rawParent === null ? null : rawParent,
     });
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  await updateCategory(id, parsed.data);
+  try {
+    await updateCategory(id, parsed.data);
+  } catch (e) {
+    return { ok: false as const, error: e instanceof Error ? e.message : "Failed" };
+  }
   refresh();
   return { ok: true as const };
 }

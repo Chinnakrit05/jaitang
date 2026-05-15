@@ -45,7 +45,18 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
   const t = useTranslations();
   const [tab, setTab] = useState<TxKind>("expense");
 
-  const filtered = initial.filter((c) => c.kind === tab);
+  const inTab = initial.filter((c) => c.kind === tab);
+  // Parents go first, then each parent's subs collapsed underneath. Subs
+  // pointing to a missing parent (defensive) get listed at root level.
+  const parentsInTab = inTab.filter((c) => c.parent_id === null);
+  const subsByParent = new Map<string, Category[]>();
+  for (const c of inTab) {
+    if (c.parent_id) {
+      if (!subsByParent.has(c.parent_id))
+        subsByParent.set(c.parent_id, []);
+      subsByParent.get(c.parent_id)!.push(c);
+    }
+  }
   const expenseCount = initial.filter((c) => c.kind === "expense").length;
   const incomeCount = initial.filter((c) => c.kind === "income").length;
 
@@ -78,13 +89,30 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
         </button>
       </div>
 
-      <CreateCategoryForm kind={tab} key={tab} />
+      <CreateCategoryForm kind={tab} parents={parentsInTab} key={tab} />
 
       <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
-        {filtered.map((c) => (
-          <CategoryRow key={c.id} category={c} />
-        ))}
-        {filtered.length === 0 && (
+        {parentsInTab.map((parent) => {
+          const subs = subsByParent.get(parent.id) ?? [];
+          return (
+            <li key={parent.id}>
+              <CategoryRow category={parent} parents={parentsInTab} />
+              {subs.length > 0 && (
+                <ul className="bg-(--background)/40 border-t border-(--border)">
+                  {subs.map((sub) => (
+                    <CategoryRow
+                      key={sub.id}
+                      category={sub}
+                      parents={parentsInTab}
+                      indent
+                    />
+                  ))}
+                </ul>
+              )}
+            </li>
+          );
+        })}
+        {parentsInTab.length === 0 && (
           <li className="px-4 py-8 text-center text-(--muted) text-sm">
             {t("categories.empty")}
           </li>
@@ -94,13 +122,20 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
   );
 }
 
-function CreateCategoryForm({ kind }: { kind: TxKind }) {
+function CreateCategoryForm({
+  kind,
+  parents,
+}: {
+  kind: TxKind;
+  parents: Category[];
+}) {
   const router = useRouter();
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState("");
   const [icon, setIcon] = useState<string>(DEFAULT_CATEGORY_ICON);
   const [color, setColor] = useState(PRESET_COLORS[0]);
+  const [parentId, setParentId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -113,6 +148,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
         fd.set("name", name);
         fd.set("icon", icon);
         fd.set("color", color);
+        if (parentId) fd.set("parentId", parentId);
         startTransition(async () => {
           const result = await createCategoryAction(fd);
           if (result?.ok === false) {
@@ -120,6 +156,7 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
             return;
           }
           setName("");
+          setParentId("");
           setError(null);
           router.refresh();
         });
@@ -172,24 +209,55 @@ function CreateCategoryForm({ kind }: { kind: TxKind }) {
           />
         ))}
       </div>
+      {parents.length > 0 && (
+        <div className="flex items-center gap-2 text-xs">
+          <label className="text-(--muted)">{t("categories.parentLabel")}</label>
+          <select
+            value={parentId}
+            onChange={(e) => setParentId(e.target.value)}
+            className="flex-1 px-2 py-1.5 rounded-lg border border-(--border) bg-(--background) text-sm"
+          >
+            <option value="">{t("categories.parentNone")}</option>
+            {parents.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       {error && <p className="text-xs text-(--expense)">{error}</p>}
     </form>
   );
 }
 
-function CategoryRow({ category }: { category: Category }) {
+function CategoryRow({
+  category,
+  parents,
+  indent,
+}: {
+  category: Category;
+  parents: Category[];
+  indent?: boolean;
+}) {
   const router = useRouter();
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(category.name);
   const [icon, setIcon] = useState(category.icon ?? DEFAULT_CATEGORY_ICON);
+  const [parentId, setParentId] = useState<string>(category.parent_id ?? "");
+  // Don't let a category that already has children become a sub itself —
+  // backend will reject it but disable the dropdown options to make that
+  // clear in the UI. This is a soft hint; the server is the authority.
+  const eligibleParents = parents.filter((p) => p.id !== category.id);
 
   function save() {
     const fd = new FormData();
     fd.set("name", name);
     fd.set("icon", icon);
     if (category.color) fd.set("color", category.color);
+    fd.set("parentId", parentId);
     startTransition(async () => {
       const result = await updateCategoryAction(category.id, fd);
       if (result?.ok !== false) {
@@ -208,7 +276,12 @@ function CategoryRow({ category }: { category: Category }) {
   }
 
   return (
-    <li className="flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition">
+    <div
+      className={cn(
+        "flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition",
+        indent && "pl-10",
+      )}
+    >
       {editing ? (
         <>
           <button
@@ -228,6 +301,21 @@ function CategoryRow({ category }: { category: Category }) {
             className="flex-1 px-2 py-1 rounded-lg border border-(--border) bg-(--background)"
             autoFocus
           />
+          {eligibleParents.length > 0 && (
+            <select
+              value={parentId}
+              onChange={(e) => setParentId(e.target.value)}
+              className="px-2 py-1 rounded-lg border border-(--border) bg-(--background) text-xs max-w-[120px]"
+              aria-label={t("categories.parentLabel")}
+            >
+              <option value="">{t("categories.parentNone")}</option>
+              {eligibleParents.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             type="button"
             onClick={save}
@@ -243,6 +331,7 @@ function CategoryRow({ category }: { category: Category }) {
               setEditing(false);
               setName(category.name);
               setIcon(category.icon ?? DEFAULT_CATEGORY_ICON);
+              setParentId(category.parent_id ?? "");
             }}
             className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
             aria-label={t("common.cancel")}
@@ -277,6 +366,6 @@ function CategoryRow({ category }: { category: Category }) {
           </button>
         </>
       )}
-    </li>
+    </div>
   );
 }
