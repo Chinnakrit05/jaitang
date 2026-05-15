@@ -239,6 +239,7 @@ function CreateRecurringForm({
             <option value="monthly">{t("recurring.frequencyMonthly")}</option>
             <option value="weekly">{t("recurring.frequencyWeekly")}</option>
             <option value="daily">{t("recurring.frequencyDaily")}</option>
+            <option value="yearly">{t("recurring.frequencyYearly")}</option>
           </select>
         </div>
         <div>
@@ -384,6 +385,7 @@ function RuleRow({
     daily: t("recurring.frequencyDaily"),
     weekly: t("recurring.frequencyWeekly"),
     monthly: t("recurring.frequencyMonthly"),
+    yearly: t("recurring.frequencyYearly"),
   };
   const ruleCurrency = rule.fx_currency ?? homeCurrency;
 
@@ -600,6 +602,7 @@ function EditRecurringModal({
               <option value="monthly">{t("recurring.frequencyMonthly")}</option>
               <option value="weekly">{t("recurring.frequencyWeekly")}</option>
               <option value="daily">{t("recurring.frequencyDaily")}</option>
+              <option value="yearly">{t("recurring.frequencyYearly")}</option>
             </select>
             <CurrencyPicker
               value={currency}
