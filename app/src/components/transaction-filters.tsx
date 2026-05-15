@@ -7,6 +7,7 @@ import type { Category, TxKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SearchInput } from "@/components/search-input";
 import { iconNameToEmoji } from "@/components/icons";
+import { sortByHierarchy } from "@/lib/categories";
 
 type TripOption = {
   id: string;
@@ -90,8 +91,9 @@ export function TransactionFilters({
           className="px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) text-sm"
         >
           <option value="">{t("transactions.filters.allCategories")}</option>
-          {categories.map((c) => (
+          {sortByHierarchy(categories).map((c) => (
             <option key={c.id} value={c.id}>
+              {c.parent_id ? "  ↳ " : ""}
               {iconNameToEmoji(c.icon)} {c.name} (
               {c.kind === "income" ? t("common.incomeShort") : t("common.expenseShort")})
             </option>

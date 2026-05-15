@@ -50,7 +50,7 @@ export type PreviewRow = {
 export type ImportPreview = {
   ok: true;
   rows: PreviewRow[];
-  knownCategories: Pick<Category, "id" | "name" | "icon" | "kind">[];
+  knownCategories: Pick<Category, "id" | "name" | "icon" | "kind" | "parent_id">[];
   /** counts by month for the summary card */
   monthSummary: Array<{ year: number; month: number; count: number; total: number }>;
 };
@@ -200,6 +200,7 @@ export async function parseImportAction(
       name: c.name,
       icon: c.icon,
       kind: c.kind,
+      parent_id: c.parent_id,
     })),
     monthSummary: Array.from(monthAgg.values()).sort((a, b) =>
       a.year !== b.year ? a.year - b.year : a.month - b.month
@@ -299,6 +300,7 @@ async function previewJaitangCsv({
       name: c.name,
       icon: c.icon,
       kind: c.kind,
+      parent_id: c.parent_id,
     })),
     monthSummary: Array.from(monthAgg.values()).sort((a, b) =>
       a.year !== b.year ? a.year - b.year : a.month - b.month
