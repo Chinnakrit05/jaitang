@@ -266,7 +266,10 @@ create table if not exists public.recurring_transactions (
   user_id uuid not null references public.users(id) on delete restrict,
   category_id uuid references public.categories(id) on delete set null,
   kind tx_kind not null,
-  amount numeric(14, 2) not null check (amount > 0),
+  -- Nullable so users can set up rules for variable-cost bills (ค่าไฟ, ค่าน้ำ)
+  -- and fill the amount in only when the bill arrives. The check still rejects
+  -- zero/negative values when an amount IS provided.
+  amount numeric(14, 2) check (amount is null or amount > 0),
   note text,
   period recur_period not null default 'monthly',
   day_of_month int,                       -- 1..31 for monthly (clamps to month length)
@@ -291,6 +294,21 @@ alter table public.recurring_transactions
   add column if not exists fx_currency text;
 create index if not exists idx_recur_account on public.recurring_transactions(account_id) where account_id is not null;
 create index if not exists idx_recur_trip on public.recurring_transactions(trip_id) where trip_id is not null;
+
+-- v3: amount became nullable (variable-cost bills). Existing deployments
+-- need both the NOT NULL drop and the relaxed check constraint applied.
+do $$ begin
+  alter table public.recurring_transactions alter column amount drop not null;
+exception when others then null;
+end $$;
+do $$ begin
+  alter table public.recurring_transactions
+    drop constraint if exists recurring_transactions_amount_check;
+  alter table public.recurring_transactions
+    add constraint recurring_transactions_amount_check
+    check (amount is null or amount > 0);
+exception when others then null;
+end $$;
 
 -- ============================================================
 -- Transaction splits (หารบิล — ใครติดเงินคนจ่ายเท่าไหร่)

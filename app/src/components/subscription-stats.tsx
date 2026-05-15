@@ -44,8 +44,17 @@ export function SubscriptionStats({
   const expenseByCurrency = new Map<string, number>();
   const incomeByCurrency = new Map<string, number>();
   for (const r of active) {
+    // Variable-cost rules (amount null) can't contribute to the monthly
+    // forecast — we don't know the value yet.
+    if (r.amount === null) continue;
     const factor =
-      r.period === "daily" ? 30 : r.period === "weekly" ? 52 / 12 : 1;
+      r.period === "daily"
+        ? 30
+        : r.period === "weekly"
+          ? 52 / 12
+          : r.period === "yearly"
+            ? 1 / 12
+            : 1;
     const cur = r.fx_currency ?? homeCurrency;
     const monthly = r.amount * factor;
     if (r.kind === "expense") {
@@ -174,11 +183,17 @@ export function SubscriptionStats({
                       : "text-(--expense)"
                   }`}
                 >
-                  {u.rule.kind === "income" ? "+" : "−"}
-                  {formatCurrency(
-                    u.rule.amount,
-                    u.rule.fx_currency ?? homeCurrency,
-                    fmtLocale
+                  {u.rule.amount === null ? (
+                    <span className="text-(--muted)">—</span>
+                  ) : (
+                    <>
+                      {u.rule.kind === "income" ? "+" : "−"}
+                      {formatCurrency(
+                        u.rule.amount,
+                        u.rule.fx_currency ?? homeCurrency,
+                        fmtLocale,
+                      )}
+                    </>
                   )}
                 </div>
               </li>

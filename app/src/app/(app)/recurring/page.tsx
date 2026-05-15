@@ -1,16 +1,21 @@
 import { requireSession } from "@/lib/session";
 import { listCategories } from "@/lib/categories";
-import { listRecurring } from "@/lib/recurring";
+import { listPendingRecurring, listRecurring } from "@/lib/recurring";
 import { listAccounts } from "@/lib/accounts";
 import { listTrips } from "@/lib/trips";
 import { RecurringPanel } from "@/components/recurring-panel";
-import { getTranslations } from "next-intl/server";
+import { PendingRecurringPanel } from "@/components/pending-recurring-panel";
+import { getTranslations, getLocale } from "next-intl/server";
+import { intlLocale } from "@/lib/locale-format";
 
 export default async function RecurringPage() {
   const { ledgerId, ledger } = await requireSession();
   const t = await getTranslations();
-  const [rules, categories, accountRows, tripRows] = await Promise.all([
+  const locale = await getLocale();
+  const fmtLocale = intlLocale(locale);
+  const [rules, pending, categories, accountRows, tripRows] = await Promise.all([
     listRecurring(ledgerId),
+    listPendingRecurring(ledgerId),
     listCategories(ledgerId),
     listAccounts(ledgerId, { includeArchived: false }),
     listTrips(ledgerId),
@@ -37,6 +42,13 @@ export default async function RecurringPage() {
         <h1 className="text-2xl font-bold">{t("recurring.title")}</h1>
         <p className="text-sm text-(--muted) mt-1">{t("recurring.subtitle")}</p>
       </div>
+      {pending.length > 0 && (
+        <PendingRecurringPanel
+          pending={pending}
+          homeCurrency={ledger.currency}
+          fmtLocale={fmtLocale}
+        />
+      )}
       <RecurringPanel
         rules={rules}
         categories={categories}

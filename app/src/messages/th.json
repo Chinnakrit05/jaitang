@@ -249,6 +249,14 @@
     "deleteConfirm": "ลบรายการประจำนี้?",
     "nextRun": "ครั้งถัดไป: {when}",
     "amountLabel": "จำนวน ({currency})",
+    "amountOptional": "ปล่อยว่างได้สำหรับบิลที่ราคาไม่แน่",
+    "amountHint": "เช่น ค่าไฟ ค่าน้ำ — มากรอกตอนได้บิล",
+    "amountPlaceholder": "จำนวน ({currency})",
+    "pendingTitle": "บิลรอกรอก ({count})",
+    "pendingHint": "รายการประจำที่ถึงรอบแล้วยังไม่ได้กรอกจำนวน ใส่ราคาแล้วกดบันทึก",
+    "dueOn": "ถึงรอบ {when}",
+    "untitled": "ไม่มีชื่อ",
+    "fillAndAdd": "บันทึก",
     "editTitle": "แก้ไขรายการประจำ"
   },
   "balances": {

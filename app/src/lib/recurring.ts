@@ -18,7 +18,9 @@ export type RecurringRule = {
    *  the FX rate at run-time and stores fx_amount = amount, amount = home value. */
   fx_currency: string | null;
   kind: TxKind;
-  amount: number;
+  /** null = variable-cost bill that the user fills in when due. Such rules
+   *  are skipped by `applyDueRecurring` until the user supplies an amount. */
+  amount: number | null;
   note: string | null;
   period: RecurPeriod;
   day_of_month: number | null;
@@ -85,7 +87,7 @@ export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> 
   if (error) throw error;
   return (data ?? []).map((r) => ({
     ...r,
-    amount: Number(r.amount),
+    amount: r.amount === null ? null : Number(r.amount),
     account_id: r.account_id ?? null,
     trip_id: r.trip_id ?? null,
     fx_currency: r.fx_currency ?? null,
@@ -104,7 +106,8 @@ export async function createRecurring(input: {
   /** When set, `amount` is in this currency; otherwise it's home. */
   fxCurrency?: string | null;
   kind: TxKind;
-  amount: number;
+  /** null = let the user fill in the amount each cycle (variable bills). */
+  amount: number | null;
   note: string | null;
   period: RecurPeriod;
   dayOfMonth: number | null;
@@ -148,7 +151,7 @@ export async function updateRecurring(
     tripId: string | null;
     fxCurrency: string | null;
     kind: TxKind;
-    amount: number;
+    amount: number | null;
     note: string | null;
     period: RecurPeriod;
     dayOfMonth: number | null;
@@ -224,6 +227,12 @@ export async function applyDueRecurring(ledgerId: string): Promise<number> {
 
   let created = 0;
   for (const r of due ?? []) {
+    // Variable-cost rules (amount IS NULL) are intentionally skipped so the
+    // user can fill the bill amount in by hand when it arrives. The rule
+    // stays "due" until it does — surfaced in the pending panel via
+    // listPendingRecurring().
+    if (r.amount === null) continue;
+
     // For FX rules: fetch one rate up-front (good for the entire backfill
     // burst — the user expects "the rate when the run happened" rather
     // than per-day historical rates which the free APIs don't expose).
@@ -284,4 +293,118 @@ export async function applyDueRecurring(ledgerId: string): Promise<number> {
       .eq("id", r.id);
   }
   return created;
+}
+
+/**
+ * Active rules with no amount whose next_run_at is in the past — these are
+ * the variable-cost bills (ค่าไฟ ค่าน้ำ) waiting for the user to fill in.
+ * Sorted oldest-first so the most overdue bill bubbles to the top.
+ */
+export async function listPendingRecurring(
+  ledgerId: string,
+): Promise<RecurringRule[]> {
+  const sb = getServerSupabase();
+  const now = new Date().toISOString();
+  const { data, error } = await sb
+    .from("recurring_transactions")
+    .select(
+      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)",
+    )
+    .eq("ledger_id", ledgerId)
+    .eq("active", true)
+    .is("amount", null)
+    .lte("next_run_at", now)
+    .order("next_run_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    ...r,
+    amount: null,
+    account_id: r.account_id ?? null,
+    trip_id: r.trip_id ?? null,
+    fx_currency: r.fx_currency ?? null,
+    category: (Array.isArray(r.category) ? r.category[0] : r.category) ?? null,
+    account: (Array.isArray(r.account) ? r.account[0] : r.account) ?? null,
+    trip: (Array.isArray(r.trip) ? r.trip[0] : r.trip) ?? null,
+  })) as RecurringRule[];
+}
+
+/**
+ * Materialize a transaction for the given rule using the user-supplied amount,
+ * then advance the rule's next_run_at to the next cycle. Used for variable-
+ * cost (null-amount) rules; the rule's saved amount stays null so the next
+ * cycle still requires a manual fill-in.
+ */
+export async function fillPendingRecurring(input: {
+  ruleId: string;
+  ledgerId: string;
+  amount: number;
+}): Promise<void> {
+  const sb = getServerSupabase();
+  const { data: rule, error: re } = await sb
+    .from("recurring_transactions")
+    .select(
+      "id, user_id, category_id, account_id, trip_id, fx_currency, kind, note, period, day_of_month, day_of_week, next_run_at",
+    )
+    .eq("id", input.ruleId)
+    .eq("ledger_id", input.ledgerId)
+    .maybeSingle();
+  if (re) throw re;
+  if (!rule) throw new Error("Rule not found");
+
+  const { data: ledgerRow } = await sb
+    .from("ledgers")
+    .select("currency")
+    .eq("id", input.ledgerId)
+    .maybeSingle();
+  const homeCurrency = (ledgerRow?.currency as string) ?? "THB";
+
+  let homeAmount = input.amount;
+  let fxFields: {
+    fx_currency: string | null;
+    fx_amount: number | null;
+    fx_rate: number | null;
+  } = { fx_currency: null, fx_amount: null, fx_rate: null };
+  if (rule.fx_currency && rule.fx_currency !== homeCurrency) {
+    try {
+      const rate = await fetchFxRate(rule.fx_currency, homeCurrency);
+      homeAmount = Math.round(input.amount * rate * 100) / 100;
+      fxFields = {
+        fx_currency: rule.fx_currency,
+        fx_amount: input.amount,
+        fx_rate: rate,
+      };
+    } catch {
+      // FX unreachable — fall back to face value rather than reject the fill.
+    }
+  }
+
+  const occurredAt = new Date(rule.next_run_at).toISOString();
+  const { error: insErr } = await sb.from("transactions").insert({
+    ledger_id: input.ledgerId,
+    user_id: rule.user_id,
+    category_id: rule.category_id,
+    account_id: rule.account_id ?? null,
+    trip_id: rule.trip_id ?? null,
+    kind: rule.kind,
+    amount: homeAmount,
+    note: rule.note ? `[ค่าประจำ] ${rule.note}` : "[ค่าประจำ]",
+    ...fxFields,
+    occurred_at: occurredAt,
+  });
+  if (insErr) throw insErr;
+
+  const nextRun = computeNextRun({
+    period: rule.period as RecurPeriod,
+    day_of_month: rule.day_of_month,
+    day_of_week: rule.day_of_week,
+    next_run_at: rule.next_run_at,
+  });
+  const { error: upErr } = await sb
+    .from("recurring_transactions")
+    .update({
+      last_run_at: new Date().toISOString(),
+      next_run_at: nextRun.toISOString(),
+    })
+    .eq("id", input.ruleId);
+  if (upErr) throw upErr;
 }

@@ -249,6 +249,14 @@
     "deleteConfirm": "Delete this recurring rule?",
     "nextRun": "Next: {when}",
     "amountLabel": "Amount ({currency})",
+    "amountOptional": "Leave blank for variable bills",
+    "amountHint": "Skip for ค่าไฟ / ค่าน้ำ / etc. — fill in when the bill arrives.",
+    "amountPlaceholder": "Amount ({currency})",
+    "pendingTitle": "Bills to file ({count})",
+    "pendingHint": "Variable-cost rules whose due date has passed. Type the amount and tap to file.",
+    "dueOn": "Due {when}",
+    "untitled": "Untitled",
+    "fillAndAdd": "File",
     "editTitle": "Edit recurring rule"
   },
   "balances": {

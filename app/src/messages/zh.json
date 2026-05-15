@@ -249,6 +249,14 @@
     "deleteConfirm": "删除此定期记录?",
     "nextRun": "下次:{when}",
     "amountLabel": "金额 ({currency})",
+    "amountOptional": "金额浮动可留空",
+    "amountHint": "如水电费 — 账单到时再填",
+    "amountPlaceholder": "金额 ({currency})",
+    "pendingTitle": "待填账单 ({count})",
+    "pendingHint": "已到期的浮动账单。填写金额后保存。",
+    "dueOn": "到期 {when}",
+    "untitled": "未命名",
+    "fillAndAdd": "记账",
     "editTitle": "编辑定期规则"
   },
   "balances": {
