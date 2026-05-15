@@ -30,14 +30,10 @@ export default async function MembersPage({
     .maybeSingle();
 
   if (!ledger) notFound();
-  if (ledger.is_personal) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <p className="text-(--muted)">{t("members.personalNoMembers")}</p>
-      </div>
-    );
-  }
 
+  // Personal ledgers used to be locked out of sharing; they're now invitable
+  // like any other ledger. Owner check still gates the page so non-owners
+  // bounce back to the list.
   const isOwner = ledger.owner_id === userId;
   if (!isOwner) redirect("/ledgers");
 
