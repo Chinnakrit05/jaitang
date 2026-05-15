@@ -223,9 +223,12 @@ function CreateRecurringForm({
             type="number"
             min="0.01"
             step="0.01"
-            required
+            placeholder={t("recurring.amountOptional")}
             className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background) tabular-nums"
           />
+          <p className="text-[11px] text-(--muted) mt-1">
+            {t("recurring.amountHint")}
+          </p>
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-(--muted)">
@@ -437,8 +440,14 @@ function RuleRow({
           rule.kind === "income" ? "text-(--income)" : "text-(--expense)"
         }`}
       >
-        {rule.kind === "income" ? "+" : "−"}
-        {formatCurrency(rule.amount, ruleCurrency, fmtLocale)}
+        {rule.amount === null ? (
+          <span className="text-(--muted)">—</span>
+        ) : (
+          <>
+            {rule.kind === "income" ? "+" : "−"}
+            {formatCurrency(rule.amount, ruleCurrency, fmtLocale)}
+          </>
+        )}
       </div>
       <button
         type="button"
@@ -507,7 +516,7 @@ function EditRecurringModal({
   const [accountId, setAccountId] = useState<string>(rule.account_id ?? "");
   const [tripId, setTripId] = useState<string>(rule.trip_id ?? "");
   const [currency, setCurrency] = useState(rule.fx_currency ?? homeCurrency);
-  const [amount, setAmount] = useState(String(rule.amount));
+  const [amount, setAmount] = useState(rule.amount === null ? "" : String(rule.amount));
   const [note, setNote] = useState(rule.note ?? "");
   const [error, setError] = useState<string | null>(null);
 
@@ -592,6 +601,7 @@ function EditRecurringModal({
               step="0.01"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              placeholder={t("recurring.amountOptional")}
               className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background) tabular-nums"
             />
             <select

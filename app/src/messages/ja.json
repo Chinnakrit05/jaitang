@@ -249,6 +249,14 @@
     "deleteConfirm": "この定期取引を削除しますか?",
     "nextRun": "次回:{when}",
     "amountLabel": "金額 ({currency})",
+    "amountOptional": "変動費は空欄でOK",
+    "amountHint": "電気代・水道代など — 請求が来たら入力",
+    "amountPlaceholder": "金額 ({currency})",
+    "pendingTitle": "未記入の請求 ({count})",
+    "pendingHint": "予定日を過ぎた変動費。金額を入力して保存。",
+    "dueOn": "予定: {when}",
+    "untitled": "無題",
+    "fillAndAdd": "登録",
     "editTitle": "定期取引を編集"
   },
   "balances": {

@@ -10,12 +10,15 @@ import {
   setRecurringActive,
   updateRecurring,
   applyDueRecurring,
+  fillPendingRecurring,
 } from "@/lib/recurring";
 import { SUPPORTED_CODES } from "@/lib/currencies";
 
 const Schema = z.object({
   kind: z.enum(["income", "expense"]),
-  amount: z.coerce.number().positive().max(1e10),
+  // Nullable so a user can set up a variable-cost rule (ค่าไฟ ค่าน้ำ) without
+  // committing to an amount up front. Empty form input → null in DB.
+  amount: z.coerce.number().positive().max(1e10).nullable().optional(),
   categoryId: z.string().uuid().nullable().optional(),
   accountId: z.string().uuid().nullable().optional(),
   tripId: z.string().uuid().nullable().optional(),
@@ -27,7 +30,7 @@ const Schema = z.object({
     .nullable()
     .optional(),
   note: z.string().max(500).optional(),
-  period: z.enum(["daily", "weekly", "monthly"]),
+  period: z.enum(["daily", "weekly", "monthly", "yearly"]),
   dayOfMonth: z.coerce.number().int().min(1).max(31).nullable().optional(),
   dayOfWeek: z.coerce.number().int().min(0).max(6).nullable().optional(),
   // Same TZ-correctness reasoning as transactions.actions.ts — see comment
@@ -46,7 +49,7 @@ export async function createRecurringAction(formData: FormData) {
   assertWritable(role);
   const parsed = Schema.safeParse({
     kind: formData.get("kind"),
-    amount: formData.get("amount"),
+    amount: formData.get("amount") || null,
     categoryId: formData.get("categoryId") || null,
     accountId: formData.get("accountId") || null,
     tripId: formData.get("tripId") || null,
@@ -70,7 +73,7 @@ export async function createRecurringAction(formData: FormData) {
     tripId: parsed.data.tripId ?? null,
     fxCurrency: parsed.data.fxCurrency ?? null,
     kind: parsed.data.kind,
-    amount: parsed.data.amount,
+    amount: parsed.data.amount ?? null,
     note: parsed.data.note ?? null,
     period: parsed.data.period,
     dayOfMonth:
@@ -96,9 +99,13 @@ export async function updateRecurringAction(id: string, formData: FormData) {
   const { role } = await requireSession();
   assertWritable(role);
 
+  // For updates, "amount" is null when blank (variable-cost rule), and a
+  // positive number when the user filled it in. The Zod schema is fine with
+  // both via `.nullable().optional()`.
+  const rawAmount = formData.get("amount");
   const parsed = UpdateSchema.safeParse({
     kind: formData.get("kind") || undefined,
-    amount: formData.get("amount") || undefined,
+    amount: rawAmount === "" || rawAmount === null ? null : rawAmount,
     categoryId: formData.get("categoryId") || null,
     accountId: formData.get("accountId") || null,
     tripId: formData.get("tripId") || null,
@@ -122,7 +129,7 @@ export async function updateRecurringAction(id: string, formData: FormData) {
     tripId: parsed.data.tripId ?? null,
     fxCurrency: parsed.data.fxCurrency ?? null,
     kind: parsed.data.kind,
-    amount: parsed.data.amount,
+    amount: parsed.data.amount ?? null,
     note: parsed.data.note ?? null,
     period: parsed.data.period,
     nextRunAt: parsed.data.startDate
@@ -152,4 +159,27 @@ export async function runDueAction() {
   const created = await applyDueRecurring(ledgerId);
   refresh();
   return { created };
+}
+
+const FillSchema = z.object({
+  amount: z.coerce.number().positive().max(1e10),
+});
+
+export async function fillPendingRecurringAction(
+  ruleId: string,
+  formData: FormData,
+) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+  const parsed = FillSchema.safeParse({ amount: formData.get("amount") });
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid amount" };
+  }
+  await fillPendingRecurring({
+    ruleId,
+    ledgerId,
+    amount: parsed.data.amount,
+  });
+  refresh();
+  return { ok: true as const };
 }
