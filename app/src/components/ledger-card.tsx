@@ -64,7 +64,11 @@ export function LedgerCard({
         {isActive && <JtIcon name="check" size={22} className="text-(--accent) shrink-0" />}
       </div>
 
-      {!ledger.is_personal && ledger.role === "owner" && (
+      {/* Owners can manage members on every ledger they own — including the
+          personal one. The "Personal" label still shows above to indicate
+          which ledger was the auto-created default, but it doesn't gate
+          sharing anymore. */}
+      {ledger.role === "owner" && (
         <Link
           href={`/ledgers/${ledger.id}/members`}
           onClick={(e) => e.stopPropagation()}
