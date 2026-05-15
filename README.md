@@ -26,6 +26,7 @@
 #### 📝 บันทึกรายการ
 - รายรับ/รายจ่าย — จำนวน, หมวด, โน้ต, วันเวลา
 - หมวดเริ่มต้น 13 หมวด — เพิ่ม/แก้/ลบ ตั้งไอคอน+สีเอง
+- **หมวดย่อย (subcategory)** — สอง level เช่น Transport → BTS / MRT / Taxi / Grab. Picker เลือก parent ได้เลยหรือเจาะ sub
 - **ช่องทางจ่าย** — เงินสด / เงินโอน
 - **Trip tagging** — ผูกรายการกับทริปได้ default จากทริปที่ active หรือเลือกได้
 - ค้นหา note + filter รวมตามช่วงเวลา / หมวด / รับ-จ่าย / ทริป
@@ -61,14 +62,17 @@
 
 #### 💰 งบประมาณ
 - ตั้งงบรายเดือนต่อหมวด — Progress bar 3 ระดับ (ปกติ / ≥80% / เกิน)
+- **Sub roll-up** — ตั้ง budget ที่ parent (เช่น Transport 5,000) จะ sweep รวม sub ทุกตัว (BTS+MRT+Taxi+Grab)
 - ใช้ home currency เสมอ (FX รายการแปลงให้แล้ว)
 
 #### 🔁 รายการประจำ
-- daily / weekly / monthly + วันที่กำหนด
+- daily / weekly / monthly / **yearly** (ค่าเทอม, ภาษีรถ, ประกัน, domain renewal)
+- **Variable-cost mode** — ปล่อยช่องจำนวนว่างได้สำหรับบิลที่ราคาไม่แน่ (ค่าไฟ/น้ำ/เน็ต)
+- ถึงรอบแล้วยังไม่กรอก → ขึ้น panel "บิลรอกรอก" ใส่ราคา + กดปุ่มเดียวจบ
 - Pause/Resume, "รันที่ครบกำหนด" backfill สูงสุด 12 ครั้ง/กฎ
 
 #### 👥 สมุดแชร์
-- ส่วนตัว + แชร์พร้อมกัน, slash ได้ทันที
+- **ทุกสมุดแชร์ได้** (รวมสมุดส่วนตัว) — กด ⚙️ ที่การ์ดเพื่อสร้าง invite link
 - เชิญผ่านลิงก์ + QR (ตั้ง max uses + expiry)
 - Roles: Owner / Editor / Viewer
 - แสดงชื่อ+avatar ของคนที่จดในแต่ละรายการ
@@ -104,8 +108,16 @@
 - **ลบรายการทั้งหมดในสมุดที่ใช้อยู่** — owner-only, type-to-confirm
 - **ลบข้อมูลทั้งหมดของฉัน** — ลบทุกสมุดที่ user เป็น owner + push subscriptions + sign out
 
+#### 🎨 Custom icon system (JtIcon)
+- **5 sprite ที่เลือกได้** — Sticker Pop (default) / Doodle / Watercolor / Geometric / Pixel Art
+- ~136 icons ต่อสไตล์ (nav, action, status, domain, emoji palette, future)
+- เปลี่ยนสไตล์ได้ที่ /settings → "สไตล์ไอคอน" — sprite เปลี่ยนทันทีทั้งแอป
+- Persist ผ่าน localStorage (`jt-icon-style`)
+- **EmojiOrIcon** — dual-format helper render JtIcon ถ้า value ตรงกับ sprite, fall back เป็น emoji char สำหรับข้อมูลเก่า
+
 #### 🌗 Theme + i18n + PWA
 - Light (default) + Dark mode — toggle บน header (desktop) หรือ /settings (mobile)
+- 6 accent colors + 4 seasonal palettes (auto-by-date หรือเลือกเอง)
 - 4 ภาษา: ไทย / English / 日本語 / 中文 — สลับได้ที่ /settings
 - Date/currency formatting ตาม locale
 - PWA: ติดตั้งบน home screen, offline shell, service worker
@@ -155,7 +167,7 @@ npm test           # one-off (TZ=Asia/Bangkok built-in)
 npm run test:watch # watch mode
 ```
 
-99 unit tests ครอบคลุม: timezone correctness, FX fetcher fallback, CSV import/export round-trip, MoM compare math, role authorization, search highlight, currency aggregation
+113 unit tests ครอบคลุม: timezone correctness, FX fetcher fallback, CSV import/export round-trip, MoM compare math, role authorization, search highlight, currency aggregation
 
 ---
 
@@ -254,19 +266,20 @@ Jaitang ใช้ **Asia/Bangkok (UTC+7)** เป็น "business timezone" ส�
 
 ### Features at a glance
 
-- 📝 **Track**: income/expenses with categories, notes, payment methods (cash/transfer), trip tags
+- 📝 **Track**: income/expenses with categories (now with two-level subcategories: Transport → BTS / Taxi / Grab), notes, payment methods, trip tags
 - 📊 **Reports**: dashboard + per-day heatmap calendar + month-over-month insights with AI summary
 - ✈️ **Trips + Multi-currency**: create trip with native currency, all entries auto-tag, live FX preview, snapshot rate at submit
-- 💰 **Budgets**: per-category monthly with traffic-light progress
-- 🔁 **Recurring**: daily/weekly/monthly with on-demand backfill
-- 👥 **Shared ledgers**: invite via link/QR, owner/editor/viewer roles
+- 💰 **Budgets**: per-category monthly with traffic-light progress; parent budgets roll up child spend
+- 🔁 **Recurring**: daily / weekly / monthly / **yearly** + **variable-cost mode** (leave amount blank for ค่าไฟ-style bills, fill in when the bill arrives)
+- 👥 **Shared ledgers**: every ledger is shareable (including the personal one) via link/QR, owner/editor/viewer roles
 - 💸 **Bill splitting**: equal-split with cent precision, settle-up flow
 - 📸 **AI receipt OCR**: receipts + bank/PromptPay slips parsed via Claude
 - ✨ **AI quick add**: type "coffee 65" → categorized + saved
 - 🔍 **Search + filters**: full-text on notes, range/category/trip/currency filters
 - 🔔 **Web push**: per-device opt-in for shared-ledger activity
 - 📥 **CSV + JSON**: export/import + full backup/restore
-- 🌗 **Theme + i18n**: dark mode, 4 languages (TH/EN/JA/ZH)
+- 🎨 **5 icon styles**: Sticker Pop / Doodle / Watercolor / Geometric / Pixel — pick in Settings, swaps every icon app-wide
+- 🌗 **Theme + i18n**: dark mode + 6 accents + 4 seasonal palettes, 4 languages (TH/EN/JA/ZH)
 - 🔒 **Danger zone**: wipe ledger transactions or delete all owned data
 - 📱 **PWA**: installable, offline shell, service worker
 
@@ -291,7 +304,7 @@ cd app
 cp .env.example .env.local        # fill in real values
 npm install
 npm run dev                       # http://localhost:3000
-npm test                          # 99 unit tests
+npm test                          # 113 unit tests
 ```
 
 You'll need:
@@ -332,10 +345,14 @@ The language switcher picks up the new option automatically.
 
 ### Project Status
 
-- **99 unit tests** passing
+- **113 unit tests** passing
 - **Timezone-correct** server-side date math (Asia/Bangkok)
 - **Multi-currency × Trip** end-to-end (32 currencies, 2-source FX fallback)
 - **AI-assisted** OCR / quick parse / monthly insights summary
+- **5 icon styles** (Sticker / Doodle / Watercolor / Geometric / Pixel) — runtime switcher in Settings
+- **Subcategories** (parent → child, 2 levels) with parent-only budget rollup
+- **Variable-cost recurring rules** for unpredictable bills (ค่าไฟ / ค่าน้ำ)
+- **Every ledger shareable** including the personal one
 - **4 languages** localized
 - TypeScript clean, ESLint clean
 - 🦐 Built with [Claude Code](https://claude.com/claude-code) over many sessions

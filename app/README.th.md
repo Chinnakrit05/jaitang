@@ -16,10 +16,10 @@
 - **Auto-categorizer** — พิมพ์โน้ต "กาแฟ" → กด ✨ → AI เลือกหมวดให้จาก list ของเรา
 - **Note autocomplete** — โน้ตเก่าเด้งมาใน `<datalist>` เรียงตามความถี่ที่ใช้ พิมพ์ "ก" → "กาแฟ", "ก๋วยเตี๋ยว" โผล่ทันที
 - **CSV import** — auto-detect รูปแบบ Jaitang vs Apple Numbers vs ตาราง generic เก็บข้อมูลทริป/วิธีจ่าย/FX ครบ
-- **Recurring v2** — ตั้งรายการประจำพร้อมระบุบัญชี/ทริป/สกุลเงินต่างประเทศได้ Cron จะสร้าง tx ของจริงให้พร้อมเรท FX ตามวันที่ run
+- **Recurring v2** — ตั้งรายการประจำพร้อมระบุบัญชี/ทริป/สกุลเงินต่างประเทศได้ Cron จะสร้าง tx ของจริงให้พร้อมเรท FX ตามวันที่ run. รองรับ daily / weekly / monthly / **yearly** + **variable-cost mode** (ปล่อยช่องจำนวนว่างได้สำหรับบิลค่าไฟ/น้ำ/เน็ต — ถึงรอบแล้วจะขึ้นใน "บิลรอกรอก" panel ให้กรอกตอนได้บิล)
 
 ### 🗂 จัดระเบียบ
-- **Categories** — มีหมวดมาตรฐานให้เริ่ม จัดการเองได้ครบทั้งไอคอน-สี
+- **Categories** — มีหมวดมาตรฐานให้เริ่ม จัดการเองได้ครบทั้งไอคอน-สี. **Subcategory** สอง level (เช่น Transport → BTS / MRT / Taxi / Grab) — picker เลือก parent หรือ sub ก็ได้ ตั้ง budget ที่ parent → sub spend roll up ให้
 - **Trips** — โฟลเดอร์ทริปต่างประเทศ เลือกสกุลเงิน → ลงรายการในสกุลนั้น → ดู breakdown กลับมาเป็นบาท
 - **Accounts / Wallets** — เงินสด ธนาคาร บัตรเครดิต อีวอลเล็ท ยอดคงเหลือคำนวณสดจาก tx + transfers
 - **Transfers** — โอนระหว่างบัญชีของตัวเอง ทั้งสกุลเดียวกันและข้ามสกุล (Wise-style: ใส่ยอดที่ได้รับจริง ระบบดึงเรทออกเอง)
@@ -51,7 +51,9 @@
 - **i18n** — ไทย / อังกฤษ / ญี่ปุ่น / จีน ทุกข้อความใน UI
 - **PWA** — มี manifest + install prompt (Chrome/Edge อัตโนมัติ, iOS Safari แสดง hint ให้ทำเอง) ใช้งาน offline-tolerant
 - **Push notifications** — Web Push API แจ้งเตือนรายการใหม่ในสมุดที่แชร์ + การเคลียร์หนี้
-- **Theme** — light/dark โหมด ตามระบบหรือสลับเอง
+- **Theme** — light/dark โหมด ตามระบบหรือสลับเอง + 6 accent colors + 4 seasonal palettes
+- **5 icon styles** — Sticker Pop (default) / Doodle / Watercolor / Geometric / Pixel Art เลือกที่ Settings → "สไตล์ไอคอน" sprite สลับทันทีทั้งแอป (เก็บใน `localStorage["jt-icon-style"]`)
+- **สมุดแชร์** — ทุกสมุด (รวมสมุดส่วนตัว) เชิญผ่านลิงก์/QR ได้ มี roles owner/editor/viewer
 - **Backup / restore** — JSON export + import ทั้งสมุด (categories, tx, trips, goals, accounts, transfers, recurring, splits)
 
 ---

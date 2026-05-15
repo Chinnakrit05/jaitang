@@ -16,10 +16,10 @@ Multi-currency, multi-ledger, AI-aware, PWA-installable. Built for Thai but spea
 - **Auto-categorizer** — type a note like "กาแฟ" → tap ✨ → AI picks the category from your list.
 - **Note autocomplete** — past notes pop up in a `<datalist>` ranked by usage frequency. Type "ก" → "กาแฟ", "ก๋วยเตี๋ยว" appear.
 - **CSV import** — auto-detects Jaitang format vs Apple Numbers vs generic columns. Preserves trip / payment method / FX.
-- **Recurring transactions v2** — set rules with optional account, trip, and foreign currency. Cron materializes them into real tx with correct FX rate at run time.
+- **Recurring transactions v2** — set rules with optional account, trip, and foreign currency. Cron materializes them into real tx with correct FX rate at run time. Frequency: daily / weekly / monthly / **yearly**. Amount can be left blank for variable-cost bills (electricity, water) — a "Bills to file" panel surfaces them when due so the user can plug the amount in once the bill arrives.
 
 ### Organize
-- **Categories** — seeded defaults; full CRUD with icons + colors.
+- **Categories** — seeded defaults; full CRUD with icons + colors. **Subcategories** (two levels max, e.g. Transport → BTS / MRT / Taxi / Grab) — picker can pick parent or sub; budgets at parent level roll up sub spend.
 - **Trips** — multi-currency travel folders. Pick a currency, log expenses in that currency, see breakdown back in home currency.
 - **Accounts / Wallets** — cash, bank, credit card, e-wallet. Per-account balance computed live from transactions + transfers.
 - **Transfers between accounts** — same-currency or cross-currency (Wise-style: enter the actual received amount, system derives the rate).
@@ -51,7 +51,9 @@ Multi-currency, multi-ledger, AI-aware, PWA-installable. Built for Thai but spea
 - **i18n** — Thai / English / Japanese / Chinese, all UI strings.
 - **PWA** — manifest + install prompt (Chromium auto, iOS Safari with manual hint). Works offline-tolerant.
 - **Push notifications** — Web Push API for new transactions in shared ledgers, settlements.
-- **Light + dark theme** — system-aware default with manual toggle.
+- **Light + dark theme** — system-aware default with manual toggle. 6 accents + 4 seasonal palettes.
+- **5 icon styles** — Sticker Pop (default) / Doodle / Watercolor / Geometric / Pixel Art. Pick in Settings → Icon style; the chosen sprite swaps every `<JtIcon>` in the app instantly. Persisted in `localStorage["jt-icon-style"]`.
+- **Shared ledgers** — every ledger (including the auto-created personal one) can be invited via link/QR with owner/editor/viewer roles.
 - **Backup / restore** — JSON export + import for full migration (categories, tx, trips, goals, accounts, transfers, recurring, splits).
 
 ---
