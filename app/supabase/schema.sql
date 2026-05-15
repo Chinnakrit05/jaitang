@@ -72,6 +72,14 @@ create table if not exists public.categories (
 
 create index if not exists idx_categories_ledger on public.categories(ledger_id);
 
+-- Subcategory support: parent_id points to another category in the same
+-- ledger. Hierarchy is two levels max (parent → sub); deeper nesting is
+-- enforced at the action layer. Deleting a parent promotes its subs to
+-- top-level rather than cascading delete (`on delete set null`).
+alter table public.categories
+  add column if not exists parent_id uuid references public.categories(id) on delete set null;
+create index if not exists idx_categories_parent on public.categories(parent_id) where parent_id is not null;
+
 -- ============================================================
 -- Trips (ทริป — container ชั่วคราว tag รายการ เช่น "ทริปทะเล")
 -- ============================================================

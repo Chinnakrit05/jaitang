@@ -217,7 +217,9 @@
     "incomePlaceholder": "e.g. Commission",
     "addButton": "Add",
     "empty": "No categories yet — add one above.",
-    "deleteConfirm": "Delete this category? Transactions using it will become 'No category' (they aren't deleted)."
+    "deleteConfirm": "Delete this category? Transactions using it will become 'No category' (they aren't deleted).",
+    "parentLabel": "Subcategory of",
+    "parentNone": "— none (top-level) —"
   },
   "budgets": {
     "title": "Budgets",
