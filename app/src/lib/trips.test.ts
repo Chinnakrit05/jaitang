@@ -68,6 +68,11 @@ vi.mock("@/lib/supabase/server", () => {
         if (col === "trip_id") api._idsFilter = ids;
         return api;
       },
+      // Soft-delete filter — fixtures don't include `deleted_at`, accept
+      // the call and let every row pass.
+      is() {
+        return api;
+      },
       order() {
         return api;
       },

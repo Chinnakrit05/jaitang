@@ -43,7 +43,8 @@ export async function listTrips(
   const { data: txRows, error: txErr } = await sb
     .from("transactions")
     .select("trip_id, kind, amount")
-    .in("trip_id", ids);
+    .in("trip_id", ids)
+    .is("deleted_at", null);
   if (txErr) throw txErr;
 
   const stats = new Map<string, { count: number; income: number; expense: number }>();

@@ -54,7 +54,8 @@ export async function listAccounts(
     sb
       .from("transactions")
       .select("account_id, kind, amount, fx_currency, fx_amount")
-      .in("account_id", ids),
+      .in("account_id", ids)
+      .is("deleted_at", null),
     sb
       .from("transfers")
       .select("from_account_id, to_account_id, from_amount, to_amount")

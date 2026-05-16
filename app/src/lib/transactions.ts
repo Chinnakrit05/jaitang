@@ -38,6 +38,7 @@ export async function listTransactions(
       "id, ledger_id, user_id, category_id, trip_id, account_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), trip:trips(id, name, icon, color, currency), account:accounts(id, name, icon, color, currency), user:users(id, name, email, image)"
     )
     .eq("ledger_id", opts.ledgerId)
+    .is("deleted_at", null) // hide soft-deleted rows from every UI read
     .order("occurred_at", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -184,29 +185,37 @@ export async function updateTransaction(
 
 export async function deleteTransaction(id: string) {
   const sb = getServerSupabase();
-  const { error } = await sb.from("transactions").delete().eq("id", id);
+  // Soft delete — sets `deleted_at` so the mobile sync engine can pick
+  // up the tombstone via the same `updated_at > cursor` pull path it
+  // uses for ordinary edits. The updated_at trigger bumps automatically.
+  const { error } = await sb
+    .from("transactions")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) throw error;
 }
 
 /**
- * Delete every transaction in a ledger. Splits are removed automatically by
- * the `transaction_splits.transaction_id` ON DELETE CASCADE foreign key.
- * Caller is responsible for authorizing — typically owner-only.
+ * Soft-delete every transaction in a ledger. Splits stay attached
+ * because the rows aren't physically removed — they're just hidden
+ * from queries by the `deleted_at is null` filter everywhere. Caller
+ * is responsible for authorizing — typically owner-only.
  *
- * Returns the number of transactions deleted (best-effort; supabase doesn't
- * always report a row count, so this falls back to 0).
+ * Returns the number of transactions marked deleted.
  */
 export async function wipeLedgerTransactions(ledgerId: string): Promise<number> {
   const sb = getServerSupabase();
-  // First count, so we can report it back to the UI.
+  // First count active rows so we can report it back to the UI.
   const { count } = await sb
     .from("transactions")
     .select("id", { count: "exact", head: true })
-    .eq("ledger_id", ledgerId);
+    .eq("ledger_id", ledgerId)
+    .is("deleted_at", null);
 
   const { error } = await sb
     .from("transactions")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
+    .is("deleted_at", null)
     .eq("ledger_id", ledgerId);
   if (error) throw error;
   return count ?? 0;
@@ -226,6 +235,7 @@ export async function sumPeriod(
     .from("transactions")
     .select("kind, amount")
     .eq("ledger_id", ledgerId)
+    .is("deleted_at", null)
     .gte("occurred_at", from.toISOString())
     .lt("occurred_at", to.toISOString())
     .limit(20000);
@@ -392,6 +402,7 @@ export async function listDistinctNotes(
     .from("transactions")
     .select("note")
     .eq("ledger_id", ledgerId)
+    .is("deleted_at", null)
     .not("note", "is", null)
     .order("occurred_at", { ascending: false })
     .limit(2000);

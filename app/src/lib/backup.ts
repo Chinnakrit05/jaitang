@@ -157,6 +157,7 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
             "id, category_id, trip_id, account_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at"
           )
           .eq("ledger_id", l.id)
+          .is("deleted_at", null) // backup snapshot mirrors what the UI shows
           .order("occurred_at"),
         sb
           .from("budgets")
