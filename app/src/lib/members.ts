@@ -21,6 +21,7 @@ export async function listMembers(ledgerId: string): Promise<Member[]> {
     .from("ledgers")
     .select("owner_id, owner:users!ledgers_owner_id_fkey(id, name, email, image)")
     .eq("id", ledgerId)
+    .is("deleted_at", null)
     .single();
   if (ledgerErr) throw ledgerErr;
 

@@ -37,7 +37,8 @@ export async function listAccounts(
     .select(
       "id, ledger_id, name, type, icon, color, initial_balance, currency, archived, created_at"
     )
-    .eq("ledger_id", ledgerId);
+    .eq("ledger_id", ledgerId)
+    .is("deleted_at", null);
   if (!opts.includeArchived) q = q.eq("archived", false);
   q = q
     .order("archived", { ascending: true })
@@ -227,9 +228,14 @@ export async function deleteAccount(
   ledgerId: string
 ): Promise<void> {
   const sb = getServerSupabase();
+  // Soft delete so offline mobile clients see the tombstone on their
+  // next pull. The FK behaviors (`set null` on transactions, `cascade`
+  // on transfers) no longer fire — but listAccounts filters out
+  // deleted rows, so the account simply disappears from the UI, and
+  // the lingering FK pointers stay valid until they're recomputed.
   const { error } = await sb
     .from("accounts")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", accountId)
     .eq("ledger_id", ledgerId);
   if (error) throw error;
@@ -241,6 +247,7 @@ async function getLedgerCurrency(ledgerId: string): Promise<string> {
     .from("ledgers")
     .select("currency")
     .eq("id", ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   return (data?.currency as string) ?? "THB";
 }

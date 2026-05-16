@@ -222,6 +222,7 @@ export async function applyDueRecurring(ledgerId: string): Promise<number> {
     .from("ledgers")
     .select("currency")
     .eq("id", ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   const homeCurrency = (ledgerRow?.currency as string) ?? "THB";
 
@@ -355,6 +356,7 @@ export async function fillPendingRecurring(input: {
     .from("ledgers")
     .select("currency")
     .eq("id", input.ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   const homeCurrency = (ledgerRow?.currency as string) ?? "THB";
 

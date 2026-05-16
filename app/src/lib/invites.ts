@@ -87,6 +87,7 @@ export async function consumeInvite(opts: {
     .select("id")
     .eq("id", invite.ledger_id)
     .eq("owner_id", opts.userId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (ownedLedger) {
     return { ledgerId: invite.ledger_id, role: "owner" };

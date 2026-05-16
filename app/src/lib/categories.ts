@@ -7,6 +7,7 @@ export async function listCategories(ledgerId: string): Promise<Category[]> {
     .from("categories")
     .select("id, ledger_id, name, icon, color, kind, sort_order, parent_id")
     .eq("ledger_id", ledgerId)
+    .is("deleted_at", null)
     .order("kind", { ascending: true })
     .order("sort_order", { ascending: true });
   if (error) throw error;
@@ -92,6 +93,7 @@ export async function createCategory(
     .select("sort_order")
     .eq("ledger_id", ledgerId)
     .eq("kind", input.kind)
+    .is("deleted_at", null)
     .order("sort_order", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -105,6 +107,7 @@ export async function createCategory(
       .from("categories")
       .select("id, ledger_id, kind, parent_id")
       .eq("id", input.parentId)
+      .is("deleted_at", null)
       .maybeSingle();
     if (!parent || parent.ledger_id !== ledgerId) {
       throw new Error("Parent category not found in this ledger");
@@ -150,6 +153,7 @@ export async function updateCategory(
       .from("categories")
       .select("id, ledger_id, kind")
       .eq("id", id)
+      .is("deleted_at", null)
       .maybeSingle();
     if (!self) throw new Error("Category not found");
     if (input.parent_id === id) {
@@ -159,6 +163,7 @@ export async function updateCategory(
       .from("categories")
       .select("id, ledger_id, kind, parent_id")
       .eq("id", input.parent_id)
+      .is("deleted_at", null)
       .maybeSingle();
     if (!parent || parent.ledger_id !== self.ledger_id) {
       throw new Error("Parent category not found in this ledger");
@@ -174,7 +179,8 @@ export async function updateCategory(
     const { count } = await sb
       .from("categories")
       .select("id", { count: "exact", head: true })
-      .eq("parent_id", id);
+      .eq("parent_id", id)
+      .is("deleted_at", null);
     if ((count ?? 0) > 0) {
       throw new Error("Cannot turn a parent category into a subcategory");
     }
@@ -192,6 +198,12 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string) {
   const sb = getServerSupabase();
-  const { error } = await sb.from("categories").delete().eq("id", id);
+  // Soft delete — keeps the row around so offline mobile clients can
+  // notice the deletion on their next pull (via the `deleted_at`
+  // timestamp landing on a row they already had cached).
+  const { error } = await sb
+    .from("categories")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) throw error;
 }

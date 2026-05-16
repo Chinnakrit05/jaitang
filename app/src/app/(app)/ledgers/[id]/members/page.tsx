@@ -27,6 +27,7 @@ export default async function MembersPage({
     .from("ledgers")
     .select("id, name, icon, owner_id, is_personal")
     .eq("id", ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
 
   if (!ledger) notFound();

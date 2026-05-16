@@ -73,6 +73,7 @@ export async function switchLedgerAction(ledgerId: string) {
     .select("id")
     .eq("id", ledgerId)
     .eq("owner_id", userId)
+    .is("deleted_at", null)
     .maybeSingle();
   let allowed = !!owned;
   if (!allowed) {
@@ -97,11 +98,19 @@ export async function deleteLedgerAction(ledgerId: string) {
     .from("ledgers")
     .select("id, owner_id, is_personal")
     .eq("id", ledgerId)
+    .is("deleted_at", null)
     .single();
   if (!ledger) throw new Error("ไม่พบสมุด");
   if (ledger.owner_id !== userId) throw new Error("เฉพาะเจ้าของสมุดเท่านั้นที่ลบได้");
   if (ledger.is_personal) throw new Error("สมุดส่วนตัวลบไม่ได้");
-  const { error } = await sb.from("ledgers").delete().eq("id", ledgerId);
+  // Soft delete so offline mobile clients see the tombstone on their
+  // next pull. Cascading FKs (members, transactions, …) no longer
+  // fire — but everything filters `deleted_at is null`, so the ledger
+  // and its contents simply disappear from the UI together.
+  const { error } = await sb
+    .from("ledgers")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", ledgerId);
   if (error) throw error;
   refreshAll();
   redirect("/ledgers");

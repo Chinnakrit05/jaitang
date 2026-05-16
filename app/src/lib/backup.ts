@@ -149,6 +149,7 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
           .from("categories")
           .select("id, name, icon, color, kind, sort_order")
           .eq("ledger_id", l.id)
+          .is("deleted_at", null)
           .order("kind")
           .order("sort_order"),
         sb
@@ -178,7 +179,8 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
           .select(
             "id, name, type, icon, color, initial_balance, currency, archived"
           )
-          .eq("ledger_id", l.id),
+          .eq("ledger_id", l.id)
+          .is("deleted_at", null),
         sb
           .from("transfers")
           .select(
@@ -456,6 +458,7 @@ export async function restoreBackup(
         .select("id")
         .eq("owner_id", userId)
         .eq("is_personal", true)
+        .is("deleted_at", null)
         .maybeSingle();
       if (existing) {
         createdLedgerId = existing.id;

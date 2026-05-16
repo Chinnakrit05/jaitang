@@ -27,6 +27,7 @@ export async function ensurePersonalLedger(userId: string) {
     .select("id")
     .eq("owner_id", userId)
     .eq("is_personal", true)
+    .is("deleted_at", null)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -56,6 +57,7 @@ export async function ensurePersonalLedger(userId: string) {
         .select("id")
         .eq("owner_id", userId)
         .eq("is_personal", true)
+        .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -84,13 +86,17 @@ export async function listLedgersForUser(userId: string): Promise<LedgerSummary[
     sb
       .from("ledgers")
       .select("id, name, icon, color, currency, is_personal, owner_id, created_at")
-      .eq("owner_id", userId),
+      .eq("owner_id", userId)
+      .is("deleted_at", null),
     sb
       .from("ledger_members")
       .select(
         "role, ledgers!inner(id, name, icon, color, currency, is_personal, owner_id, created_at)"
       )
-      .eq("user_id", userId),
+      .eq("user_id", userId)
+      // Filter on the joined `ledgers` table — PostgREST allows this even
+      // when the column isn't projected in the select.
+      .is("ledgers.deleted_at", null),
   ]);
 
   if (ownedRes.error) throw ownedRes.error;

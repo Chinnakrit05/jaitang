@@ -42,7 +42,8 @@ export async function buildNetWorthHistory(
     sb
       .from("accounts")
       .select("id, currency, initial_balance, archived")
-      .eq("ledger_id", ledgerId),
+      .eq("ledger_id", ledgerId)
+      .is("deleted_at", null),
     sb
       .from("transactions")
       .select("account_id, kind, amount, fx_currency, fx_amount, occurred_at")

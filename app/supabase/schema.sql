@@ -228,6 +228,49 @@ before update on public.transactions
 for each row execute function set_updated_at();
 
 -- ============================================================
+-- Sync metadata for categories / accounts / ledgers
+-- Mobile pulls with `updated_at > since`; deletions propagate via the
+-- `deleted_at` tombstone (same pattern as transactions above) so an
+-- offline client picks up removals on its next sync instead of seeing
+-- a stale row forever. Partial indexes keep the active-row queries fast.
+-- ============================================================
+alter table public.categories
+  add column if not exists updated_at timestamptz not null default now();
+alter table public.categories
+  add column if not exists deleted_at timestamptz;
+drop trigger if exists trg_categories_updated_at on public.categories;
+create trigger trg_categories_updated_at
+before update on public.categories
+for each row execute function set_updated_at();
+create index if not exists idx_categories_active
+  on public.categories(ledger_id, kind, sort_order)
+  where deleted_at is null;
+
+alter table public.accounts
+  add column if not exists updated_at timestamptz not null default now();
+alter table public.accounts
+  add column if not exists deleted_at timestamptz;
+drop trigger if exists trg_accounts_updated_at on public.accounts;
+create trigger trg_accounts_updated_at
+before update on public.accounts
+for each row execute function set_updated_at();
+create index if not exists idx_accounts_live
+  on public.accounts(ledger_id)
+  where deleted_at is null and archived = false;
+
+alter table public.ledgers
+  add column if not exists updated_at timestamptz not null default now();
+alter table public.ledgers
+  add column if not exists deleted_at timestamptz;
+drop trigger if exists trg_ledgers_updated_at on public.ledgers;
+create trigger trg_ledgers_updated_at
+before update on public.ledgers
+for each row execute function set_updated_at();
+create index if not exists idx_ledgers_active
+  on public.ledgers(owner_id)
+  where deleted_at is null;
+
+-- ============================================================
 -- Invites (ลิงก์เชิญเข้าสมุดแชร์)
 -- ============================================================
 create table if not exists public.invites (
