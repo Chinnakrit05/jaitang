@@ -54,6 +54,7 @@ async function getAccountForLedger(
     .select("id, currency")
     .eq("id", accountId)
     .eq("ledger_id", ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   return data;
 }
@@ -230,6 +231,7 @@ export async function createTransactionAction(formData: FormData) {
       .from("ledgers")
       .select("name, is_personal")
       .eq("id", ledgerId)
+      .is("deleted_at", null)
       .single();
     if (ledger && !ledger.is_personal) {
       const members = await listMembers(ledgerId);

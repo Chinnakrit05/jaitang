@@ -168,6 +168,7 @@ async function validateAccountInLedger(
     .select("id, currency")
     .eq("id", accountId)
     .eq("ledger_id", ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   return data;
 }
@@ -178,6 +179,7 @@ async function getLedgerCurrency(ledgerId: string): Promise<string> {
     .from("ledgers")
     .select("currency")
     .eq("id", ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   return (data?.currency as string) ?? "THB";
 }
@@ -329,6 +331,7 @@ export async function reconcileAccountAction(
     .select("id, currency, initial_balance")
     .eq("id", accountId)
     .eq("ledger_id", ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (!acc) {
     return { ok: false, error: "Account not found in this ledger" };

@@ -25,14 +25,18 @@ export const resolveActiveLedger = cache(async (userId: string): Promise<string>
       .select("id")
       .eq("id", cookieValue)
       .eq("owner_id", userId)
+      .is("deleted_at", null)
       .maybeSingle();
     if (owned) return owned.id as string;
 
+    // The membership row itself is fine, but if the underlying ledger was
+    // soft-deleted we shouldn't honor the cookie. Filter via the join.
     const { data: member } = await sb
       .from("ledger_members")
-      .select("ledger_id")
+      .select("ledger_id, ledgers!inner(id)")
       .eq("ledger_id", cookieValue)
       .eq("user_id", userId)
+      .is("ledgers.deleted_at", null)
       .maybeSingle();
     if (member) return member.ledger_id as string;
   }

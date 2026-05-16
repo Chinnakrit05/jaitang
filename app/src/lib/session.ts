@@ -58,6 +58,7 @@ export const requireSession = cache(async (): Promise<SessionContext> => {
     .from("ledgers")
     .select("id, name, icon, currency, is_personal, owner_id")
     .eq("id", ledgerId)
+    .is("deleted_at", null)
     .single();
   if (lErr || !ledgerRow) {
     // Ledger we cookied is gone — bail to a fresh personal ledger next render.
