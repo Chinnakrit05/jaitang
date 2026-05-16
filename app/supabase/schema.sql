@@ -203,6 +203,16 @@ create index if not exists idx_tx_ledger_occurred on public.transactions(ledger_
 create index if not exists idx_tx_user on public.transactions(user_id);
 create index if not exists idx_tx_trip on public.transactions(trip_id) where trip_id is not null;
 
+-- Soft delete so the mobile sync engine can propagate deletions in
+-- either direction (last-write-wins by `updated_at`). Web `delete*`
+-- helpers now do UPDATE deleted_at = now() instead of DELETE; SELECTs
+-- filter on `deleted_at is null`.
+alter table public.transactions
+  add column if not exists deleted_at timestamptz;
+create index if not exists idx_tx_active
+  on public.transactions(ledger_id, occurred_at desc)
+  where deleted_at is null;
+
 -- updated_at trigger
 create or replace function set_updated_at()
 returns trigger as $$

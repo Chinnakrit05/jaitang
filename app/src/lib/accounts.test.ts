@@ -112,6 +112,7 @@ vi.mock("@/lib/supabase/server", () => {
       select: () => typeof chain;
       eq: (c: string, v: unknown) => typeof chain;
       in: (c: string, ids: string[]) => typeof chain;
+      is: (c: string, v: unknown) => typeof chain;
       or: () => typeof chain;
       order: () => typeof chain;
       maybeSingle: () => Promise<{ data: unknown; error: null }>;
@@ -127,6 +128,9 @@ vi.mock("@/lib/supabase/server", () => {
         if (col === "account_id") state.idsFilter = ids;
         return chain;
       },
+      // Soft-delete filter — fixtures don't include `deleted_at`, so just
+      // accept the call and let every row pass.
+      is: () => chain,
       or: () => chain,
       order: () => chain,
       maybeSingle() {

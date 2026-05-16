@@ -47,6 +47,7 @@ export async function buildNetWorthHistory(
       .from("transactions")
       .select("account_id, kind, amount, fx_currency, fx_amount, occurred_at")
       .eq("ledger_id", ledgerId)
+      .is("deleted_at", null)
       .not("account_id", "is", null)
       .order("occurred_at", { ascending: true }),
     sb
