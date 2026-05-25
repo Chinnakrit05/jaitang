@@ -10,7 +10,6 @@
  */
 
 export const WIDGET_IDS = [
-  "summary",
   "expenseByCategory",
   "dailyTrend",
   "accountBalances",

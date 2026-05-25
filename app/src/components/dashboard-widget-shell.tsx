@@ -92,7 +92,6 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
   }
 
   const widgetLabel: Record<WidgetId, string> = {
-    summary: t("dashboard.widgetSummary"),
     expenseByCategory: t("dashboard.widgetExpenseByCategory"),
     dailyTrend: t("dashboard.widgetDailyTrend"),
     accountBalances: t("dashboard.widgetAccountBalances"),

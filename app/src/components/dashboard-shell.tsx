@@ -77,11 +77,15 @@ export async function DashboardShell({
     { href: "/settings",     label: t("nav.settings"),     icon: "settings" },
   ];
 
+  // Two primary tabs on each side of the center FAB. The FAB itself
+  // is rendered by MobileNav as a fixed center slot and points at
+  // /transactions/new. Five slots total (incl. the "more" button) to
+  // match the mobile app's `AppTabBar`. Other routes live in the
+  // "more" drawer.
   const MOBILE_NAV: NavItem[] = [
     { href: "/dashboard",   label: t("nav.homeShort"),    icon: "home" },
-    { href: "/quick",       label: t("nav.quickShort"),   icon: "quick" },
     { href: "/transactions",label: t("nav.transactions"), icon: "transactions" },
-    { href: "/ledgers",     label: t("nav.ledgersShort"), icon: "ledgers" },
+    { href: "/insights",    label: t("nav.insights"),     icon: "insights" },
   ];
 
   const ROLE_LABEL: Record<string, string> = {
@@ -177,7 +181,12 @@ export async function DashboardShell({
         </main>
       </div>
 
-      <MobileNav primary={MOBILE_NAV} all={NAV} moreLabel={t("nav.more")} />
+      <MobileNav
+        primary={MOBILE_NAV}
+        all={NAV}
+        moreLabel={t("nav.more")}
+        fabLabel={t("dashboard.addTransaction")}
+      />
     </div>
   );
 }

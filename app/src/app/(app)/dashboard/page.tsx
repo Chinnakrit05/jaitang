@@ -1,22 +1,21 @@
-import Link from "next/link";
-import { JtIcon } from "@/components/icons";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
 import { aggregateMonthSummary, listTransactions } from "@/lib/transactions";
 import { listAccounts } from "@/lib/accounts";
+import { listBudgets } from "@/lib/budgets";
 import { resolveRange, type RangeKey } from "@/lib/date-range";
-import { TransactionList } from "@/components/transaction-list";
-import { ExpenseByCategoryChart, DailyTrendChart } from "@/components/dashboard-charts";
+import { DailyTrendChart } from "@/components/dashboard-charts";
 import { PaymentMethodBreakdown } from "@/components/payment-method-breakdown";
+import { CategorySummary } from "@/components/category-summary";
+import { RecentTransactionsCompact } from "@/components/recent-transactions-compact";
 import { DashboardRangeFilter } from "@/components/dashboard-range-filter";
 import { DashboardCurrencyToggle } from "@/components/dashboard-currency-toggle";
 import { DashboardAccountBalances } from "@/components/dashboard-account-balances";
-import { DecorativePattern } from "@/components/decorative-pattern";
+import { DashboardHero } from "@/components/dashboard-hero";
 import {
   DashboardWidgetShell,
   type WidgetMap,
 } from "@/components/dashboard-widget-shell";
-import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { SUPPORTED_CODES } from "@/lib/currencies";
 
@@ -55,8 +54,9 @@ export default async function DashboardPage({
 
   // Pull the rows in this window + the last 5 (separate query — recent
   // transactions on the home page should not be limited by the filter).
-  // Account balances ride alongside since the widget is always visible.
-  const [items, recent, accountBalances] = await Promise.all([
+  // Account balances + monthly budgets ride alongside since the hero
+  // card needs the budget cap to draw its mood progress bar.
+  const [items, recent, accountBalances, budgets] = await Promise.all([
     listTransactions({
       ledgerId,
       from: range.from,
@@ -65,7 +65,11 @@ export default async function DashboardPage({
     }),
     listTransactions({ ledgerId, limit: 5 }),
     listAccounts(ledgerId, { includeArchived: false }),
+    listBudgets(ledgerId).catch(() => []),
   ]);
+  // Sum of per-category caps for this ledger — used as the budget bar's
+  // denominator on the hero. 0 means "no budget set" (bar renders muted).
+  const budgetCap = budgets.reduce((sum, b) => sum + b.amount, 0);
   const summary = aggregateMonthSummary(items, filterCurrency);
   // Distinct foreign currencies present in this period — drives whether
   // the toggle row even renders.
@@ -84,27 +88,35 @@ export default async function DashboardPage({
   // keep the original "ภาพรวม{month}" phrasing.
   const subtitle = buildSubtitle(rangeKey, range.from, fmtLocale, t);
 
+  // Month label for the hero card's month-nav line — formatted in the
+  // user's locale so Thai readers see "พฤษภาคม 2569" while others see
+  // "May 2026" etc.
+  const monthLabel = new Intl.DateTimeFormat(fmtLocale, {
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+
   return (
     <div className="space-y-6 fade-rise">
-      <div className="relative flex items-end justify-between flex-wrap gap-3 overflow-hidden">
-        <DecorativePattern kind="dots" className="top-0 right-0 -mr-2 -mt-2 hidden sm:block" />
-        <div className="space-y-1.5 relative">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            {t("dashboard.greeting", { name })}
-          </h1>
-          <p className="text-sm text-(--muted) flex items-center gap-2">
-            <span className="inline-block h-1 w-6 rounded-full bg-(--accent) shrink-0" />
-            {subtitle}
-          </p>
-        </div>
-        <Link
-          href="/transactions/new"
-          className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm cta-primary relative"
-        >
-          <JtIcon name="plus-fab" size={22} />
-          {t("dashboard.addTransaction")}
-        </Link>
-      </div>
+      <DashboardHero
+        name={name}
+        avatarUrl={user.image ?? null}
+        income={summary.income}
+        expense={summary.expense}
+        balance={summary.balance}
+        budgetCap={budgetCap}
+        currency={displayCurrency}
+        fmtLocale={fmtLocale}
+        monthLabel={monthLabel}
+        // TODO(streak): wire to a real per-user counter once the server
+        // tracks daily activity. Hidden when 0 / undefined.
+        streakDays={undefined}
+      />
+
+      <p className="text-sm text-(--muted) flex items-center gap-2">
+        <span className="inline-block h-1 w-6 rounded-full bg-(--accent) shrink-0" />
+        {subtitle}
+      </p>
 
       <DashboardRangeFilter activeKey={rangeKey} />
 
@@ -116,50 +128,17 @@ export default async function DashboardPage({
       )}
 
       {/* Customizable widgets — order + visibility persist per-user via
-          localStorage. Charts are now stacked full-width (was 2-col)
-          so they can be reordered independently. */}
+          localStorage. The hero card above the widget shell now owns
+          income / expense / balance, so the old `summary` 3-up grid was
+          retired. */}
       {(() => {
         const widgets: WidgetMap = {
-          summary: (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <SummaryCard
-                label={t("dashboard.incomeMonth")}
-                value={summary.income}
-                icon={<JtIcon name="trending-up" size={24} />}
-                tone="income"
-                currency={displayCurrency}
-                fmtLocale={fmtLocale}
-              />
-              <SummaryCard
-                label={t("dashboard.expenseMonth")}
-                value={summary.expense}
-                icon={<JtIcon name="trending-down" size={24} />}
-                tone="expense"
-                currency={displayCurrency}
-                fmtLocale={fmtLocale}
-              />
-              <SummaryCard
-                label={t("dashboard.balanceCard")}
-                value={summary.balance}
-                icon={<JtIcon name="accounts" size={24} />}
-                tone={summary.balance >= 0 ? "balance" : "expense"}
-                showSign
-                currency={displayCurrency}
-                fmtLocale={fmtLocale}
-              />
-            </div>
-          ),
           expenseByCategory: (
-            <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
-              <h2 className="section-heading font-semibold mb-4">
-                {t("dashboard.expenseByCategory")}
-              </h2>
-              <ExpenseByCategoryChart
-                summary={summary}
-                currency={displayCurrency}
-                fmtLocale={fmtLocale}
-              />
-            </section>
+            <CategorySummary
+              summary={summary}
+              currency={displayCurrency}
+              fmtLocale={fmtLocale}
+            />
           ),
           dailyTrend: (
             <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
@@ -188,24 +167,12 @@ export default async function DashboardPage({
             />
           ),
           recent: (
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="section-heading font-semibold">
-                  {t("dashboard.recent")}
-                </h2>
-                <Link
-                  href="/transactions"
-                  className="text-sm text-(--accent) hover:underline"
-                >
-                  {t("dashboard.viewAll")}
-                </Link>
-              </div>
-              <TransactionList
-                items={recent}
-                showAttribution={!ledger.is_personal}
-                currency={currency}
-              />
-            </section>
+            <RecentTransactionsCompact
+              items={recent}
+              currency={currency}
+              fmtLocale={fmtLocale}
+              showTrip={!ledger.is_personal}
+            />
           ),
         };
         return <DashboardWidgetShell widgets={widgets} />;
@@ -253,84 +220,3 @@ function buildSubtitle(
   return t(`transactions.rangeLabels.${rangeKey}`);
 }
 
-function SummaryCard({
-  label,
-  value,
-  icon,
-  tone,
-  showSign,
-  currency,
-  fmtLocale,
-}: {
-  label: string;
-  value: number;
-  icon: React.ReactNode;
-  tone: "income" | "expense" | "balance";
-  showSign?: boolean;
-  currency: string;
-  fmtLocale: string;
-}) {
-  const toneClass =
-    tone === "income"
-      ? "text-(--income)"
-      : tone === "expense"
-      ? "text-(--expense)"
-      : "text-(--accent)";
-
-  // Tone-tinted CSS var — drives the corner blob fill so income cards
-  // glow green, expense cards glow red, balance cards glow accent.
-  const toneVar =
-    tone === "income"
-      ? "var(--income)"
-      : tone === "expense"
-      ? "var(--expense)"
-      : "var(--accent)";
-
-  const sign = showSign ? (value >= 0 ? "+" : "−") : "";
-
-  return (
-    <div className="group card-hover rounded-2xl border border-(--border) bg-(--card) p-5 hover:border-(--muted)/40 relative overflow-hidden">
-      {/* Corner blob — soft radial glow in the tone color, fades into the
-          card. Pure CSS so it follows the theme without extra JS. */}
-      <div
-        aria-hidden
-        className="absolute -top-12 -right-12 w-40 h-40 rounded-full pointer-events-none transition-opacity opacity-60 group-hover:opacity-90"
-        style={{
-          background: `radial-gradient(circle, color-mix(in srgb, ${toneVar} 28%, transparent), transparent 70%)`,
-        }}
-      />
-      {/* Decorative arc in the bottom-left — adds visual interest without
-          stealing focus from the number. */}
-      <svg
-        aria-hidden
-        className="absolute -bottom-3 -left-3 pointer-events-none opacity-30 group-hover:opacity-50 transition-opacity"
-        width="72"
-        height="48"
-        viewBox="0 0 72 48"
-        fill="none"
-      >
-        <path
-          d="M0 40 Q18 20 36 30 T72 18"
-          stroke={toneVar}
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          fill="none"
-        />
-      </svg>
-      <div className="flex items-center justify-between text-xs uppercase tracking-wide text-(--muted) mb-3 relative">
-        <span className="font-medium">{label}</span>
-        <span
-          className={`${toneClass} inline-flex items-center justify-center h-8 w-8 rounded-xl transition group-hover:scale-110`}
-          style={{
-            background: `color-mix(in srgb, ${toneVar} 14%, transparent)`,
-          }}
-        >
-          {icon}
-        </span>
-      </div>
-      <div className={`text-2xl sm:text-3xl font-semibold tabular-nums ${toneClass} relative`}>
-        {value === 0 ? "—" : `${sign}${formatCurrency(Math.abs(value), currency, fmtLocale)}`}
-      </div>
-    </div>
-  );
-}
