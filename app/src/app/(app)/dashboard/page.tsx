@@ -15,10 +15,7 @@ import {
   DashboardWidgetShell,
   type WidgetMap,
 } from "@/components/dashboard-widget-shell";
-import {
-  DashboardLayoutProvider,
-  LayoutToolbar,
-} from "@/components/dashboard-layout-context";
+import { DashboardLayoutProvider } from "@/components/dashboard-layout-context";
 import { intlLocale } from "@/lib/locale-format";
 import { SUPPORTED_CODES } from "@/lib/currencies";
 
@@ -139,12 +136,9 @@ export default async function DashboardPage({
   return (
     <DashboardLayoutProvider>
       <div className="space-y-6 fade-rise">
-        {/* Top-right layout toolbar — sits above the hero card. Editing
-            state is shared with the widget shell via context so the
-            same Done/Reset buttons control both. */}
-        <div className="flex justify-end -mb-3">
-          <LayoutToolbar />
-        </div>
+        {/* Layout toolbar is hidden for now — re-add `<LayoutToolbar />`
+            here when reorder/hide is ready to ship. Provider stays so
+            the widget shell keeps reading editing=false from context. */}
 
         <DashboardHero
           name={name}

@@ -2,10 +2,6 @@ import { DashboardHero } from "@/components/dashboard-hero";
 import { CategorySummary } from "@/components/category-summary";
 import { RecentTransactionsCompact } from "@/components/recent-transactions-compact";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
-import {
-  DashboardLayoutProvider,
-  LayoutToolbar,
-} from "@/components/dashboard-layout-context";
 import type { MonthSummary, TransactionWithCategory } from "@/lib/types";
 
 /**
@@ -219,22 +215,6 @@ export default function HeroPreviewPage() {
         <h2 className="text-xs uppercase tracking-wide text-(--muted) font-bold">
           Hero card
         </h2>
-        <div className="space-y-3">
-          <div className="text-xs uppercase tracking-wide text-(--muted) font-medium">
-            Layout toolbar (top-right) + hero — order matches /dashboard
-          </div>
-          <DashboardLayoutProvider>
-            <div className="flex justify-end -mb-3">
-              <LayoutToolbar />
-            </div>
-            <DashboardHero
-              {...heroScenarios[0].props}
-              currency="THB"
-              fmtLocale="th-TH"
-              monthLabel={monthLabel}
-            />
-          </DashboardLayoutProvider>
-        </div>
         {heroScenarios.map((s) => (
           <div key={s.title} className="space-y-3">
             <div className="text-xs uppercase tracking-wide text-(--muted) font-medium">
