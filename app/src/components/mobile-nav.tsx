@@ -110,7 +110,16 @@ export function MobileNav({
 
   return (
     <>
-      <nav className="md:hidden border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20">
+      <nav
+        className="md:hidden border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20"
+        style={{
+          // Push the bar's bottom edge above the iPhone home indicator
+          // when running standalone (PWA). `env(safe-area-inset-bottom)`
+          // resolves to ~34px on iPhones with the gesture bar, 0 on
+          // devices without it — so the same markup works both ways.
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
+      >
         <div className="flex items-end justify-around py-2 px-2">
           {leftItems.map(renderTab)}
 

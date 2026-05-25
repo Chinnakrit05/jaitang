@@ -179,7 +179,17 @@ export async function DashboardShell({
       <div className="flex flex-1">
         <DesktopSidebar items={NAV} />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-10 py-6 max-w-6xl w-full mx-auto pb-20 md:pb-6">
+        <main
+          className="flex-1 px-4 sm:px-6 lg:px-10 py-6 max-w-6xl w-full mx-auto pb-20 md:pb-6"
+          style={{
+            // Standalone mode (no Safari URL bar) puts our content
+            // under the Dynamic Island / notch. Push the top edge down
+            // by the safe-area inset so the layout toolbar + hero card
+            // stay below it. Desktop already has the visible header
+            // taking the space, so this is mainly a mobile concern.
+            paddingTop: "max(env(safe-area-inset-top), 1.5rem)",
+          }}
+        >
           {children}
         </main>
       </div>
