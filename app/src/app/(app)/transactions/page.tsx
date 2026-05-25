@@ -1,15 +1,13 @@
 import { requireSession } from "@/lib/session";
-import { JtIcon } from "@/components/icons";
 import { listTransactions } from "@/lib/transactions";
 import { listCategories } from "@/lib/categories";
-import { listTrips } from "@/lib/trips";
 import { TransactionList } from "@/components/transaction-list";
-import { TransactionFilters } from "@/components/transaction-filters";
+import { TransactionsHeader } from "@/components/transactions-header";
+import { TransactionsHero } from "@/components/transactions-hero";
+import { CategoryFilterPills } from "@/components/category-filter-pills";
 import { resolveRange } from "@/lib/date-range";
-import { formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { getLocale, getTranslations } from "next-intl/server";
-import Link from "next/link";
 
 import type { TxKind } from "@/lib/types";
 
@@ -32,14 +30,13 @@ export default async function TransactionsPage({
   const kindParam =
     sp.kind === "income" || sp.kind === "expense" ? (sp.kind as TxKind) : undefined;
 
-  // Trip filter URL: ?trip=<id> | "none" (no trip) | absent (any)
   const tripParam = sp.trip;
   const tripFilter =
     tripParam === "none" ? null : tripParam || undefined;
 
   const searchQ = sp.q?.trim() || undefined;
 
-  const [items, categories, allTrips] = await Promise.all([
+  const [items, categories] = await Promise.all([
     listTransactions({
       ledgerId,
       from: range.from,
@@ -51,87 +48,28 @@ export default async function TransactionsPage({
       limit: 500,
     }),
     listCategories(ledgerId),
-    listTrips(ledgerId, { includeArchived: true }),
   ]);
 
   const totalIncome = items
-    .filter((t) => t.kind === "income")
-    .reduce((s, t) => s + t.amount, 0);
+    .filter((tx) => tx.kind === "income")
+    .reduce((s, tx) => s + tx.amount, 0);
   const totalExpense = items
-    .filter((t) => t.kind === "expense")
-    .reduce((s, t) => s + t.amount, 0);
-
-  const exportParams = new URLSearchParams();
-  if (sp.range) exportParams.set("range", sp.range);
-  if (kindParam) exportParams.set("kind", kindParam);
-  if (sp.category) exportParams.set("category", sp.category);
-  if (tripParam) exportParams.set("trip", tripParam);
-  if (searchQ) exportParams.set("q", searchQ);
-  const exportHref = `/transactions/export${
-    exportParams.toString() ? `?${exportParams.toString()}` : ""
-  }`;
+    .filter((tx) => tx.kind === "expense")
+    .reduce((s, tx) => s + tx.amount, 0);
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{t("transactions.title")}</h1>
-          <p className="text-sm text-(--muted) mt-0.5">
-            {t(`transactions.rangeLabels.${range.key}`)}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <a
-            href={exportHref}
-            className="inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 font-medium text-sm transition"
-          >
-            <JtIcon name="download" size={20} />
-            <span className="hidden sm:inline">{t("transactions.csv")}</span>
-          </a>
-          <Link
-            href="/transactions/new"
-            className="inline-flex items-center gap-2 rounded-full bg-(--accent) text-(--accent-foreground) px-5 py-2.5 font-semibold text-sm cta-primary"
-          >
-            <JtIcon name="plus-fab" size={22} />
-            {t("transactions.addNew")}
-          </Link>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <TransactionsHeader title={t("transactions.title")} />
 
-      <TransactionFilters
-        categories={categories}
-        trips={allTrips.map((tr) => ({
-          id: tr.id,
-          name: tr.name,
-          icon: tr.icon,
-          archived: tr.archived,
-        }))}
+      <TransactionsHero
+        count={items.length}
+        income={totalIncome}
+        expense={totalExpense}
+        currency={currency}
+        fmtLocale={fmtLocale}
       />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-        <Stat
-          label={t("transactions.totalIncome")}
-          value={totalIncome}
-          tone="income"
-          currency={currency}
-          fmtLocale={fmtLocale}
-        />
-        <Stat
-          label={t("transactions.totalExpense")}
-          value={totalExpense}
-          tone="expense"
-          currency={currency}
-          fmtLocale={fmtLocale}
-        />
-        <Stat
-          label={t("transactions.net")}
-          value={totalIncome - totalExpense}
-          tone={totalIncome - totalExpense >= 0 ? "income" : "expense"}
-          showSign
-          currency={currency}
-          fmtLocale={fmtLocale}
-        />
-      </div>
+      <CategoryFilterPills categories={categories} />
 
       <TransactionList
         items={items}
@@ -139,36 +77,6 @@ export default async function TransactionsPage({
         currency={currency}
         highlight={searchQ}
       />
-    </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  tone,
-  showSign,
-  currency,
-  fmtLocale,
-}: {
-  label: string;
-  value: number;
-  tone: "income" | "expense";
-  showSign?: boolean;
-  currency: string;
-  fmtLocale: string;
-}) {
-  const cls = tone === "income" ? "text-(--income)" : "text-(--expense)";
-  const sign = showSign ? (value >= 0 ? "+" : "−") : "";
-  return (
-    <div className="rounded-xl border border-(--border) bg-(--card) px-4 py-3 transition hover:border-(--muted)/40">
-      <div className="text-[11px] uppercase tracking-wide text-(--muted) font-medium mb-1">
-        {label}
-      </div>
-      <div className={`text-base sm:text-lg font-semibold tabular-nums ${cls}`}>
-        {sign}
-        {formatCurrency(Math.abs(value), currency, fmtLocale)}
-      </div>
     </div>
   );
 }

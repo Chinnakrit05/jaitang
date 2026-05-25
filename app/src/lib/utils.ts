@@ -32,6 +32,25 @@ export function formatTHB(value: number) {
   return formatCurrency(value, "THB");
 }
 
+/**
+ * Whole-baht currency formatter. The transactions list and hero card use
+ * this to match the mockup, which drops cents from row amounts and the
+ * monthly summary chips so the figures sit cleanly on a single line.
+ */
+export function formatCurrencyCompact(
+  value: number,
+  currency = "THB",
+  locale?: string
+) {
+  const fmtLocale = locale ?? CURRENCY_LOCALE[currency] ?? "en-US";
+  return new Intl.NumberFormat(fmtLocale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Math.round(value));
+}
+
 export function formatDate(date: Date | string, locale = "th-TH") {
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat(locale, {

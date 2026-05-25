@@ -164,6 +164,8 @@
   "transactions": {
     "title": "全部记录",
     "csv": "CSV",
+    "searchAria": "搜索记录",
+    "heroSummary": "本月共 {count} 笔记录",
     "addNew": "添加记录",
     "newTitle": "新增记录",
     "editTitle": "编辑记录",
@@ -208,6 +210,7 @@
       "all": "全部",
       "allKinds": "收入与支出",
       "allCategories": "全部分类",
+      "allCategoriesShort": "全部",
       "allTrips": "全部旅行",
       "noTrip": "无旅行",
       "searchPlaceholder": "搜索备注…",

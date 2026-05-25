@@ -164,6 +164,8 @@
   "transactions": {
     "title": "All transactions",
     "csv": "CSV",
+    "searchAria": "Search transactions",
+    "heroSummary": "{count} transactions this month",
     "addNew": "Add transaction",
     "newTitle": "New transaction",
     "editTitle": "Edit transaction",
@@ -208,6 +210,7 @@
       "all": "All",
       "allKinds": "Income & Expense",
       "allCategories": "All categories",
+      "allCategoriesShort": "All",
       "allTrips": "All trips",
       "noTrip": "No trip",
       "searchPlaceholder": "Search notes…",

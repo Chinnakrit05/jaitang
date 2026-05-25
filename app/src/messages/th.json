@@ -164,6 +164,8 @@
   "transactions": {
     "title": "รายการทั้งหมด",
     "csv": "CSV",
+    "searchAria": "ค้นหารายการ",
+    "heroSummary": "เดือนนี้คุณมีรายการ {count} รายการ",
     "addNew": "เพิ่มรายการ",
     "newTitle": "เพิ่มรายการ",
     "editTitle": "แก้ไขรายการ",
@@ -208,6 +210,7 @@
       "all": "ทั้งหมด",
       "allKinds": "ทั้งรายรับ-รายจ่าย",
       "allCategories": "ทุกหมวด",
+      "allCategoriesShort": "ทั้งหมด",
       "allTrips": "ทุกทริป",
       "noTrip": "ไม่อยู่ในทริป",
       "searchPlaceholder": "ค้นหา note...",

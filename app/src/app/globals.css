@@ -188,6 +188,16 @@ body {
   background-color: var(--muted);
 }
 
+/* Hide scrollbar entirely (still scrollable via swipe/wheel). Used for
+   the pill filter row where the scrollbar would visually crowd the
+   compact rounded pills. */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Subtle "lift" interaction for clickable cards. Mobile-friendly: the
    transform is small (1px) so it doesn't fight haptics, and the shadow
    is dim enough to read in dark mode without blowing out. Pair with the

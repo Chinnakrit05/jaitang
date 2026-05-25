@@ -7,8 +7,7 @@ import Link from "next/link";
 
 import type { TransactionWithCategory } from "@/lib/types";
 import {
-  formatDate,
-  formatCurrency,
+  formatCurrencyCompact,
   dayKeyInTz,
   highlightSegments,
 } from "@/lib/utils";
@@ -17,6 +16,22 @@ import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import { EmptyIllustration } from "@/components/empty-illustration";
 import { removeTransactionFromTripAction } from "@/app/(app)/trips/actions";
 import { useRouter } from "next/navigation";
+
+function formatTime(iso: string) {
+  try {
+    const d = new Date(iso);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  } catch {
+    return "";
+  }
+}
+
+function formatDayHeader(date: Date, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
 
 export function TransactionList({
   items,
@@ -29,13 +44,8 @@ export function TransactionList({
   items: TransactionWithCategory[];
   showAttribution?: boolean;
   currency?: string;
-  /** Show "🏖️ ทริปทะเล" badge on rows that belong to a trip. Hide it on
-   *  the trip detail page where the badge is redundant context. */
   showTrip?: boolean;
-  /** Show a small "remove from trip" button per row. Trip detail page only. */
   showRemoveFromTrip?: boolean;
-  /** When the parent page is in search mode, pass the query string here so
-   *  the note column can wrap matches in <mark>. */
   highlight?: string;
 }) {
   const t = useTranslations();
@@ -46,7 +56,7 @@ export function TransactionList({
 
   if (!items.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-12 text-center">
+      <div className="rounded-3xl border border-dashed border-(--border) bg-(--card)/40 p-12 text-center">
         <EmptyIllustration kind="transactions" className="mb-4" />
         <p className="font-semibold mb-1.5">{t("transactions.emptyTitle")}</p>
         <p className="text-sm text-(--muted) mb-5 max-w-xs mx-auto">
@@ -62,11 +72,9 @@ export function TransactionList({
     );
   }
 
-  // Group by day in the BROWSER's local timezone. The naive `.slice(0, 10)`
-  // we used to do takes the UTC date out of the ISO string — for a Bangkok
-  // user, a transaction recorded at 03:00 local (= 20:00 UTC the previous
-  // day) would land in the wrong day group, with the section header
-  // claiming May 1 while the row plainly displayed May 2 03:00.
+  // Group by day in the BROWSER's local timezone. Same reasoning as before:
+  // a naive `.slice(0, 10)` on the ISO string would push a 03:00 Bangkok
+  // transaction into the previous calendar day's group.
   const groups = new Map<string, TransactionWithCategory[]>();
   for (const tx of items) {
     const day = dayKeyInTz(tx.occurred_at);
@@ -76,18 +84,16 @@ export function TransactionList({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {Array.from(groups.entries()).map(([day, txs]) => {
         const dayIncome = txs
-          .filter((t) => t.kind === "income")
-          .reduce((s, t) => s + t.amount, 0);
+          .filter((tx) => tx.kind === "income")
+          .reduce((s, tx) => s + tx.amount, 0);
         const dayExpense = txs
-          .filter((t) => t.kind === "expense")
-          .reduce((s, t) => s + t.amount, 0);
+          .filter((tx) => tx.kind === "expense")
+          .reduce((s, tx) => s + tx.amount, 0);
+        const dayNet = dayIncome - dayExpense;
 
-        // Construct from parts so the header date is the LOCAL midnight of
-        // the day key — not `new Date("YYYY-MM-DD")` which would be parsed
-        // as UTC midnight and could shift a date for users far from UTC.
         const [yStr, mStr, dStr] = day.split("-");
         const headerDate = new Date(
           Number(yStr),
@@ -96,195 +102,210 @@ export function TransactionList({
         );
 
         return (
-          <section key={day}>
-            <header className="flex items-center justify-between mb-2 px-1">
-              <h3 className="text-sm font-semibold text-(--muted)">
-                {new Intl.DateTimeFormat(fmtLocale, {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                  weekday: "short",
-                }).format(headerDate)}
+          <section
+            key={day}
+            className="rounded-3xl bg-(--card) border border-(--border) overflow-hidden"
+          >
+            <header className="flex items-center justify-between px-5 pt-4 pb-2">
+              <h3 className="text-base font-bold tabular-nums">
+                {formatDayHeader(headerDate, fmtLocale)}
               </h3>
-              <span className="text-xs tabular-nums text-(--muted)">
-                {dayIncome > 0 && (
-                  <span className="text-(--income) mr-2">
-                    +{formatCurrency(dayIncome, currency, fmtLocale)}
-                  </span>
-                )}
-                {dayExpense > 0 && (
-                  <span className="text-(--expense)">
-                    −{formatCurrency(dayExpense, currency, fmtLocale)}
-                  </span>
-                )}
+              <span
+                className={`text-base font-bold tabular-nums ${
+                  dayNet > 0
+                    ? "text-(--income)"
+                    : "text-(--foreground)"
+                }`}
+              >
+                {formatCurrencyCompact(Math.abs(dayNet), currency, fmtLocale)}
               </span>
             </header>
-            <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
-              {txs.map((tx) => (
-                <li
-                  key={tx.id}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition group tone-strip"
-                  style={{
-                    ["--tone" as string]:
-                      tx.kind === "income"
-                        ? "var(--income)"
-                        : "var(--expense)",
-                  }}
-                >
-                  <span className="pl-1"><EmojiOrIcon value={tx.category?.icon} fallback="sparkle" size={28} /></span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">
-                      {tx.category?.name ?? t("common.uncategorizedFull")}
-                    </div>
-                    {tx.note && (
-                      <div className="text-sm text-(--muted) truncate">
-                        {highlight
-                          ? highlightSegments(tx.note, highlight).map(
-                              (seg, i) =>
-                                seg.match ? (
-                                  <mark
-                                    key={i}
-                                    className="bg-(--accent)/20 text-(--foreground) rounded px-0.5"
-                                  >
-                                    {seg.text}
-                                  </mark>
-                                ) : (
-                                  <span key={i}>{seg.text}</span>
+            <ul>
+              {txs.map((tx) => {
+                const time = formatTime(tx.occurred_at);
+                const catName =
+                  tx.category?.name ?? t("common.uncategorizedFull");
+                // Primary line: user note when present, falling back to the
+                // category. Matches the recent-transactions-compact layout
+                // so the two surfaces feel cohesive.
+                const primary = tx.note ?? catName;
+                const showCategoryOnSub = !!tx.note;
+                return (
+                  <li key={tx.id} className="relative group">
+                    <Link
+                      href={`/transactions/${tx.id}/edit`}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-(--background)/60 transition"
+                    >
+                      <span
+                        className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
+                        style={{
+                          background:
+                            "color-mix(in srgb, #F9D5B4 35%, var(--card))",
+                        }}
+                        aria-hidden
+                      >
+                        <EmojiOrIcon
+                          value={tx.category?.icon}
+                          fallback="sparkle"
+                          size={22}
+                        />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-semibold text-[15px] truncate">
+                            {highlight
+                              ? highlightSegments(primary, highlight).map(
+                                  (seg, i) =>
+                                    seg.match ? (
+                                      <mark
+                                        key={i}
+                                        className="bg-(--accent)/20 text-(--foreground) rounded px-0.5"
+                                      >
+                                        {seg.text}
+                                      </mark>
+                                    ) : (
+                                      <span key={i}>{seg.text}</span>
+                                    )
                                 )
-                            )
-                          : tx.note}
-                      </div>
-                    )}
-                    <div className="text-xs text-(--muted) flex items-center gap-1.5 flex-wrap">
-                      <span>{formatDate(tx.occurred_at, fmtLocale)}</span>
-                      {tx.payment_method && (
-                        <>
-                          <span>•</span>
-                          <span className="inline-flex items-center gap-1">
-                            {tx.payment_method === "cash" ? (
-                              <JtIcon name="banknote" size={16} />
-                            ) : (
-                              <JtIcon name="landmark" size={16} />
-                            )}
-                            <span>
-                              {tx.payment_method === "cash"
-                                ? t("transactions.paymentCash")
-                                : t("transactions.paymentTransfer")}
-                            </span>
+                              : primary}
                           </span>
-                        </>
-                      )}
-                      {tx.fx_currency && tx.fx_amount !== null && (
-                        <>
-                          <span>•</span>
-                          <span
-                            className="tabular-nums"
-                            title={
-                              tx.fx_rate
-                                ? `1 ${tx.fx_currency} ≈ ${tx.fx_rate.toFixed(4)} ${currency}`
-                                : undefined
-                            }
-                          >
-                            {formatCurrency(
-                              tx.fx_amount,
-                              tx.fx_currency,
-                              fmtLocale
-                            )}
-                          </span>
-                        </>
-                      )}
-                      {showAttribution && tx.user && (
-                        <>
-                          <span>•</span>
-                          <span className="inline-flex items-center gap-1">
-                            {tx.user.image ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={tx.user.image}
-                                alt={tx.user.name ?? tx.user.email}
-                                className="h-3.5 w-3.5 rounded-full"
+                          {showTrip && tx.trip && (
+                            <span
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold shrink-0"
+                              style={{
+                                background: `${tx.trip.color ?? "var(--accent)"}22`,
+                                color: tx.trip.color ?? "var(--accent)",
+                              }}
+                            >
+                              <EmojiOrIcon
+                                value={tx.trip.icon}
+                                fallback="airplane"
+                                size={14}
                               />
-                            ) : null}
-                            <span>{tx.user.name?.split(" ")[0] ?? "?"}</span>
-                          </span>
-                        </>
+                              <span className="truncate max-w-[80px]">
+                                {tx.trip.name}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-(--muted) flex items-center gap-1.5 flex-wrap min-w-0">
+                          {showCategoryOnSub && (
+                            <>
+                              <span className="truncate">{catName}</span>
+                              <span>·</span>
+                            </>
+                          )}
+                          {tx.payment_method && (
+                            <>
+                              <span className="inline-flex items-center gap-1">
+                                {tx.payment_method === "cash" ? (
+                                  <JtIcon name="banknote" size={14} />
+                                ) : (
+                                  <JtIcon name="landmark" size={14} />
+                                )}
+                                <span>
+                                  {tx.payment_method === "cash"
+                                    ? t("transactions.paymentCash")
+                                    : t("transactions.paymentTransfer")}
+                                </span>
+                              </span>
+                              <span>·</span>
+                            </>
+                          )}
+                          {tx.fx_currency && tx.fx_amount !== null && (
+                            <>
+                              <span
+                                className="tabular-nums"
+                                title={
+                                  tx.fx_rate
+                                    ? `1 ${tx.fx_currency} ≈ ${tx.fx_rate.toFixed(4)} ${currency}`
+                                    : undefined
+                                }
+                              >
+                                {formatCurrencyCompact(
+                                  tx.fx_amount,
+                                  tx.fx_currency,
+                                  fmtLocale
+                                )}
+                              </span>
+                              <span>·</span>
+                            </>
+                          )}
+                          {showAttribution && tx.user && (
+                            <>
+                              <span className="inline-flex items-center gap-1">
+                                {tx.user.image ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={tx.user.image}
+                                    alt={tx.user.name ?? tx.user.email}
+                                    className="h-3.5 w-3.5 rounded-full"
+                                  />
+                                ) : null}
+                                <span>
+                                  {tx.user.name?.split(" ")[0] ?? "?"}
+                                </span>
+                              </span>
+                              <span>·</span>
+                            </>
+                          )}
+                          <span className="tabular-nums">{time}</span>
+                        </div>
+                      </div>
+                      <div
+                        className={`tabular-nums font-bold text-[15px] shrink-0 ${
+                          tx.kind === "income"
+                            ? "text-(--income)"
+                            : "text-(--foreground)"
+                        }`}
+                      >
+                        {tx.kind === "income" ? "+" : "−"}
+                        {formatCurrencyCompact(tx.amount, currency, fmtLocale)}
+                      </div>
+                    </Link>
+                    {/* Row actions: hover-revealed on desktop. Absolute-
+                        positioned over the right edge so the row stays a
+                        single Link target on mobile (tap → edit page),
+                        matching the mockup which doesn't expose inline
+                        actions on touch. */}
+                    <div className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 items-center gap-1 opacity-0 group-hover:opacity-100 transition bg-(--card) rounded-lg px-1 shadow-sm">
+                      {showRemoveFromTrip && tx.trip && (
+                        <button
+                          type="button"
+                          disabled={pending}
+                          onClick={() => {
+                            if (!confirm(t("trips.removeFromTripConfirm"))) return;
+                            startTransition(async () => {
+                              await removeTransactionFromTripAction(tx.id);
+                              router.refresh();
+                            });
+                          }}
+                          className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background) hover:text-(--foreground)"
+                          aria-label={t("trips.removeFromTrip")}
+                          title={t("trips.removeFromTrip")}
+                        >
+                          <JtIcon name="x" size={18} />
+                        </button>
                       )}
-                      {showTrip && tx.trip && (
-                        <>
-                          <span>•</span>
-                          <Link
-                            href={`/trips/${tx.trip.id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-(--border) bg-(--background) hover:bg-(--card) transition"
-                            style={
-                              tx.trip.color
-                                ? { borderColor: `${tx.trip.color}40` }
-                                : undefined
-                            }
-                          >
-                            <EmojiOrIcon value={tx.trip.icon} fallback="airplane" size={16} />
-                            <span>{tx.trip.name}</span>
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div
-                    className={`tabular-nums font-semibold ${
-                      tx.kind === "income" ? "text-(--income)" : "text-(--expense)"
-                    }`}
-                  >
-                    {tx.kind === "income" ? "+" : "−"}
-                    {formatCurrency(tx.amount, currency, fmtLocale)}
-                  </div>
-                  {/* On mobile we always show the row actions — there's no
-                      hover on touch devices, so the desktop hover-reveal
-                      pattern hides the buttons forever. From sm: up we keep
-                      the clean hover-only behaviour. */}
-                  <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
-                    {showRemoveFromTrip && tx.trip && (
                       <button
                         type="button"
                         disabled={pending}
                         onClick={() => {
-                          if (!confirm(t("trips.removeFromTripConfirm"))) return;
+                          if (!confirm(t("transactions.deleteConfirm"))) return;
                           startTransition(async () => {
-                            await removeTransactionFromTripAction(tx.id);
+                            await deleteTransactionAction(tx.id);
                             router.refresh();
                           });
                         }}
-                        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
-                        aria-label={t("trips.removeFromTrip")}
-                        title={t("trips.removeFromTrip")}
+                        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
+                        aria-label={t("common.delete")}
                       >
-                        <JtIcon name="x" size={20} />
+                        <JtIcon name="trash2" size={18} />
                       </button>
-                    )}
-                    <Link
-                      href={`/transactions/${tx.id}/edit`}
-                      className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
-                      aria-label={t("common.edit")}
-                    >
-                      <JtIcon name="pencil" size={20} />
-                    </Link>
-                    <button
-                      type="button"
-                      disabled={pending}
-                      onClick={() => {
-                        if (!confirm(t("transactions.deleteConfirm"))) return;
-                        startTransition(async () => {
-                          await deleteTransactionAction(tx.id);
-                          router.refresh();
-                        });
-                      }}
-                      className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
-                      aria-label={t("common.delete")}
-                    >
-                      <JtIcon name="trash2" size={20} />
-                    </button>
-                  </div>
-                </li>
-              ))}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         );
