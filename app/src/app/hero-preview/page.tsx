@@ -2,6 +2,10 @@ import { DashboardHero } from "@/components/dashboard-hero";
 import { CategorySummary } from "@/components/category-summary";
 import { RecentTransactionsCompact } from "@/components/recent-transactions-compact";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
+import {
+  DashboardLayoutProvider,
+  LayoutToolbar,
+} from "@/components/dashboard-layout-context";
 import type { MonthSummary, TransactionWithCategory } from "@/lib/types";
 
 /**
@@ -26,7 +30,6 @@ export default function HeroPreviewPage() {
         expense: 128_568,
         balance: -128_568,
         budgetCap: 90_000,
-        streakDays: 12,
       },
     },
     {
@@ -37,7 +40,6 @@ export default function HeroPreviewPage() {
         expense: 38_500,
         balance: 6_500,
         budgetCap: 50_000,
-        streakDays: 5,
       },
     },
     {
@@ -48,7 +50,6 @@ export default function HeroPreviewPage() {
         expense: 18_200,
         balance: 41_800,
         budgetCap: 50_000,
-        streakDays: 28,
       },
     },
     {
@@ -59,7 +60,6 @@ export default function HeroPreviewPage() {
         expense: 9_300,
         balance: 2_700,
         budgetCap: 0,
-        streakDays: undefined,
       },
     },
     {
@@ -70,7 +70,6 @@ export default function HeroPreviewPage() {
         expense: 0,
         balance: 0,
         budgetCap: 0,
-        streakDays: undefined,
       },
     },
   ];
@@ -220,6 +219,22 @@ export default function HeroPreviewPage() {
         <h2 className="text-xs uppercase tracking-wide text-(--muted) font-bold">
           Hero card
         </h2>
+        <div className="space-y-3">
+          <div className="text-xs uppercase tracking-wide text-(--muted) font-medium">
+            Layout toolbar (top-right) + hero — order matches /dashboard
+          </div>
+          <DashboardLayoutProvider>
+            <div className="flex justify-end -mb-3">
+              <LayoutToolbar />
+            </div>
+            <DashboardHero
+              {...heroScenarios[0].props}
+              currency="THB"
+              fmtLocale="th-TH"
+              monthLabel={monthLabel}
+            />
+          </DashboardLayoutProvider>
+        </div>
         {heroScenarios.map((s) => (
           <div key={s.title} className="space-y-3">
             <div className="text-xs uppercase tracking-wide text-(--muted) font-medium">

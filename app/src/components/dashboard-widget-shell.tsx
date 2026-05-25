@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { JtIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
 import { GripVertical } from "lucide-react";
@@ -24,19 +24,17 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import {
-  DEFAULT_LAYOUT,
-  loadLayout,
-  saveLayout,
   setVisible,
   type Layout,
   type WidgetId,
 } from "@/lib/dashboard-layout";
+import { useDashboardLayout } from "@/components/dashboard-layout-context";
 
 export type WidgetMap = Partial<Record<WidgetId, ReactNode>>;
 
 /**
  * Customizable dashboard. Server renders all widgets; this client shell:
- *   1. Loads layout from localStorage (defaults to canonical order).
+ *   1. Reads layout + editing state from `DashboardLayoutProvider`.
  *   2. Renders visible widgets in a `@dnd-kit` SortableContext so the
  *      user can drag them to reorder.
  *   3. In edit mode: each widget shows a drag handle and a hide button.
@@ -45,20 +43,14 @@ export type WidgetMap = Partial<Record<WidgetId, ReactNode>>;
  *
  * Mobile: PointerSensor handles mouse + stylus, TouchSensor uses a
  * 180ms long-press so taps and scrolls don't accidentally start drags.
+ *
+ * The edit/done/reset buttons live in `<LayoutToolbar>` (top-right of
+ * the dashboard page), not inside this shell — they share state via
+ * the layout context.
  */
 export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
   const t = useTranslations();
-  const [layout, setLayout] = useState<Layout>(DEFAULT_LAYOUT);
-  const [editing, setEditing] = useState(false);
-
-  useEffect(() => {
-    setLayout(loadLayout());
-  }, []);
-
-  function commit(next: Layout) {
-    setLayout(next);
-    saveLayout(next);
-  }
+  const { editing, layout, setLayout } = useDashboardLayout();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -80,15 +72,11 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
     const from = ids.indexOf(active.id as WidgetId);
     const to = ids.indexOf(over.id as WidgetId);
     if (from === -1 || to === -1) return;
-    commit(arrayMove(layout, from, to));
+    setLayout(arrayMove(layout, from, to) as Layout);
   }
 
   function toggle(id: WidgetId, visible: boolean) {
-    commit(setVisible(layout, id, visible));
-  }
-
-  function reset() {
-    commit(DEFAULT_LAYOUT);
+    setLayout(setVisible(layout, id, visible));
   }
 
   const widgetLabel: Record<WidgetId, string> = {
@@ -105,36 +93,6 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-2 -mt-2">
-        <button
-          type="button"
-          onClick={() => setEditing((v) => !v)}
-          className="inline-flex items-center gap-1.5 text-xs text-(--muted) hover:text-(--foreground) transition px-2 py-1 rounded-md hover:bg-(--card)"
-        >
-          {editing ? (
-            <>
-              <JtIcon name="x" size={18} />
-              {t("dashboard.layoutDone")}
-            </>
-          ) : (
-            <>
-              <JtIcon name="pencil" size={18} />
-              {t("dashboard.layoutEdit")}
-            </>
-          )}
-        </button>
-        {editing && layout.some((it, i) => it.id !== DEFAULT_LAYOUT[i]?.id || !it.visible) && (
-          <button
-            type="button"
-            onClick={reset}
-            className="inline-flex items-center gap-1 text-xs text-(--muted) hover:text-(--foreground) px-2 py-1 rounded-md hover:bg-(--card)"
-          >
-            <JtIcon name="rotate-ccw" size={16} />
-            {t("dashboard.layoutReset")}
-          </button>
-        )}
-      </div>
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

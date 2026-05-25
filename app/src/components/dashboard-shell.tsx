@@ -97,7 +97,10 @@ export async function DashboardShell({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-(--border) header-accent-edge sticky top-0 z-20 bg-(--background)/80 backdrop-blur">
+      {/* Top bar — desktop only. On mobile the chrome lives in the
+          hero card greeting row + the bottom nav FAB/more drawer, so
+          the header is just visual noise and we hide it entirely. */}
+      <header className="hidden md:flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-(--border) header-accent-edge sticky top-0 z-20 bg-(--background)/80 backdrop-blur">
         <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
           <span className="text-xl">📒</span>
           <span className="font-semibold hidden sm:inline">{t("appName")}</span>

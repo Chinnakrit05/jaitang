@@ -28,7 +28,6 @@ export async function DashboardHero({
   currency,
   fmtLocale,
   monthLabel,
-  streakDays,
 }: {
   name: string;
   avatarUrl?: string | null;
@@ -39,8 +38,6 @@ export async function DashboardHero({
   currency: string;
   fmtLocale: string;
   monthLabel: string;
-  /** Per-user daily-streak counter. Optional — hides the chip when absent. */
-  streakDays?: number;
 }) {
   const t = await getTranslations();
 
@@ -84,37 +81,23 @@ export async function DashboardHero({
   return (
     <section className="space-y-4 fade-rise">
       {/* Greeting row */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={avatarUrl}
-              alt={name}
-              className="h-11 w-11 rounded-full border border-(--border)"
-            />
-          ) : (
-            <div className="h-11 w-11 rounded-full bg-(--card) border border-(--border) flex items-center justify-center text-xl">
-              🦊
-            </div>
-          )}
-          <div className="min-w-0">
-            <div className="text-xs text-(--muted)">{t("dashboard.helloShort")}</div>
-            <div className="text-base font-semibold truncate">{name}</div>
-          </div>
-        </div>
-        {typeof streakDays === "number" && streakDays > 0 && (
-          <div
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
-            style={{
-              background: "color-mix(in srgb, var(--expense) 14%, transparent)",
-              color: "var(--expense)",
-            }}
-          >
-            <span aria-hidden>🔥</span>
-            <span>{t("dashboard.streakDays", { count: String(streakDays) })}</span>
+      <div className="flex items-center gap-3 min-w-0">
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={avatarUrl}
+            alt={name}
+            className="h-11 w-11 rounded-full border border-(--border)"
+          />
+        ) : (
+          <div className="h-11 w-11 rounded-full bg-(--card) border border-(--border) flex items-center justify-center text-xl">
+            🦊
           </div>
         )}
+        <div className="min-w-0">
+          <div className="text-xs text-(--muted)">{t("dashboard.helloShort")}</div>
+          <div className="text-base font-semibold truncate">{name}</div>
+        </div>
       </div>
 
       {/* Hero card — peach gradient, mascot floats in the top-right
