@@ -371,6 +371,14 @@ do $$ begin
 exception when others then null;
 end $$;
 
+-- v4: remember the most recent fill amount for variable-cost rules so
+-- the UI can render the value the user just typed when they return to
+-- the page. The rule's own `amount` stays null on purpose — variable
+-- bills are meant to prompt every cycle — but we don't want the
+-- display to look empty between fill and next cycle.
+alter table public.recurring_transactions
+  add column if not exists last_fill_amount numeric;
+
 -- ============================================================
 -- Transaction splits (หารบิล — ใครติดเงินคนจ่ายเท่าไหร่)
 --

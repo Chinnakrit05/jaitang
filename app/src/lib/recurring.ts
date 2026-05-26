@@ -27,6 +27,12 @@ export type RecurringRule = {
   day_of_week: number | null;
   next_run_at: string;
   last_run_at: string | null;
+  /** Most recent amount the user typed in for a variable-cost (null
+   *  `amount`) rule. Cached on fill so the row can display the value
+   *  even after a refresh, until the next period rolls around. Always
+   *  null for fixed-amount rules — those already keep the value on
+   *  `amount`. */
+  last_fill_amount: number | null;
   active: boolean;
   created_at: string;
   category?: { id: string; name: string; icon: string | null; color: string | null } | null;
@@ -80,7 +86,7 @@ export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> 
   const { data, error } = await sb
     .from("recurring_transactions")
     .select(
-      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)"
+      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)"
     )
     .eq("ledger_id", ledgerId)
     .order("next_run_at", { ascending: true });
@@ -88,6 +94,10 @@ export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> 
   return (data ?? []).map((r) => ({
     ...r,
     amount: r.amount === null ? null : Number(r.amount),
+    last_fill_amount:
+      r.last_fill_amount === null || r.last_fill_amount === undefined
+        ? null
+        : Number(r.last_fill_amount),
     account_id: r.account_id ?? null,
     trip_id: r.trip_id ?? null,
     fx_currency: r.fx_currency ?? null,
@@ -309,7 +319,7 @@ export async function listPendingRecurring(
   const { data, error } = await sb
     .from("recurring_transactions")
     .select(
-      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)",
+      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)",
     )
     .eq("ledger_id", ledgerId)
     .eq("active", true)
@@ -320,6 +330,10 @@ export async function listPendingRecurring(
   return (data ?? []).map((r) => ({
     ...r,
     amount: null,
+    last_fill_amount:
+      r.last_fill_amount === null || r.last_fill_amount === undefined
+        ? null
+        : Number(r.last_fill_amount),
     account_id: r.account_id ?? null,
     trip_id: r.trip_id ?? null,
     fx_currency: r.fx_currency ?? null,
@@ -406,6 +420,11 @@ export async function fillPendingRecurring(input: {
     .update({
       last_run_at: new Date().toISOString(),
       next_run_at: nextRun.toISOString(),
+      // Cache the value the user just typed (in the rule's native
+      // currency) so the UI can keep showing it after refresh. The
+      // rule's `amount` stays null — variable bills are meant to
+      // prompt for input every cycle.
+      last_fill_amount: input.amount,
     })
     .eq("id", input.ruleId);
   if (upErr) throw upErr;

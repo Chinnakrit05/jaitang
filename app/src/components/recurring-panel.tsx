@@ -531,10 +531,14 @@ function RuleRow({
           )}
         </p>
       </button>
-      {/* Amount — inline input when the rule is variable-cost. Saving
-          materialises the rule for this period (creates the tx and
-          bumps last_run_at / next_run_at). */}
-      {isVariable ? (
+      {/* Amount — inline input when the rule is variable-cost AND
+          we don't already have a recorded fill amount for the current
+          period. Saving materialises the rule for this period (creates
+          the tx and bumps last_run_at / next_run_at). When the rule
+          has a `last_fill_amount` and we're inside the applied window,
+          fall through to the static display so the user sees what
+          they typed last time. */}
+      {isVariable && !(appliedThisPeriod && rule.last_fill_amount !== null) ? (
         <InlineAmount
           initial={null}
           currency={ruleCurrency}
@@ -550,7 +554,11 @@ function RuleRow({
           )}
         >
           {rule.kind === "income" ? "+" : "−"}
-          {formatCurrency(rule.amount!, ruleCurrency, fmtLocale)}
+          {formatCurrency(
+            isVariable ? rule.last_fill_amount! : rule.amount!,
+            ruleCurrency,
+            fmtLocale
+          )}
         </div>
       )}
     </li>
