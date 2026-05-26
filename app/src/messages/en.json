@@ -297,7 +297,10 @@
     "dueOn": "Due {when}",
     "untitled": "Untitled",
     "fillAndAdd": "File",
-    "editTitle": "Edit recurring rule"
+    "editTitle": "Edit recurring rule",
+    "appliedThisPeriod": "✓ Logged this period",
+    "variableBillBadge": "📝 Awaiting amount",
+    "listHelper": "💡 Tap a row to edit · long-press to delete"
   },
   "balances": {
     "title": "Balances",

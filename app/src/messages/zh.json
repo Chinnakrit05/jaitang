@@ -297,7 +297,10 @@
     "dueOn": "到期 {when}",
     "untitled": "未命名",
     "fillAndAdd": "记账",
-    "editTitle": "编辑定期规则"
+    "editTitle": "编辑定期规则",
+    "appliedThisPeriod": "✓ 本期已记录",
+    "variableBillBadge": "📝 金额待填",
+    "listHelper": "💡 点击编辑 · 长按删除"
   },
   "balances": {
     "title": "结算",

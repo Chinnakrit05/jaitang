@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { JtIcon, iconNameToEmoji } from "@/components/icons";
+import Link from "next/link";
+import { JtIcon, EmojiOrIcon, iconNameToEmoji } from "@/components/icons";
 import { sortByHierarchy } from "@/lib/categories";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -67,28 +68,31 @@ export function RecurringPanel({
   const editingRule = rules.find((r) => r.id === editingId) ?? null;
 
   return (
-    <div className="space-y-4">
-      <SubscriptionStats rules={rules} homeCurrency={homeCurrency} />
-
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-4 max-w-md mx-auto pb-28">
+      {/* Mobile header — back / title / + add */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/more"
+          aria-label={t("common.back")}
+          className="h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm hover:bg-(--background) transition"
+        >
+          <JtIcon name="chevron-left" size={18} />
+        </Link>
+        <h1 className="text-base font-semibold">{t("recurring.title")}</h1>
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition"
+          aria-label={t("recurring.addButton")}
+          className="h-10 w-10 rounded-full flex items-center justify-center text-white shadow-sm transition active:scale-95"
+          style={{
+            background: "linear-gradient(135deg, #E89A6A 0%, #D87A45 100%)",
+          }}
         >
           <JtIcon name="plus-fab" size={20} />
-          {t("recurring.addButton")}
-        </button>
-        <button
-          type="button"
-          onClick={applyDue}
-          disabled={pending}
-          className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition disabled:opacity-50"
-        >
-          <JtIcon name="refresh" size={20} className={pending ? "animate-spin" : ""} />
-          {t("recurring.runDue")}
         </button>
       </div>
+
+      <SubscriptionStats rules={rules} homeCurrency={homeCurrency} />
 
       {showForm && (
         <CreateRecurringForm
@@ -103,18 +107,37 @@ export function RecurringPanel({
       {rules.length === 0 ? (
         <p className="text-sm text-(--muted) px-1">{t("recurring.empty")}</p>
       ) : (
-        <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
-          {rules.map((r) => (
-            <RuleRow
-              key={r.id}
-              rule={r}
-              homeCurrency={homeCurrency}
-              pending={pending}
-              onEdit={() => setEditingId(r.id)}
-            />
-          ))}
-        </ul>
+        <>
+          <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border)/60 overflow-hidden">
+            {rules.map((r) => (
+              <RuleRow
+                key={r.id}
+                rule={r}
+                homeCurrency={homeCurrency}
+                pending={pending}
+                onEdit={() => setEditingId(r.id)}
+              />
+            ))}
+          </ul>
+          <p className="text-center text-xs text-(--muted)">
+            {t("recurring.listHelper")}
+          </p>
+        </>
       )}
+
+      {/* Manual "run due" — kept as a quiet text link so power users
+          can still kick the cron-like job from the UI. */}
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={applyDue}
+          disabled={pending}
+          className="inline-flex items-center gap-1.5 text-xs text-(--muted) hover:text-(--foreground) disabled:opacity-50"
+        >
+          <JtIcon name="refresh" size={14} className={pending ? "animate-spin" : ""} />
+          {t("recurring.runDue")}
+        </button>
+      </div>
 
       {editingRule && (
         <EditRecurringModal
@@ -398,104 +421,165 @@ function RuleRow({
   };
   const ruleCurrency = rule.fx_currency ?? homeCurrency;
 
+  // "Applied this period" check — true when last_run_at is inside the
+  // current calendar bucket for the rule's period. Drives the green
+  // checkmark vs. "next run on X" status line.
+  const appliedThisPeriod = isAppliedThisPeriod(rule.last_run_at, rule.period);
+  const isVariable = rule.amount === null;
+
+  function commitDelete() {
+    if (!confirm(t("recurring.deleteConfirm"))) return;
+    startTransition(async () => {
+      await deleteRecurringAction(rule.id);
+      router.refresh();
+    });
+  }
+
+  // Long-press → delete. We arm a 600ms timer on pointer-down, cancel
+  // on pointer-up / leave. If the timer fires, we mark the gesture so
+  // the click handler can skip the edit branch.
+  const longPressed = useRef(false);
+  const longPressTimer = useRef<number | null>(null);
+  function startLongPress() {
+    longPressed.current = false;
+    if (longPressTimer.current) window.clearTimeout(longPressTimer.current);
+    longPressTimer.current = window.setTimeout(() => {
+      longPressed.current = true;
+      commitDelete();
+    }, 600);
+  }
+  function cancelLongPress() {
+    if (longPressTimer.current) window.clearTimeout(longPressTimer.current);
+    longPressTimer.current = null;
+  }
+
   return (
-    <li
-      className={cn(
-        "flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition",
-        !rule.active && "opacity-60"
-      )}
-    >
-      <span className="text-2xl shrink-0">{rule.category?.icon ?? "✨"}</span>
-      <div className="flex-1 min-w-0">
-        <div className="font-medium truncate flex items-center gap-1.5 flex-wrap">
-          <span>{rule.category?.name ?? t("common.uncategorizedFull")}</span>
-          {rule.account && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-1.5 py-0.5">
-              <JtIcon name="accounts" size={14} />
-              {rule.account.name}
-            </span>
-          )}
-          {rule.trip && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-1.5 py-0.5">
-              {iconNameToEmoji(rule.trip.icon) || "✈️"}
-              {rule.trip.name}
-            </span>
-          )}
-          {ruleCurrency !== homeCurrency && (
-            <span className="inline-flex items-center text-[10px] font-medium text-(--muted) bg-(--background) border border-(--border) rounded-full px-1.5 py-0.5 tabular-nums">
-              {ruleCurrency}
-            </span>
-          )}
+    <li>
+      <button
+        type="button"
+        onClick={() => {
+          if (longPressed.current) return;
+          onEdit();
+        }}
+        onPointerDown={startLongPress}
+        onPointerUp={cancelLongPress}
+        onPointerLeave={cancelLongPress}
+        onContextMenu={(e) => {
+          // Long-press on some touch browsers fires `contextmenu` rather than
+          // our pointer-based timer — wire that path to delete too.
+          e.preventDefault();
+          commitDelete();
+        }}
+        disabled={pending || busy}
+        className={cn(
+          "w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-(--background) transition disabled:opacity-60",
+          !rule.active && "opacity-60"
+        )}
+      >
+        <span
+          className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
+          style={{
+            background: "color-mix(in srgb, #F9D5B4 40%, var(--card))",
+          }}
+          aria-hidden
+        >
+          <EmojiOrIcon value={rule.category?.icon} fallback="recurring" size={20} />
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-[14px] leading-tight truncate">
+            {rule.note?.trim() || rule.category?.name || t("common.uncategorizedFull")}
+          </p>
+          <p className="text-[11px] text-(--muted) leading-tight mt-0.5 flex items-center gap-1 flex-wrap">
+            <span>{PERIOD_LABEL[rule.period]}</span>
+            <span>·</span>
+            {isVariable && (
+              <>
+                <span>{t("recurring.variableBillBadge")}</span>
+                <span>·</span>
+              </>
+            )}
+            {appliedThisPeriod ? (
+              <span className="text-(--income)">
+                {t("recurring.appliedThisPeriod")}
+              </span>
+            ) : (
+              <span>
+                {t("recurring.nextRun", {
+                  when: formatDate(rule.next_run_at, fmtLocale),
+                })}
+              </span>
+            )}
+            {ruleCurrency !== homeCurrency && (
+              <>
+                <span>·</span>
+                <span className="tabular-nums">{ruleCurrency}</span>
+              </>
+            )}
+          </p>
         </div>
-        <div className="text-xs text-(--muted) flex items-center gap-2 flex-wrap">
-          <span>{PERIOD_LABEL[rule.period]}</span>
-          <span>•</span>
-          <span>
-            {t("recurring.nextRun", { when: formatDate(rule.next_run_at, fmtLocale) })}
-          </span>
-          {rule.note && (
+        <div
+          className={cn(
+            "tabular-nums font-semibold shrink-0 text-[14px]",
+            isVariable
+              ? "text-(--muted)"
+              : rule.kind === "income"
+              ? "text-(--income)"
+              : "text-(--expense)"
+          )}
+        >
+          {isVariable ? (
             <>
-              <span>•</span>
-              <span className="truncate">{rule.note}</span>
+              {ruleCurrency === "THB" ? "฿" : ruleCurrency}—
+            </>
+          ) : (
+            <>
+              {rule.kind === "income" ? "+" : "−"}
+              {formatCurrency(rule.amount!, ruleCurrency, fmtLocale)}
             </>
           )}
         </div>
-      </div>
-      <div
-        className={`tabular-nums font-semibold shrink-0 ${
-          rule.kind === "income" ? "text-(--income)" : "text-(--expense)"
-        }`}
-      >
-        {rule.amount === null ? (
-          <span className="text-(--muted)">—</span>
-        ) : (
-          <>
-            {rule.kind === "income" ? "+" : "−"}
-            {formatCurrency(rule.amount, ruleCurrency, fmtLocale)}
-          </>
-        )}
-      </div>
-      <button
-        type="button"
-        onClick={onEdit}
-        disabled={pending || busy}
-        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground) shrink-0"
-        aria-label={t("common.edit")}
-        title={t("common.edit")}
-      >
-        <JtIcon name="pencil" size={20} />
-      </button>
-      <button
-        type="button"
-        disabled={pending || busy}
-        onClick={() =>
-          startTransition(async () => {
-            await toggleRecurringAction(rule.id, !rule.active);
-            router.refresh();
-          })
-        }
-        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground) shrink-0"
-        aria-label={rule.active ? t("common.cancel") : t("common.confirm")}
-      >
-        {rule.active ? <JtIcon name="pause" size={20} /> : <JtIcon name="play" size={20} />}
-      </button>
-      <button
-        type="button"
-        disabled={pending || busy}
-        onClick={() => {
-          if (!confirm(t("recurring.deleteConfirm"))) return;
-          startTransition(async () => {
-            await deleteRecurringAction(rule.id);
-            router.refresh();
-          });
-        }}
-        className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense) shrink-0"
-        aria-label={t("common.delete")}
-      >
-        <JtIcon name="trash2" size={20} />
       </button>
     </li>
   );
+}
+
+/** True when `last_run_at` falls in the current period bucket. */
+function isAppliedThisPeriod(
+  lastRunAt: string | null,
+  period: RecurPeriod
+): boolean {
+  if (!lastRunAt) return false;
+  const last = new Date(lastRunAt);
+  const now = new Date();
+  if (Number.isNaN(last.getTime())) return false;
+  switch (period) {
+    case "daily":
+      return (
+        last.getFullYear() === now.getFullYear() &&
+        last.getMonth() === now.getMonth() &&
+        last.getDate() === now.getDate()
+      );
+    case "weekly": {
+      // ISO week comparison via Monday-anchored start date
+      const startOfWeek = (d: Date) => {
+        const x = new Date(d);
+        const day = (x.getDay() + 6) % 7; // 0 = Monday
+        x.setHours(0, 0, 0, 0);
+        x.setDate(x.getDate() - day);
+        return x.getTime();
+      };
+      return startOfWeek(last) === startOfWeek(now);
+    }
+    case "monthly":
+      return (
+        last.getFullYear() === now.getFullYear() &&
+        last.getMonth() === now.getMonth()
+      );
+    case "yearly":
+      return last.getFullYear() === now.getFullYear();
+    default:
+      return false;
+  }
 }
 
 function EditRecurringModal({

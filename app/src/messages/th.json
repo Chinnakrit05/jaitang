@@ -297,7 +297,10 @@
     "dueOn": "ถึงรอบ {when}",
     "untitled": "ไม่มีชื่อ",
     "fillAndAdd": "บันทึก",
-    "editTitle": "แก้ไขรายการประจำ"
+    "editTitle": "แก้ไขรายการประจำ",
+    "appliedThisPeriod": "✓ ใส่แล้วเดือนนี้",
+    "variableBillBadge": "📝 บิลรอกรอก",
+    "listHelper": "💡 กดที่แถวเพื่อแก้ไข · กดค้างเพื่อลบ"
   },
   "balances": {
     "title": "ยอดหนี้-เครดิต",

@@ -297,7 +297,10 @@
     "dueOn": "予定: {when}",
     "untitled": "無題",
     "fillAndAdd": "登録",
-    "editTitle": "定期取引を編集"
+    "editTitle": "定期取引を編集",
+    "appliedThisPeriod": "✓ 今期は記録済み",
+    "variableBillBadge": "📝 金額待ち",
+    "listHelper": "💡 タップで編集・長押しで削除"
   },
   "balances": {
     "title": "精算",
