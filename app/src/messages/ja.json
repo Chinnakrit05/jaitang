@@ -627,7 +627,8 @@
     "periodYear": "今年",
     "topCategory": "最多カテゴリ",
     "noBaseline": "比較できる過去データがありません — 記録を始めましょう！",
-    "ofExpense": "支出に占める割合"
+    "ofExpense": "支出に占める割合",
+    "txCount": "{count, plural, other {#件}}"
   },
   "yearReport": {
     "title": "{year}年 振り返り",

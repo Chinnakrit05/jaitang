@@ -627,7 +627,8 @@
     "periodYear": "This year",
     "topCategory": "Top category",
     "noBaseline": "No prior data to compare yet — start logging!",
-    "ofExpense": "of total expense"
+    "ofExpense": "of total expense",
+    "txCount": "{count, plural, one {1 entry} other {# entries}}"
   },
   "yearReport": {
     "title": "{year} Year in Review",

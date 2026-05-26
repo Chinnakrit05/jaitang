@@ -33,15 +33,27 @@ export default function InsightsPreviewPage() {
   const [period, setPeriod] = useState<Period>("month");
 
   const rows = [
-    { name: "Bts", icon: "🚕", total: 124_478 },
-    { name: "ของหวาน", icon: "🍰", total: 3_588 },
-    { name: "ไม่ระบุ", icon: null as string | null, total: 368 },
-    { name: "น้ำมัน", icon: "⛽", total: 99 },
-    { name: "คาเฟ่", icon: "☕", total: 35 },
+    { id: "c1", name: "Bts",      icon: "🚕" as string | null, total: 124_478 },
+    { id: "c2", name: "ของหวาน",  icon: "🍰" as string | null, total: 3_588 },
+    { id: "none", name: "ไม่ระบุ", icon: null  as string | null, total: 368 },
+    { id: "c4", name: "น้ำมัน",   icon: "⛽" as string | null, total: 99 },
+    { id: "c5", name: "คาเฟ่",    icon: "☕" as string | null, total: 35 },
   ];
   const totalExpense = rows.reduce((s, r) => s + r.total, 0);
   const top = rows[0];
   const topPct = Math.round((top.total / totalExpense) * 100);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const drilldownTxs: Array<{ date: string; note: string; amount: number }> =
+    selectedId === "c1"
+      ? [
+          { date: "25 พ.ค.", note: "ค่าเนก", amount: 123_656 },
+          { date: "25 พ.ค.", note: "ค่าเนก", amount: 123 },
+          { date: "24 พ.ค.", note: "ค่าเน็ต", amount: 599 },
+          { date: "17 พ.ค.", note: "Bts", amount: 50 },
+          { date: "17 พ.ค.", note: "Bts", amount: 50 },
+        ]
+      : [];
+  const selectedRow = selectedId ? rows.find((r) => r.id === selectedId) ?? null : null;
 
   const cashExpense = 408;
   const transferExpense = 112;
@@ -131,46 +143,63 @@ export default function InsightsPreviewPage() {
                 centerValue={formatCurrencyCompact(totalExpense, currency, fmtLocale)}
               />
             </div>
-            <ul className="flex-1 space-y-2 min-w-0">
+            <ul className="flex-1 space-y-1 min-w-0">
               {rows.map((r, i) => {
                 const color = CATEGORY_PALETTE[i % CATEGORY_PALETTE.length];
                 const rawPct = (r.total / totalExpense) * 100;
+                const isSelected = selectedId === r.id;
                 return (
-                  <li key={r.name} className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        aria-hidden
-                        className="h-2 w-2 rounded-full shrink-0"
-                        style={{ backgroundColor: color }}
-                      />
-                      <EmojiOrIcon value={r.icon} fallback="sparkle" size={14} />
-                      <span className="truncate text-[13px] flex-1">{r.name}</span>
-                      <span className="text-[11px] font-semibold tabular-nums shrink-0">
-                        {Math.round(rawPct)}%
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5 pl-5">
-                      <div
-                        className="h-1 rounded-full flex-1 overflow-hidden"
-                        style={{
-                          background:
-                            "color-mix(in srgb, var(--foreground) 6%, transparent)",
-                        }}
-                      >
-                        <div
-                          className="h-full rounded-full bar-fill"
-                          style={
-                            {
-                              background: color,
-                              "--bar-target": `${rawPct}%`,
-                            } as React.CSSProperties
-                          }
+                  <li key={r.id} className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedId((prev) => (prev === r.id ? null : r.id))
+                      }
+                      className="w-full text-left rounded-xl px-1.5 py-1 transition"
+                      style={
+                        isSelected
+                          ? {
+                              background: `color-mix(in srgb, ${color} 18%, transparent)`,
+                              boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${color} 50%, transparent)`,
+                            }
+                          : undefined
+                      }
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          aria-hidden
+                          className="h-2 w-2 rounded-full shrink-0"
+                          style={{ backgroundColor: color }}
                         />
+                        <EmojiOrIcon value={r.icon} fallback="sparkle" size={14} />
+                        <span className="truncate text-[13px] flex-1">{r.name}</span>
+                        <span className="text-[11px] font-semibold tabular-nums shrink-0">
+                          {Math.round(rawPct)}%
+                        </span>
                       </div>
-                      <span className="text-[10px] text-(--muted) tabular-nums shrink-0">
-                        {formatCurrencyCompact(r.total, currency, fmtLocale)}
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-2 mt-0.5 pl-5">
+                        <div
+                          className="h-1 rounded-full flex-1 overflow-hidden"
+                          style={{
+                            background:
+                              "color-mix(in srgb, var(--foreground) 6%, transparent)",
+                          }}
+                        >
+                          <div
+                            className="h-full rounded-full bar-fill"
+                            style={
+                              {
+                                background: color,
+                                "--bar-target": `${rawPct}%`,
+                              } as React.CSSProperties
+                            }
+                          />
+                        </div>
+                        <span className="text-[10px] text-(--muted) tabular-nums shrink-0">
+                          {formatCurrencyCompact(r.total, currency, fmtLocale)}
+                        </span>
+                      </div>
+                    </button>
                   </li>
                 );
               })}
@@ -186,6 +215,47 @@ export default function InsightsPreviewPage() {
             </span>
           </div>
         </section>
+
+        {selectedRow && (
+          <section className="rounded-2xl border border-(--border) bg-(--card) overflow-hidden">
+            <header className="flex items-center gap-3 px-4 py-3 bg-(--background)/40">
+              <span
+                className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: "color-mix(in srgb, #F9D5B4 50%, var(--card))" }}
+              >
+                <EmojiOrIcon value={selectedRow.icon} fallback="sparkle" size={18} />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">{selectedRow.name}</p>
+                <p className="text-[11px] text-(--muted)">
+                  {t("insights.txCount", { count: drilldownTxs.length })} ·{" "}
+                  {formatCurrencyCompact(selectedRow.total, currency, fmtLocale)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedId(null)}
+                aria-label="close"
+                className="h-8 w-8 rounded-full flex items-center justify-center text-(--muted) hover:bg-(--background) transition"
+              >
+                <JtIcon name="x" size={16} />
+              </button>
+            </header>
+            <ul className="divide-y divide-(--border)/60">
+              {drilldownTxs.map((tx, i) => (
+                <li key={i} className="flex items-center gap-2 px-4 py-2.5">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-(--background) tabular-nums shrink-0">
+                    {tx.date}
+                  </span>
+                  <span className="flex-1 min-w-0 text-[14px] truncate">{tx.note}</span>
+                  <span className="text-[14px] font-bold tabular-nums shrink-0">
+                    {formatCurrencyCompact(tx.amount, currency, fmtLocale)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section>
           <div className="flex items-center justify-between mb-2">

@@ -627,7 +627,8 @@
     "periodYear": "ปีนี้",
     "topCategory": "หมวดที่ใช้มากสุด",
     "noBaseline": "ยังไม่มีข้อมูลรอบก่อนเทียบ — เริ่มจดเลย!",
-    "ofExpense": "ของยอดจ่าย"
+    "ofExpense": "ของยอดจ่าย",
+    "txCount": "{count, plural, one {1 รายการ} other {# รายการ}}"
   },
   "yearReport": {
     "title": "สรุปปี {year}",

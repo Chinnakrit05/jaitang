@@ -627,7 +627,8 @@
     "periodYear": "本年",
     "topCategory": "最常用类别",
     "noBaseline": "暂无可比较的历史数据 — 开始记录吧！",
-    "ofExpense": "占总支出"
+    "ofExpense": "占总支出",
+    "txCount": "{count, plural, other {# 笔}}"
   },
   "yearReport": {
     "title": "{year}年回顾",
