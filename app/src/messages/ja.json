@@ -92,7 +92,25 @@
     "quickShort": "クイック",
     "budgetsShort": "予算",
     "ledgersShort": "帳簿",
-    "more": "もっと"
+    "more": "もっと",
+    "descriptions": {
+      "goals": "貯金目標を設定 — 入金記録、進捗追跡、AIのアドバイス",
+      "loans": "貸し借りを記録 — 返済記録と残高表示",
+      "calendar": "毎日の支出ヒートマップ — 色が濃いほど支出が多い",
+      "budgets": "カテゴリ別の月間予算 — 上限に近づくと通知",
+      "categories": "収入・支出のカテゴリを管理",
+      "recurring": "毎日/毎週/毎月の自動作成エントリー",
+      "trips": "旅行中に記録した取引を自動でタグ付け",
+      "balances": "口座別の残高サマリー",
+      "accounts": "現金・銀行口座 — 開始残高と通貨を設定",
+      "chat": "自然な言葉でAIに支出を質問",
+      "quick": "よく使うクイックエントリーへのショートカット",
+      "import": "他のアプリやCSVから取引をインポート",
+      "settings": "テーマ、言語、通知などの設定",
+      "insights": "月次サマリーとトレンド、カテゴリ別の内訳",
+      "ledgers": "個人または共有の帳簿を切り替え",
+      "transfers": "収支に影響せず口座間で資金を移動"
+    }
   },
   "landing": {
     "title": "Jaitang",
@@ -789,5 +807,12 @@
     "txSplitBody": "{sign}{amount} • {count} 人で割り勘",
     "txBody": "{sign}{amount}",
     "txBodyWithNote": "{sign}{amount} • {note}"
+  },
+  "more": {
+    "frequentlyUsed": "よく使う",
+    "general": "一般",
+    "reports": "レポート",
+    "accountsBook": "口座",
+    "transferShort": "振替"
   }
 }

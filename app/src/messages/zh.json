@@ -92,7 +92,25 @@
     "quickShort": "快速",
     "budgetsShort": "预算",
     "ledgersShort": "账本",
-    "more": "更多"
+    "more": "更多",
+    "descriptions": {
+      "goals": "设置储蓄目标 — 记录存款、查看进度、AI 建议",
+      "loans": "记录借入或借出的钱 — 跟踪还款和未还余额",
+      "calendar": "每日支出热力图 — 颜色越深花得越多",
+      "budgets": "每月分类预算 — 接近或超出时提醒",
+      "categories": "管理收入支出的分类",
+      "recurring": "每天/每周/每月自动生成的循环记录",
+      "trips": "出行期间记录的交易自动打上行程标签",
+      "balances": "按账户分组的总余额概览",
+      "accounts": "现金/银行账户 — 设置初始余额和币种",
+      "chat": "用自然语言向 AI 询问你的支出",
+      "quick": "常用快速记录的快捷方式",
+      "import": "从其他应用或 CSV 文件导入",
+      "settings": "主题、语言、通知等",
+      "insights": "月度概要 + 趋势,按分类拆分",
+      "ledgers": "在个人和共享账本之间切换",
+      "transfers": "在账户间转账,不影响收入/支出"
+    }
   },
   "landing": {
     "title": "Jaitang",
@@ -789,5 +807,12 @@
     "txSplitBody": "{sign}{amount} • 由 {count} 人分摊",
     "txBody": "{sign}{amount}",
     "txBodyWithNote": "{sign}{amount} • {note}"
+  },
+  "more": {
+    "frequentlyUsed": "常用",
+    "general": "通用",
+    "reports": "报表",
+    "accountsBook": "账户",
+    "transferShort": "转账"
   }
 }

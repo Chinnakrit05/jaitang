@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { JtIcon } from "@/components/icons";
 
@@ -38,38 +37,24 @@ export type NavItem = {
 
 export function MobileNav({
   primary,
-  all,
   moreLabel,
   fabLabel,
 }: {
   primary: NavItem[];
-  all: NavItem[];
+  /** Retained for ABI compatibility with callers (preview routes). */
+  all?: NavItem[];
   moreLabel: string;
   /** Accessible label for the floating "+" button that links to the
    *  new-transaction page. Required because the FAB has no visible
    *  text (icon-only). */
   fabLabel: string;
 }) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
   // Path-prefix match handles `/transactions/123/edit` highlighting the
   // Transactions tab. Exact match would feel wrong (the tab would dim
   // mid-flow). The "/" guard avoids matching everything when href is "/".
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [open]);
 
   // Split `primary` so the FAB lands in the middle of the bar — first
   // half on the left, second half on the right, FAB raised between them.
@@ -136,58 +121,27 @@ export function MobileNav({
 
           {rightItems.map(renderTab)}
 
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="flex flex-1 flex-col items-center gap-0.5 px-1 py-1 text-xs text-(--muted) hover:text-(--foreground)"
+          <Link
+            href="/more"
+            className={cn(
+              "flex flex-1 flex-col items-center gap-0.5 px-1 py-1 text-xs transition",
+              isActive("/more")
+                ? "text-(--accent)"
+                : "text-(--muted) hover:text-(--foreground)"
+            )}
             aria-label={moreLabel}
           >
+            {isActive("/more") && (
+              <span
+                aria-hidden
+                className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 -mt-2 rounded-full bg-(--accent)"
+              />
+            )}
             <JtIcon name="more" size={24} />
             <span className="truncate max-w-full">{moreLabel}</span>
-          </button>
+          </Link>
         </div>
       </nav>
-
-      {open && (
-        <>
-          <button
-            type="button"
-            aria-label="close"
-            onClick={() => setOpen(false)}
-            className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-          />
-          <div className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-(--card) border-t border-(--border) rounded-t-2xl pb-safe shadow-2xl">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-(--border)">
-              <h2 className="font-semibold">{moreLabel}</h2>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background)"
-                aria-label="close"
-              >
-                <JtIcon name="x" size={22} />
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-2 p-4">
-              {all.map(({ href, label, icon }) => {
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setOpen(false)}
-                    className="flex flex-col items-center gap-2 p-3 rounded-xl bg-(--background) border border-(--border) hover:border-(--accent) hover:bg-(--accent)/5 transition text-center"
-                  >
-                    <JtIcon name={icon} size={26} className="text-(--accent)" />
-                    <span className="text-xs font-medium leading-tight">
-                      {label}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
     </>
   );
 }

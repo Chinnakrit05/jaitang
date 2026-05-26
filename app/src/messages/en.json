@@ -92,7 +92,25 @@
     "quickShort": "Quick",
     "budgetsShort": "Budget",
     "ledgersShort": "Ledger",
-    "more": "More"
+    "more": "More",
+    "descriptions": {
+      "goals": "Set savings goals — log deposits, track progress, get AI nudges",
+      "loans": "Track money you lent or borrowed — log repayments + see outstanding",
+      "calendar": "Heatmap of daily spend — darker = more spending",
+      "budgets": "Per-category monthly budgets — alerts when you're near or over",
+      "categories": "Manage categories for income and expense entries",
+      "recurring": "Auto-create entries that repeat daily/weekly/monthly",
+      "trips": "Tag transactions to a trip automatically while it's active",
+      "balances": "Total balance overview, split by account",
+      "accounts": "Cash / bank accounts — opening balance and currency",
+      "chat": "Ask the AI about your spending in natural language",
+      "quick": "Shortcut to your most-used quick entries",
+      "import": "Import from other apps or a CSV file",
+      "settings": "Theme, language, notifications, and more",
+      "insights": "Monthly summary + trends, broken down by category",
+      "ledgers": "Switch between personal and shared ledgers",
+      "transfers": "Move money between accounts without affecting income/expense"
+    }
   },
   "landing": {
     "title": "Jaitang",
@@ -789,5 +807,12 @@
     "txSplitBody": "{sign}{amount} • split among {count}",
     "txBody": "{sign}{amount}",
     "txBodyWithNote": "{sign}{amount} • {note}"
+  },
+  "more": {
+    "frequentlyUsed": "Frequently used",
+    "general": "General",
+    "reports": "Reports",
+    "accountsBook": "Accounts",
+    "transferShort": "Transfer"
   }
 }
