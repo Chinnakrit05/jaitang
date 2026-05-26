@@ -174,13 +174,13 @@ function ReportSection({
   return (
     <section className="rounded-2xl border border-(--border) overflow-hidden bg-(--card)">
       <header
-        className="px-4 py-2 text-white font-semibold text-sm"
+        className="px-3 py-1.5 text-white font-semibold text-xs"
         style={{ background: headerColor }}
       >
         {title}
       </header>
       {isEmpty ? (
-        <p className="px-4 py-4 text-sm text-(--muted)">{emptyLabel}</p>
+        <p className="px-3 py-2 text-xs text-(--muted)">{emptyLabel}</p>
       ) : (
         <ul className="divide-y divide-(--border)/60">
           {rules.map((r) => (
@@ -193,13 +193,13 @@ function ReportSection({
       )}
       {!isEmpty && (
         <div
-          className="px-4 py-2 flex items-center justify-between border-t border-(--border)/60"
+          className="px-3 py-1.5 flex items-center justify-between border-t border-(--border)/60"
           style={{
             background: `color-mix(in srgb, ${headerColor} 8%, var(--card))`,
           }}
         >
-          <span className="text-sm font-medium">{totalLabel}</span>
-          <span className="font-bold tabular-nums">
+          <span className="text-xs font-medium">{totalLabel}</span>
+          <span className="font-bold tabular-nums text-[13px]">
             ฿{Math.round(total).toLocaleString()}
           </span>
         </div>
@@ -211,32 +211,32 @@ function ReportSection({
 function PreviewRow({ row, recurring }: { row: Row; recurring?: boolean }) {
   const [v, setV] = useState(String(row.amount));
   return (
-    <li className="flex items-center gap-3 px-4 py-3">
+    <li className="flex items-center gap-2 px-3 py-1.5">
       {recurring && (
         <span
-          className="h-8 w-8 rounded-full flex items-center justify-center shrink-0"
+          className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
           style={{
             background: "color-mix(in srgb, #F9D5B4 50%, var(--card))",
           }}
         >
-          <EmojiOrIcon value={null} fallback="recurring" size={16} />
+          <EmojiOrIcon value={null} fallback="recurring" size={12} />
         </span>
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[15px] truncate">{row.primary}</p>
+        <p className="font-semibold text-[13px] leading-tight truncate">{row.primary}</p>
         {row.sub && (
-          <p className="text-xs text-(--muted) truncate">{row.sub}</p>
+          <p className="text-[11px] text-(--muted) leading-tight truncate">{row.sub}</p>
         )}
       </div>
       <span className="inline-flex items-center gap-0.5 tabular-nums">
-        <span className="text-(--muted) text-xs">฿</span>
+        <span className="text-(--muted) text-[10px]">฿</span>
         <input
           type="text"
           inputMode="decimal"
           value={v}
           onChange={(e) => setV(e.target.value.replace(/[^\d.]/g, ""))}
           size={Math.max(3, v.length)}
-          className="bg-transparent text-right font-semibold tabular-nums focus:outline-none focus:bg-(--background) focus:px-1 focus:rounded transition"
+          className="bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none focus:bg-(--background) focus:px-1 focus:rounded transition"
         />
       </span>
     </li>

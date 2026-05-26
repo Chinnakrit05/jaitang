@@ -77,7 +77,7 @@ export function InlineAmount({
         }}
         size={Math.max(3, value.length)}
         className={cn(
-          "bg-transparent text-right font-semibold tabular-nums focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition",
+          "bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition",
           error ? "text-(--expense)" : "text-(--foreground)"
         )}
       />

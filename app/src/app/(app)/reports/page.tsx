@@ -224,14 +224,14 @@ function ReportSection({
   return (
     <section className="rounded-2xl border border-(--border) overflow-hidden bg-(--card)">
       <header
-        className="px-4 py-2 text-white font-semibold text-sm"
+        className="px-3 py-1.5 text-white font-semibold text-xs"
         style={{ background: headerColor }}
       >
         {title}
       </header>
 
       {isEmpty ? (
-        <p className="px-4 py-4 text-sm text-(--muted)">{emptyLabel}</p>
+        <p className="px-3 py-2 text-xs text-(--muted)">{emptyLabel}</p>
       ) : (
         <ul className="divide-y divide-(--border)/60">
           {/* Recurring rules first — surfaces the "expected" line items
@@ -248,13 +248,13 @@ function ReportSection({
 
       {!isEmpty && (
         <div
-          className="px-4 py-2 flex items-center justify-between border-t border-(--border)/60"
+          className="px-3 py-1.5 flex items-center justify-between border-t border-(--border)/60"
           style={{
             background: `color-mix(in srgb, ${headerColor} 8%, var(--card))`,
           }}
         >
-          <span className="text-sm font-medium">{totalLabel}</span>
-          <span className="font-bold tabular-nums">
+          <span className="text-xs font-medium">{totalLabel}</span>
+          <span className="font-bold tabular-nums text-[13px]">
             {currency === "THB" ? "฿" : currency}
             {Math.round(total).toLocaleString()}
           </span>
@@ -279,10 +279,10 @@ function TxRow({ tx, currency }: { tx: Tx; currency: string }) {
   }
 
   return (
-    <li className="flex items-center gap-3 px-4 py-3">
+    <li className="flex items-center gap-2 px-3 py-1.5">
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[15px] truncate">{primary}</p>
-        {sub && <p className="text-xs text-(--muted) truncate">{sub}</p>}
+        <p className="font-semibold text-[13px] leading-tight truncate">{primary}</p>
+        {sub && <p className="text-[11px] text-(--muted) leading-tight truncate">{sub}</p>}
       </div>
       <InlineAmount
         initial={tx.amount}
@@ -305,20 +305,20 @@ function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
   }
 
   return (
-    <li className="flex items-center gap-3 px-4 py-3">
+    <li className="flex items-center gap-2 px-3 py-1.5">
       <span
-        className="h-8 w-8 rounded-full flex items-center justify-center shrink-0"
+        className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
         style={{
           background: "color-mix(in srgb, #F9D5B4 50%, var(--card))",
         }}
         title="recurring"
         aria-label="recurring"
       >
-        <EmojiOrIcon value={rule.category?.icon} fallback="recurring" size={16} />
+        <EmojiOrIcon value={rule.category?.icon} fallback="recurring" size={12} />
       </span>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[15px] truncate">{primary}</p>
-        <p className="text-xs text-(--muted) truncate">
+        <p className="font-semibold text-[13px] leading-tight truncate">{primary}</p>
+        <p className="text-[11px] text-(--muted) leading-tight truncate">
           {sub || rule.period}
         </p>
       </div>
