@@ -26,6 +26,40 @@ function refresh() {
   revalidatePath("/dashboard");
 }
 
+/**
+ * Bulk reorder: caller passes the category ids in their desired
+ * visual order, and we write `sort_order = index + 1` for each. Used
+ * by the wiggle-mode reorder grid on /transactions/new.
+ *
+ * Belongs in /categories actions (not /transactions) because the
+ * mutation is on the categories table — the form just happens to be
+ * the convenient surface.
+ */
+const ReorderSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(500),
+});
+
+export async function reorderCategoriesAction(ids: string[]) {
+  const { ledgerId } = await requireSession();
+  const parsed = ReorderSchema.safeParse({ ids });
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  // Issue per-row updates in parallel; updateCategory already enforces
+  // ledger ownership through RLS-equivalent lib checks.
+  await Promise.all(
+    parsed.data.ids.map((id, index) =>
+      updateCategory(id, { sort_order: index + 1 })
+    )
+  );
+  // Best-effort ledger guard: any id outside the active ledger would
+  // have failed silently above (the update touches 0 rows). The next
+  // page render simply won't see those reorders.
+  void ledgerId;
+  refresh();
+  return { ok: true as const };
+}
+
 export async function createCategoryAction(formData: FormData) {
   const { ledgerId } = await requireSession();
   const parsed = CategorySchema.safeParse({

@@ -1,14 +1,31 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import { EmojiOrIcon, JtIcon } from "@/components/icons";
 import { ALL_CURRENCIES, PINNED_COUNT } from "@/lib/currencies";
 import { getFxRateAction } from "@/app/(app)/transactions/fx-actions";
 import { suggestCategoryAction } from "@/app/(app)/transactions/categorize-action";
+import { reorderCategoriesAction } from "@/app/(app)/categories/actions";
 import { sortByHierarchy } from "@/lib/categories";
 import { cn, formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
@@ -100,6 +117,14 @@ export function NewTransactionForm({
   const [error, setError] = useState<string | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiHint, setAiHint] = useState<string | null>(null);
+  // Reorder mode for the category grid. While true, every tile wiggles
+  // and drag-to-rearrange is enabled. Tapping the pencil chip toggles
+  // it on; tapping "เสร็จ" toggles off and persists the new order.
+  const [editingCats, setEditingCats] = useState(false);
+  // Local override of the rendered category order while in edit mode.
+  // We start from the server-sorted `visibleCats` and update on every
+  // drag end; the server action only fires when the user taps done.
+  const [catOrderOverride, setCatOrderOverride] = useState<string[] | null>(null);
 
   // FX preview — same debounce pattern as the long form.
   useEffect(() => {
@@ -402,69 +427,28 @@ export function NewTransactionForm({
       )}
 
       {/* Category grid */}
-      <section>
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold">{t("common.category")}</h2>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={runAiCategorize}
-              disabled={aiBusy || note.trim().length === 0}
-              title={
-                note.trim().length === 0
-                  ? t("transactions.aiCategorizeNeedsNote")
-                  : t("transactions.aiCategorizeHint")
-              }
-              className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                background: `color-mix(in srgb, ${PEACH_SOFT} 55%, var(--card))`,
-                color: "#8A4A1C",
-              }}
-            >
-              <JtIcon
-                name="sparkles"
-                size={12}
-                className={aiBusy ? "animate-pulse" : ""}
-              />
-              {aiBusy
-                ? t("transactions.aiCategorizeLoading")
-                : t("transactions.aiCategorizeButton")}
-            </button>
-            <Link
-              href="/categories"
-              className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full"
-              style={{
-                background: `color-mix(in srgb, ${PEACH_SOFT} 55%, var(--card))`,
-                color: "#8A4A1C",
-              }}
-            >
-              <span aria-hidden>✏️</span>
-              {t("common.edit")}
-            </Link>
-          </div>
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          {visibleCats.map((c) => (
-            <CategoryTile
-              key={c.id}
-              category={c}
-              parent={c.parent_id ? categoryById.get(c.parent_id) ?? null : null}
-              selected={categoryId === c.id}
-              onClick={() => setCategoryId(c.id)}
-            />
-          ))}
-          <Link
-            href="/categories"
-            aria-label={t("categories.title")}
-            className="aspect-square rounded-2xl border border-dashed border-(--border) bg-(--card) flex items-center justify-center text-(--muted) hover:bg-(--background) transition"
-          >
-            <span className="text-2xl leading-none">+</span>
-          </Link>
-        </div>
-        {aiHint && (
-          <p className="mt-1.5 text-xs text-(--muted)">{aiHint}</p>
-        )}
-      </section>
+      <CategorySection
+        categories={visibleCats}
+        categoryById={categoryById}
+        selectedId={categoryId}
+        onSelect={setCategoryId}
+        editing={editingCats}
+        onToggleEditing={() => setEditingCats((v) => !v)}
+        orderOverride={catOrderOverride}
+        onOrderChange={setCatOrderOverride}
+        aiBusy={aiBusy}
+        aiDisabled={note.trim().length === 0}
+        aiHint={aiHint}
+        runAi={runAiCategorize}
+        aiNeedsNoteLabel={t("transactions.aiCategorizeNeedsNote")}
+        aiHintLabel={t("transactions.aiCategorizeHint")}
+        aiLoadingLabel={t("transactions.aiCategorizeLoading")}
+        aiButtonLabel={t("transactions.aiCategorizeButton")}
+        editLabel={t("common.edit")}
+        doneLabel={t("common.done")}
+        categoryLabel={t("common.category")}
+        addLabel={t("categories.title")}
+      />
 
       {error && (
         <div className="rounded-lg bg-(--expense)/10 text-(--expense) px-3 py-2 text-sm">
@@ -607,6 +591,8 @@ function CategoryTile({
   parent,
   selected,
   onClick,
+  editing = false,
+  wiggleVariant = "a",
 }: {
   category: Category;
   /** When the tile is a sub-category, the resolved parent. Drives the
@@ -614,31 +600,241 @@ function CategoryTile({
   parent: Category | null;
   selected: boolean;
   onClick: () => void;
+  /** When true, the tile is part of the reorder grid: pointer events
+   *  drive the drag instead of selecting the category, and the tile
+   *  is wrapped in a wiggle animation by the parent. */
+  editing?: boolean;
+  wiggleVariant?: "a" | "b";
 }) {
+  const sortable = useSortable({ id: category.id, disabled: !editing });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = sortable;
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  } as React.CSSProperties;
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
+      ref={setNodeRef}
+      style={style}
       className={cn(
-        "relative aspect-square rounded-2xl border bg-(--card) flex flex-col items-center justify-center gap-1 p-2 transition",
-        selected ? "border-transparent" : "border-(--border) hover:bg-(--background)"
+        "relative",
+        editing && (wiggleVariant === "a" ? "wiggle-a" : "wiggle-b"),
+        isDragging && "z-10 opacity-80"
       )}
-      style={selected ? { boxShadow: `inset 0 0 0 2px ${PEACH_STRONG}` } : undefined}
+      // Pointer events live on the wrapper in edit mode so a slow press
+      // doesn't get eaten by the inner <button>'s click handler.
+      {...(editing ? { ...attributes, ...listeners } : {})}
     >
-      {parent && (
-        <span
-          className="absolute top-1 right-1 h-5 w-5 rounded-full flex items-center justify-center bg-(--background) shadow-sm"
-          style={{ fontSize: 12, lineHeight: 1 }}
-          title={parent.name}
-          aria-label={parent.name}
-        >
-          <EmojiOrIcon value={parent.icon} fallback="sparkle" size={12} />
+      <button
+        type={editing ? "button" : "button"}
+        onClick={editing ? undefined : onClick}
+        // Disable the inner button during edit so it doesn't intercept
+        // pointer events meant for sortable drag.
+        disabled={editing}
+        className={cn(
+          "w-full aspect-square rounded-2xl border bg-(--card) flex flex-col items-center justify-center gap-1 p-2 transition",
+          selected ? "border-transparent" : "border-(--border) hover:bg-(--background)",
+          editing && "cursor-grab active:cursor-grabbing"
+        )}
+        style={selected ? { boxShadow: `inset 0 0 0 2px ${PEACH_STRONG}` } : undefined}
+      >
+        {parent && (
+          <span
+            className="absolute top-1 right-1 h-5 w-5 rounded-full flex items-center justify-center bg-(--background) shadow-sm"
+            style={{ fontSize: 12, lineHeight: 1 }}
+            title={parent.name}
+            aria-label={parent.name}
+          >
+            <EmojiOrIcon value={parent.icon} fallback="sparkle" size={12} />
+          </span>
+        )}
+        <EmojiOrIcon value={category.icon} fallback="sparkle" size={28} />
+        <span className="text-xs font-medium leading-tight text-center line-clamp-1">
+          {category.name}
         </span>
+      </button>
+    </div>
+  );
+}
+
+function CategorySection({
+  categories,
+  categoryById,
+  selectedId,
+  onSelect,
+  editing,
+  onToggleEditing,
+  orderOverride,
+  onOrderChange,
+  aiBusy,
+  aiDisabled,
+  aiHint,
+  runAi,
+  aiNeedsNoteLabel,
+  aiHintLabel,
+  aiLoadingLabel,
+  aiButtonLabel,
+  editLabel,
+  doneLabel,
+  categoryLabel,
+  addLabel,
+}: {
+  categories: Category[];
+  categoryById: Map<string, Category>;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  editing: boolean;
+  onToggleEditing: () => void;
+  orderOverride: string[] | null;
+  onOrderChange: (next: string[] | null) => void;
+  aiBusy: boolean;
+  aiDisabled: boolean;
+  aiHint: string | null;
+  runAi: () => void;
+  aiNeedsNoteLabel: string;
+  aiHintLabel: string;
+  aiLoadingLabel: string;
+  aiButtonLabel: string;
+  editLabel: string;
+  doneLabel: string;
+  categoryLabel: string;
+  addLabel: string;
+}) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    // Touch needs a small long-press so a normal tap (= select category
+    // in non-edit mode) and finger-scrolls don't accidentally start a
+    // drag while wiggle mode is on.
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } })
+  );
+  const [saving, startSaving] = useTransition();
+
+  // Materialize the rendered order. While editing, the user's local
+  // reorders take precedence; otherwise we fall back to the server-
+  // sorted `categories`.
+  const orderedCategories = useMemo(() => {
+    if (!orderOverride) return categories;
+    const byId = new Map(categories.map((c) => [c.id, c] as const));
+    const ordered: Category[] = [];
+    for (const id of orderOverride) {
+      const c = byId.get(id);
+      if (c) ordered.push(c);
+    }
+    // Append any new categories that arrived from the server after the
+    // override was captured (e.g. user added a category mid-edit).
+    for (const c of categories) {
+      if (!orderOverride.includes(c.id)) ordered.push(c);
+    }
+    return ordered;
+  }, [categories, orderOverride]);
+
+  const ids = orderedCategories.map((c) => c.id);
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const from = ids.indexOf(active.id as string);
+    const to = ids.indexOf(over.id as string);
+    if (from === -1 || to === -1) return;
+    onOrderChange(arrayMove(ids, from, to));
+  }
+
+  function commitOrder() {
+    if (!orderOverride || orderOverride.length === 0) {
+      onToggleEditing();
+      return;
+    }
+    startSaving(async () => {
+      await reorderCategoriesAction(orderOverride);
+      onOrderChange(null);
+      onToggleEditing();
+    });
+  }
+
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-sm font-semibold">{categoryLabel}</h2>
+        <div className="flex items-center gap-1">
+          {!editing && (
+            <button
+              type="button"
+              onClick={runAi}
+              disabled={aiBusy || aiDisabled}
+              title={aiDisabled ? aiNeedsNoteLabel : aiHintLabel}
+              className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: `color-mix(in srgb, ${PEACH_SOFT} 55%, var(--card))`,
+                color: "#8A4A1C",
+              }}
+            >
+              <JtIcon
+                name="sparkles"
+                size={12}
+                className={aiBusy ? "animate-pulse" : ""}
+              />
+              {aiBusy ? aiLoadingLabel : aiButtonLabel}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={editing ? commitOrder : onToggleEditing}
+            disabled={saving}
+            className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full transition disabled:opacity-60"
+            style={{
+              background: editing
+                ? PEACH_STRONG
+                : `color-mix(in srgb, ${PEACH_SOFT} 55%, var(--card))`,
+              color: editing ? "white" : "#8A4A1C",
+            }}
+          >
+            <span aria-hidden>{editing ? (saving ? "…" : "✓") : "✏️"}</span>
+            {editing ? doneLabel : editLabel}
+          </button>
+        </div>
+      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={ids} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-4 gap-2">
+            {orderedCategories.map((c, i) => (
+              <CategoryTile
+                key={c.id}
+                category={c}
+                parent={c.parent_id ? categoryById.get(c.parent_id) ?? null : null}
+                selected={selectedId === c.id}
+                onClick={() => onSelect(c.id)}
+                editing={editing}
+                wiggleVariant={i % 2 === 0 ? "a" : "b"}
+              />
+            ))}
+            {!editing && (
+              <Link
+                href="/categories"
+                aria-label={addLabel}
+                className="aspect-square rounded-2xl border border-dashed border-(--border) bg-(--card) flex items-center justify-center text-(--muted) hover:bg-(--background) transition"
+              >
+                <span className="text-2xl leading-none">+</span>
+              </Link>
+            )}
+          </div>
+        </SortableContext>
+      </DndContext>
+      {aiHint && !editing && (
+        <p className="mt-1.5 text-xs text-(--muted)">{aiHint}</p>
       )}
-      <EmojiOrIcon value={category.icon} fallback="sparkle" size={28} />
-      <span className="text-xs font-medium leading-tight text-center line-clamp-1">
-        {category.name}
-      </span>
-    </button>
+    </section>
   );
 }

@@ -389,6 +389,24 @@ select:focus-visible {
   animation: fade-rise 320ms ease-out both;
 }
 
+/* iOS-style wiggle for category tiles in reorder mode. Two staggered
+   variants so adjacent tiles don't move in lock-step, which would
+   read as a single rigid block instead of a fidgety grid. The
+   `prefers-reduced-motion` guard pauses both. */
+@keyframes wiggle-a {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50%      { transform: rotate(1.2deg); }
+}
+@keyframes wiggle-b {
+  0%, 100% { transform: rotate(1.2deg); }
+  50%      { transform: rotate(-1.2deg); }
+}
+.wiggle-a { animation: wiggle-a 0.28s ease-in-out infinite; transform-origin: center; }
+.wiggle-b { animation: wiggle-b 0.32s ease-in-out infinite; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) {
+  .wiggle-a, .wiggle-b { animation: none; }
+}
+
 /* Diagonal shimmer used by skeleton loaders. The bg-image is a sliding
    accent-tinted highlight; pair with a light/dark base color. */
 @keyframes shimmer {
