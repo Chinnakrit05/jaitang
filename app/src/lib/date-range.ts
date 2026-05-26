@@ -4,8 +4,10 @@ export type RangeKey =
   | "today"
   | "yesterday"
   | "day_before"
+  | "week"
   | "month"
   | "prev"
+  | "year"
   | "30d"
   | "ytd"
   | "all";
@@ -63,10 +65,23 @@ export function resolveRange(
         key: "day_before",
       };
     }
+    case "week": {
+      // ISO week — Monday-anchored. `getUTCDay()` reports the day in
+      // BUSINESS_TZ because `tzNow` is the local-as-UTC trick.
+      const dow = (tzNow.getUTCDay() + 6) % 7; // 0 = Monday
+      const from = businessTzMidnightUtc(year, month, day - dow);
+      const to = businessTzMidnightUtc(year, month, day - dow + 7);
+      return { from: from.toISOString(), to: to.toISOString(), key: "week" };
+    }
     case "month": {
       const from = businessTzMidnightUtc(year, month, 1);
       const to = businessTzMidnightUtc(year, month + 1, 1);
       return { from: from.toISOString(), to: to.toISOString(), key: "month" };
+    }
+    case "year": {
+      const from = businessTzMidnightUtc(year, 0, 1);
+      const to = businessTzMidnightUtc(year + 1, 0, 1);
+      return { from: from.toISOString(), to: to.toISOString(), key: "year" };
     }
     case "prev": {
       const from = businessTzMidnightUtc(year, month - 1, 1);

@@ -618,7 +618,16 @@
     "upEmpty": "今月増えたカテゴリはなし。",
     "downHeading": "支出が減ったカテゴリ",
     "downEmpty": "今月減ったカテゴリはなし。",
-    "newThisMonth": "今月から"
+    "newThisMonth": "今月から",
+    "expenseWeek": "今週の支出",
+    "expenseMonth": "今月の支出",
+    "expenseYear": "今年の支出",
+    "periodWeek": "今週",
+    "periodMonth": "今月",
+    "periodYear": "今年",
+    "topCategory": "最多カテゴリ",
+    "noBaseline": "比較できる過去データがありません — 記録を始めましょう！",
+    "ofExpense": "支出に占める割合"
   },
   "yearReport": {
     "title": "{year}年 振り返り",

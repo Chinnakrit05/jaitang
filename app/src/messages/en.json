@@ -618,7 +618,16 @@
     "upEmpty": "Nothing went up this month.",
     "downHeading": "Categories trending down",
     "downEmpty": "Nothing went down this month.",
-    "newThisMonth": "new this month"
+    "newThisMonth": "new this month",
+    "expenseWeek": "This week's expense",
+    "expenseMonth": "This month's expense",
+    "expenseYear": "This year's expense",
+    "periodWeek": "This week",
+    "periodMonth": "This month",
+    "periodYear": "This year",
+    "topCategory": "Top category",
+    "noBaseline": "No prior data to compare yet — start logging!",
+    "ofExpense": "of total expense"
   },
   "yearReport": {
     "title": "{year} Year in Review",

@@ -1,20 +1,36 @@
 import Link from "next/link";
-import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/session";
+import { listTransactions, aggregateMonthSummary } from "@/lib/transactions";
 import { compareMonths } from "@/lib/insights";
-import { generateMonthInsightsSummary } from "@/lib/insights-ai";
 import { intlLocale } from "@/lib/locale-format";
-import { formatCurrency } from "@/lib/utils";
 import { nowInBusinessTz } from "@/lib/business-tz";
-import type { CategoryDelta } from "@/lib/insights";
+import { resolveRange, type RangeKey } from "@/lib/date-range";
+import { Mascot } from "@/components/mascots";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
+import { Donut, type DonutSlice } from "@/components/donut";
+import { formatCurrencyCompact } from "@/lib/utils";
+
+const CATEGORY_PALETTE = [
+  "#FF7BAC",
+  "#A78BFA",
+  "#FBBF24",
+  "#FB923C",
+  "#60A5FA",
+  "#34D399",
+];
+
+const PEACH_GRADIENT =
+  "linear-gradient(135deg, color-mix(in srgb, #F9D5B4 65%, var(--card)) 0%, color-mix(in srgb, #F4B58A 30%, var(--card)) 100%)";
+const PEACH_STRONG = "#E89A6A";
+
+type Period = "week" | "month" | "year";
 
 export default async function InsightsPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const aiEnabled = !!process.env.ANTHROPIC_API_KEY;
   const [sp, { ledgerId, ledger }, t, locale] = await Promise.all([
     searchParams,
     requireSession(),
@@ -22,278 +38,292 @@ export default async function InsightsPage({
     getLocale(),
   ]);
   const fmtLocale = intlLocale(locale);
+  const period: Period =
+    sp.p === "week" || sp.p === "year" ? sp.p : "month";
 
+  const range = resolveRange(period as RangeKey);
+  const txs = await listTransactions({
+    ledgerId,
+    from: range.from,
+    to: range.to,
+    limit: 5000,
+  });
+  const summary = aggregateMonthSummary(txs);
+  const expenseRows = summary.byCategory
+    .filter((c) => c.kind === "expense")
+    .sort((a, b) => b.total - a.total);
+  const totalExpense = expenseRows.reduce((s, r) => s + r.total, 0);
+
+  // Mascot card shows only when there's no previous-month data to
+  // compare against — i.e., the user's first month on the app.
   const now = nowInBusinessTz();
-  const fallback = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
-  const ymRaw = sp.ym && /^\d{4}-\d{2}$/.test(sp.ym) ? sp.ym : fallback;
-  const [yStr, mStr] = ymRaw.split("-");
-  const year = Number(yStr);
-  const month = Number(mStr);
-
-  const compare = await compareMonths(ledgerId, year, month);
-
-  // Run the AI step in parallel with rendering only when enabled. We
-  // intentionally don't `await` for AI separately — the page already pays
-  // the round-trip for `compareMonths`, and Haiku adds another ~600 ms
-  // worst case, which is acceptable for a "deep" view like Insights.
-  let aiSummary: string | null = null;
-  let aiError: string | null = null;
-  if (aiEnabled) {
-    try {
-      aiSummary = await generateMonthInsightsSummary(
-        compare,
-        locale,
-        ledger.currency
-      );
-    } catch (e) {
-      aiError = e instanceof Error ? e.message : String(e);
-    }
-  }
+  const compare = await compareMonths(
+    ledgerId,
+    now.getUTCFullYear(),
+    now.getUTCMonth() + 1
+  );
+  const hasBaseline = compare.prev.expense > 0 || compare.prev.income > 0;
 
   const monthLabel = new Intl.DateTimeFormat(fmtLocale, {
     month: "long",
     year: "numeric",
-  }).format(new Date(year, month - 1, 1));
-  const prev = month === 1 ? `${year - 1}-12` : `${year}-${String(month - 1).padStart(2, "0")}`;
-  const next = month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, "0")}`;
+  }).format(new Date(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const currency = ledger.currency;
 
-  const totalsExpensePctLabel =
-    compare.totals.expenseDeltaPct === null
-      ? t("insights.deltaNoBaseline")
-      : t("insights.deltaPct", {
-          pct: Math.round(compare.totals.expenseDeltaPct),
-        });
-  const totalsIncomePctLabel =
-    compare.totals.incomeDeltaPct === null
-      ? t("insights.deltaNoBaseline")
-      : t("insights.deltaPct", {
-          pct: Math.round(compare.totals.incomeDeltaPct),
-        });
+  const periodTitle =
+    period === "week"
+      ? t("insights.expenseWeek")
+      : period === "year"
+      ? t("insights.expenseYear")
+      : t("insights.expenseMonth");
+  const periodLabels: Record<Period, string> = {
+    week: t("insights.periodWeek"),
+    month: t("insights.periodMonth"),
+    year: t("insights.periodYear"),
+  };
+
+  // Pre-rank top category for the footer chip.
+  const top = expenseRows[0];
+  const topPct =
+    top && totalExpense > 0 ? Math.round((top.total / totalExpense) * 100) : 0;
+
+  const cashExpense = summary.byPaymentMethod.cash.expense;
+  const transferExpense = summary.byPaymentMethod.transfer.expense;
+  const unspecifiedExpense = summary.byPaymentMethod.unspecified.expense;
+  const totalPaid = cashExpense + transferExpense + unspecifiedExpense;
+  const pctOf = (v: number) =>
+    totalPaid > 0 ? Math.round((v / totalPaid) * 100) : 0;
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <JtIcon name="sparkles" size={24} className="text-(--accent)" />
-            {t("insights.title")}
-          </h1>
-          <p className="text-sm text-(--muted) mt-1">{t("insights.subtitle")}</p>
-        </div>
-        <Link
-          href={`/insights/year/${year}`}
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
+    <div className="max-w-md mx-auto pb-28 space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold">{t("insights.title")}</h1>
+        <p className="text-sm text-(--muted) mt-0.5">{monthLabel}</p>
+      </div>
+
+      {!hasBaseline && (
+        <section
+          className="rounded-2xl px-4 py-3 border flex items-center gap-3"
+          style={{
+            background: PEACH_GRADIENT,
+            borderColor: "color-mix(in srgb, #E89A6A 25%, transparent)",
+          }}
         >
-          <JtIcon name="calendar" size={18} />
-          {t("yearReport.cta", { year })}
-        </Link>
-      </div>
-
-      {/* Month nav */}
-      <div className="flex items-center justify-between">
-        <Link
-          href={`/insights?ym=${prev}`}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
-        >
-          <JtIcon name="chevron-left" size={18} />
-          {t("calendar.prev")}
-        </Link>
-        <h2 className="font-semibold text-lg">{monthLabel}</h2>
-        <Link
-          href={`/insights?ym=${next}`}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
-        >
-          {t("calendar.next")}
-          <JtIcon name="chevron-right" size={18} />
-        </Link>
-      </div>
-
-      {/* AI summary */}
-      <section className="rounded-2xl border border-(--accent)/40 bg-(--accent)/5 p-5 space-y-2">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <JtIcon name="sparkles" size={18} className="text-(--accent)" />
-          {t("insights.aiHeading")}
-        </div>
-        {!aiEnabled ? (
-          <p className="text-sm text-(--muted)">{t("insights.aiDisabled")}</p>
-        ) : aiError ? (
-          <p className="text-sm text-(--expense)">{aiError}</p>
-        ) : (
-          <p className="text-sm leading-relaxed">{aiSummary}</p>
-        )}
-      </section>
-
-      {/* Totals comparison */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <DeltaCard
-          label={t("insights.expenseLabel")}
-          thisAmount={compare.this.expense}
-          prevAmount={compare.prev.expense}
-          delta={compare.totals.expenseDelta}
-          deltaPctLabel={totalsExpensePctLabel}
-          tone="expense"
-          currency={currency}
-          fmtLocale={fmtLocale}
-        />
-        <DeltaCard
-          label={t("insights.incomeLabel")}
-          thisAmount={compare.this.income}
-          prevAmount={compare.prev.income}
-          delta={compare.totals.incomeDelta}
-          deltaPctLabel={totalsIncomePctLabel}
-          tone="income"
-          currency={currency}
-          fmtLocale={fmtLocale}
-        />
-      </section>
-
-      {/* Top movers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <MoverColumn
-          heading={t("insights.upHeading")}
-          icon={<JtIcon name="trending-up" size={18} className="text-(--expense)" />}
-          rows={compare.expenseUp}
-          tone="up"
-          currency={currency}
-          fmtLocale={fmtLocale}
-          emptyLabel={t("insights.upEmpty")}
-          newThisMonthLabel={t("insights.newThisMonth")}
-        />
-        <MoverColumn
-          heading={t("insights.downHeading")}
-          icon={<JtIcon name="trending-down" size={18} className="text-(--income)" />}
-          rows={compare.expenseDown}
-          tone="down"
-          currency={currency}
-          fmtLocale={fmtLocale}
-          emptyLabel={t("insights.downEmpty")}
-          newThisMonthLabel={t("insights.newThisMonth")}
-        />
-      </div>
-    </div>
-  );
-}
-
-function DeltaCard({
-  label,
-  thisAmount,
-  prevAmount,
-  delta,
-  deltaPctLabel,
-  tone,
-  currency,
-  fmtLocale,
-}: {
-  label: string;
-  thisAmount: number;
-  prevAmount: number;
-  delta: number;
-  deltaPctLabel: string;
-  tone: "income" | "expense";
-  currency: string;
-  fmtLocale: string;
-}) {
-  // For expense, "up" is bad (red). For income, "up" is good (green).
-  // We flip the visual color independently of the underlying tone.
-  const directionalClass =
-    delta === 0
-      ? "text-(--muted)"
-      : tone === "expense"
-      ? delta > 0
-        ? "text-(--expense)"
-        : "text-(--income)"
-      : delta > 0
-      ? "text-(--income)"
-      : "text-(--expense)";
-  const arrow = delta === 0 ? "" : delta > 0 ? "▲" : "▼";
-
-  return (
-    <div className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-2">
-      <div className="text-xs uppercase tracking-wide text-(--muted) font-medium">
-        {label}
-      </div>
-      <div className="text-2xl font-semibold tabular-nums">
-        {formatCurrency(thisAmount, currency, fmtLocale)}
-      </div>
-      <div className={`text-sm tabular-nums ${directionalClass}`}>
-        {arrow}{" "}
-        {delta === 0
-          ? "—"
-          : `${delta > 0 ? "+" : ""}${formatCurrency(Math.abs(delta), currency, fmtLocale)}`}
-        {delta !== 0 && (
-          <span className="text-(--muted) ml-2">{deltaPctLabel}</span>
-        )}
-      </div>
-      <div className="text-xs text-(--muted)">
-        {prevAmount > 0
-          ? `vs ${formatCurrency(prevAmount, currency, fmtLocale)}`
-          : ""}
-      </div>
-    </div>
-  );
-}
-
-function MoverColumn({
-  heading,
-  icon,
-  rows,
-  tone,
-  currency,
-  fmtLocale,
-  emptyLabel,
-  newThisMonthLabel,
-}: {
-  heading: string;
-  icon: React.ReactNode;
-  rows: CategoryDelta[];
-  tone: "up" | "down";
-  currency: string;
-  fmtLocale: string;
-  emptyLabel: string;
-  newThisMonthLabel: string;
-}) {
-  return (
-    <section className="rounded-2xl border border-(--border) bg-(--card) p-5">
-      <h3 className="font-semibold flex items-center gap-2 mb-3">
-        {icon}
-        {heading}
-      </h3>
-      {rows.length === 0 ? (
-        <p className="text-sm text-(--muted)">{emptyLabel}</p>
-      ) : (
-        <ul className="space-y-2.5">
-          {rows.map((d) => (
-            <li
-              key={d.id}
-              className="flex items-center justify-between gap-3 text-sm"
-            >
-              <span className="flex items-center gap-2 min-w-0">
-                <span className="shrink-0"><EmojiOrIcon value={d.icon} fallback="sparkle" size={22} /></span>
-                <span className="truncate">{d.name}</span>
-              </span>
-              <span className="text-right shrink-0 tabular-nums">
-                <div
-                  className={
-                    tone === "up" ? "text-(--expense)" : "text-(--income)"
-                  }
-                >
-                  {tone === "up" ? "+" : ""}
-                  {formatCurrency(Math.abs(d.delta), currency, fmtLocale)}
-                  {tone === "down" && " ↓"}
-                </div>
-                <div className="text-[11px] text-(--muted)">
-                  {d.prevAmount === 0
-                    ? newThisMonthLabel
-                    : d.deltaPct !== null
-                    ? `${d.deltaPct > 0 ? "+" : ""}${Math.round(d.deltaPct)}%`
-                    : ""}
-                </div>
-              </span>
-            </li>
-          ))}
-        </ul>
+          <div className="h-14 w-14 rounded-full bg-(--card)/70 flex items-center justify-center shrink-0">
+            <Mascot size={48} idPrefix="insights-mascot" />
+          </div>
+          <p className="text-sm font-medium text-(--foreground)/85">
+            {t("insights.noBaseline")}
+          </p>
+        </section>
       )}
-    </section>
+
+      {/* Expense breakdown card */}
+      <section
+        className="rounded-3xl px-5 py-5 border space-y-4"
+        style={{
+          background: PEACH_GRADIENT,
+          borderColor: "color-mix(in srgb, #E89A6A 25%, transparent)",
+        }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold">{periodTitle}</h2>
+          <PeriodToggle active={period} labels={periodLabels} />
+        </div>
+
+        {expenseRows.length === 0 ? (
+          <div className="rounded-2xl bg-(--card) px-4 py-6 text-center text-sm text-(--muted)">
+            {t("dashboard.noExpensePrompt")}
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-(--card) px-4 py-4 flex items-center gap-4">
+            <div className="shrink-0">
+              <Donut
+                data={
+                  expenseRows.slice(0, 6).map((r, i) => ({
+                    value: r.total,
+                    color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length],
+                  })) satisfies DonutSlice[]
+                }
+                size={120}
+                label={t("dashboard.donutSpent")}
+                centerValue={
+                  totalExpense > 0
+                    ? formatCurrencyCompact(totalExpense, currency, fmtLocale)
+                    : "—"
+                }
+              />
+            </div>
+            <ul className="flex-1 space-y-2 min-w-0">
+              {expenseRows.slice(0, 5).map((r, i) => {
+                const color = CATEGORY_PALETTE[i % CATEGORY_PALETTE.length];
+                const rawPct =
+                  totalExpense > 0 ? (r.total / totalExpense) * 100 : 0;
+                return (
+                  <li key={r.category_id ?? `row-${i}`} className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        aria-hidden
+                        className="h-2 w-2 rounded-full shrink-0"
+                        style={{ backgroundColor: color }}
+                      />
+                      <EmojiOrIcon value={r.icon} fallback="sparkle" size={14} />
+                      <span className="truncate text-[13px] flex-1">
+                        {r.name}
+                      </span>
+                      <span className="text-[11px] font-semibold tabular-nums shrink-0">
+                        {Math.round(rawPct)}%
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5 pl-5">
+                      <div
+                        className="h-1 rounded-full flex-1 overflow-hidden"
+                        style={{
+                          background:
+                            "color-mix(in srgb, var(--foreground) 6%, transparent)",
+                        }}
+                      >
+                        <div
+                          className="h-full rounded-full bar-fill"
+                          style={
+                            {
+                              background: color,
+                              "--bar-target": `${rawPct}%`,
+                            } as React.CSSProperties
+                          }
+                        />
+                      </div>
+                      <span className="text-[10px] text-(--muted) tabular-nums shrink-0">
+                        {formatCurrencyCompact(r.total, currency, fmtLocale)}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        {top && (
+          <div className="rounded-2xl bg-(--card)/70 px-4 py-2 flex items-center justify-between">
+            <span className="text-xs text-(--foreground)/80">
+              {t("insights.topCategory")}
+            </span>
+            <span className="text-sm font-semibold tabular-nums">
+              {top.name} · {topPct}%
+            </span>
+          </div>
+        )}
+      </section>
+
+      {/* Payment method summary — 2-col cards */}
+      <section>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-semibold">
+            {t("dashboard.paymentMethodTitle")}
+          </h2>
+          {unspecifiedExpense > 0 && (
+            <span className="text-[11px] text-(--muted)">
+              {t("dashboard.paymentMethodUnspecified")}{" "}
+              {formatCurrencyCompact(unspecifiedExpense, currency, fmtLocale)}
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <PaymentCard
+            icon={<JtIcon name="banknote" size={20} />}
+            label={t("transactions.paymentCash")}
+            amount={cashExpense}
+            pct={pctOf(cashExpense)}
+            currency={currency}
+            fmtLocale={fmtLocale}
+            ofExpenseLabel={t("insights.ofExpense")}
+          />
+          <PaymentCard
+            icon={<JtIcon name="landmark" size={20} />}
+            label={t("transactions.paymentTransfer")}
+            amount={transferExpense}
+            pct={pctOf(transferExpense)}
+            currency={currency}
+            fmtLocale={fmtLocale}
+            ofExpenseLabel={t("insights.ofExpense")}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function PeriodToggle({
+  active,
+  labels,
+}: {
+  active: Period;
+  labels: Record<Period, string>;
+}) {
+  return (
+    <div className="flex items-center gap-1 p-0.5 rounded-full bg-(--card)/70">
+      <PeriodLink p="week" active={active} label={labels.week} />
+      <PeriodLink p="month" active={active} label={labels.month} />
+      <PeriodLink p="year" active={active} label={labels.year} />
+    </div>
+  );
+}
+
+function PeriodLink({
+  p,
+  active,
+  label,
+}: {
+  p: Period;
+  active: Period;
+  label: string;
+}) {
+  const isActive = p === active;
+  return (
+    <Link
+      href={p === "month" ? "/insights" : `/insights?p=${p}`}
+      className="px-3 py-1.5 rounded-full text-xs font-semibold transition"
+      style={
+        isActive
+          ? { background: "white", color: PEACH_STRONG }
+          : { color: "color-mix(in srgb, #6E3A12 75%, transparent)" }
+      }
+    >
+      {label}
+    </Link>
+  );
+}
+
+function PaymentCard({
+  icon,
+  label,
+  amount,
+  pct,
+  currency,
+  fmtLocale,
+  ofExpenseLabel,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  amount: number;
+  pct: number;
+  currency: string;
+  fmtLocale: string;
+  ofExpenseLabel: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-(--border) bg-(--card) px-4 py-3">
+      <div className="flex items-center gap-2 text-(--muted)">
+        {icon}
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <p className="mt-2 text-xl font-bold tabular-nums">
+        {formatCurrencyCompact(amount, currency, fmtLocale)}
+      </p>
+      <p className="mt-1 text-[11px] text-(--muted)">
+        {pct}% {ofExpenseLabel}
+      </p>
+    </div>
   );
 }

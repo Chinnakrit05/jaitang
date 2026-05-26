@@ -618,7 +618,16 @@
     "upEmpty": "本月没有上升的分类。",
     "downHeading": "下降的分类",
     "downEmpty": "本月没有下降的分类。",
-    "newThisMonth": "本月新增"
+    "newThisMonth": "本月新增",
+    "expenseWeek": "本周支出",
+    "expenseMonth": "本月支出",
+    "expenseYear": "本年支出",
+    "periodWeek": "本周",
+    "periodMonth": "本月",
+    "periodYear": "本年",
+    "topCategory": "最常用类别",
+    "noBaseline": "暂无可比较的历史数据 — 开始记录吧！",
+    "ofExpense": "占总支出"
   },
   "yearReport": {
     "title": "{year}年回顾",

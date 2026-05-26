@@ -618,7 +618,16 @@
     "upEmpty": "ไม่มีหมวดไหนใช้เพิ่มขึ้น",
     "downHeading": "หมวดที่ใช้ลดลง",
     "downEmpty": "ไม่มีหมวดไหนใช้ลดลง",
-    "newThisMonth": "ใหม่เดือนนี้"
+    "newThisMonth": "ใหม่เดือนนี้",
+    "expenseWeek": "รายจ่ายสัปดาห์นี้",
+    "expenseMonth": "รายจ่ายเดือนนี้",
+    "expenseYear": "รายจ่ายปีนี้",
+    "periodWeek": "สัปดาห์นี้",
+    "periodMonth": "เดือนนี้",
+    "periodYear": "ปีนี้",
+    "topCategory": "หมวดที่ใช้มากสุด",
+    "noBaseline": "ยังไม่มีข้อมูลรอบก่อนเทียบ — เริ่มจดเลย!",
+    "ofExpense": "ของยอดจ่าย"
   },
   "yearReport": {
     "title": "สรุปปี {year}",
