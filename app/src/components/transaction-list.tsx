@@ -120,7 +120,7 @@ export function TransactionList({
                 {formatCurrencyCompact(Math.abs(dayNet), currency, fmtLocale)}
               </span>
             </header>
-            <ul>
+            <ul className="divide-y divide-(--border)/60">
               {txs.map((tx) => {
                 const time = formatTime(tx.occurred_at);
                 const catName =
