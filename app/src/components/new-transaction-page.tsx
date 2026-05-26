@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  TransactionForm,
-  type AccountChoice,
-  type SplitMember,
-  type TripChoice,
-} from "@/components/transaction-form";
+import { NewTransactionForm } from "@/components/new-transaction-form";
 import { ReceiptUploader } from "@/components/receipt-uploader";
+import type {
+  AccountChoice,
+  TripChoice,
+} from "@/components/transaction-form";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 import type { ParsedReceipt } from "@/lib/ocr";
 
@@ -18,11 +17,6 @@ type Initial = {
   note: string | null;
   paymentMethod: PaymentMethod | null;
   occurredAt: string;
-  // Pre-fill the trip too — when the user scans a receipt during an
-  // active trip, the OCR result should inherit the trip tag the same
-  // way a manual "+ add" would. Without this, OCR-fed `initial` causes
-  // the form to treat the row as edit-mode (where intentionally-cleared
-  // tripId means "no trip") and the active-trip fallback never fires.
   tripId: string | null;
 };
 
@@ -30,9 +24,7 @@ export function NewTransactionPage({
   categories,
   action,
   ocrEnabled,
-  splitMembers,
   activeTrip,
-  trips,
   accounts,
   noteSuggestions,
   currency,
@@ -40,14 +32,11 @@ export function NewTransactionPage({
   categories: Category[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   ocrEnabled: boolean;
-  splitMembers?: SplitMember[];
   activeTrip?: TripChoice | null;
-  trips?: TripChoice[];
   accounts?: AccountChoice[];
   noteSuggestions?: string[];
   currency?: string;
 }) {
-  // Use a key to force-remount the form when OCR fills it
   const [formKey, setFormKey] = useState(0);
   const [initial, setInitial] = useState<Initial | undefined>(undefined);
 
@@ -61,28 +50,23 @@ export function NewTransactionPage({
       occurredAt: result.occurredAt
         ? new Date(result.occurredAt).toISOString()
         : new Date().toISOString(),
-      // Inherit the active trip — receipts scanned during a trip should
-      // be tagged automatically, matching the manual-add UX.
       tripId: activeTrip?.id ?? null,
     });
     setFormKey((k) => k + 1);
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {ocrEnabled && <ReceiptUploader onParsed={applyOcr} />}
-      <TransactionForm
+      <NewTransactionForm
         key={formKey}
         categories={categories}
-        initial={initial}
-        splitMembers={splitMembers}
-        activeTrip={activeTrip}
-        trips={trips}
         accounts={accounts}
+        activeTrip={activeTrip}
         noteSuggestions={noteSuggestions}
-        action={action}
-        submitLabel="บันทึก"
         currency={currency}
+        action={action}
+        initial={initial}
       />
     </div>
   );
