@@ -61,11 +61,17 @@ export function InlineAmount({
   // Format currency prefix — keep it tiny so the input stays close to
   // the number for tap-targeting on mobile.
   const symbol = currency === "THB" ? "฿" : currency;
+  // When the field has no committed value yet, surface a dashed pill
+  // so the user can tell at a glance that the row is awaiting input.
+  // Once they commit a number, fall back to the seamless text look.
+  const emptyState = savedValue === null;
 
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-end gap-0.5 tabular-nums",
+        "inline-flex items-center justify-end gap-0.5 tabular-nums transition",
+        emptyState &&
+          "border border-dashed border-(--accent)/60 rounded-md px-1.5 py-0.5 bg-(--accent)/5",
         pending && "opacity-60"
       )}
       title={error ?? undefined}
@@ -91,7 +97,8 @@ export function InlineAmount({
         size={Math.max(3, value.length)}
         className={cn(
           "bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition",
-          error ? "text-(--expense)" : "text-(--foreground)"
+          error ? "text-(--expense)" : "text-(--foreground)",
+          emptyState && "placeholder:text-(--accent)/70"
         )}
       />
     </span>

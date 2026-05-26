@@ -136,14 +136,14 @@ export default function RecurringPreviewPage() {
                   </p>
                 </div>
                 {r.amount === null ? (
-                  <span className="inline-flex items-center justify-end gap-0.5 tabular-nums">
+                  <span className="inline-flex items-center justify-end gap-0.5 tabular-nums border border-dashed border-(--accent)/60 rounded-md px-1.5 py-0.5 bg-(--accent)/5">
                     <span className="text-(--muted) text-xs">฿</span>
                     <input
                       type="text"
                       inputMode="decimal"
                       placeholder="0"
                       size={4}
-                      className="bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition"
+                      className="bg-transparent text-right font-semibold tabular-nums text-[13px] placeholder:text-(--accent)/70 focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition"
                     />
                   </span>
                 ) : (
