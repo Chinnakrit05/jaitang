@@ -7,8 +7,6 @@ import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
 import { formatCurrencyCompact } from "@/lib/utils";
 
-const PEACH_STRONG = "#E89A6A";
-
 type Row = { id: string; primary: string; sub?: string; amount: number };
 
 /**
@@ -95,9 +93,6 @@ export default function ReportsPreviewPage() {
           />
         </div>
 
-        {/* View toggle */}
-        <ViewToggle />
-
         {/* Income section */}
         <ReportSection
           kind="income"
@@ -154,35 +149,6 @@ export default function ReportsPreviewPage() {
       </div>
     );
   }
-}
-
-function ViewToggle() {
-  const t = useTranslations();
-  const [view, setView] = useState<"list" | "table">("table");
-  return (
-    <div className="rounded-full border border-(--border) bg-(--card) p-1 grid grid-cols-2">
-      <button
-        type="button"
-        onClick={() => setView("list")}
-        className={`py-2 text-sm font-semibold rounded-full transition ${
-          view === "list" ? "shadow-sm" : "text-(--muted)"
-        }`}
-        style={view === "list" ? { background: PEACH_STRONG, color: "white" } : undefined}
-      >
-        {t("reports.styleA")}
-      </button>
-      <button
-        type="button"
-        onClick={() => setView("table")}
-        className={`py-2 text-sm font-semibold rounded-full transition ${
-          view === "table" ? "shadow-sm" : "text-(--muted)"
-        }`}
-        style={view === "table" ? { background: PEACH_STRONG, color: "white" } : undefined}
-      >
-        {t("reports.styleB")}
-      </button>
-    </div>
-  );
 }
 
 function ReportSection({

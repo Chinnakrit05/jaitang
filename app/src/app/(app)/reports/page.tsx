@@ -49,7 +49,6 @@ export default async function ReportsPage({
   const [yStr, mStr] = ymRaw.split("-");
   const year = Number(yStr);
   const month = Number(mStr);
-  const view = sp.view === "list" ? "list" : "table";
 
   // Compute UTC bounds for the calendar month. We don't try to be clever
   // about the user's TZ here — sumPeriod / listTransactions all use UTC
@@ -98,7 +97,7 @@ export default async function ReportsPage({
       {/* Month switcher */}
       <div className="rounded-2xl border border-(--border) bg-(--card) flex items-center justify-between px-3 py-2">
         <Link
-          href={`/reports?ym=${prev}&view=${view}`}
+          href={`/reports?ym=${prev}`}
           aria-label={t("calendar.prev")}
           className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-(--background) transition"
         >
@@ -106,7 +105,7 @@ export default async function ReportsPage({
         </Link>
         <span className="font-semibold tabular-nums">{monthLabel}</span>
         <Link
-          href={`/reports?ym=${next}&view=${view}`}
+          href={`/reports?ym=${next}`}
           aria-label={t("calendar.next")}
           className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-(--background) transition"
         >
@@ -137,36 +136,6 @@ export default async function ReportsPage({
           currency={currency}
           fmtLocale={fmtLocale}
         />
-      </div>
-
-      {/* View toggle */}
-      <div className="rounded-full border border-(--border) bg-(--card) p-1 grid grid-cols-2">
-        <Link
-          href={`/reports?ym=${ymRaw}&view=list`}
-          className={`py-2 text-center text-sm font-semibold rounded-full transition ${
-            view === "list" ? "shadow-sm" : "text-(--muted)"
-          }`}
-          style={
-            view === "list"
-              ? { background: "#E89A6A", color: "white" }
-              : undefined
-          }
-        >
-          {t("reports.styleA")}
-        </Link>
-        <Link
-          href={`/reports?ym=${ymRaw}&view=table`}
-          className={`py-2 text-center text-sm font-semibold rounded-full transition ${
-            view === "table" ? "shadow-sm" : "text-(--muted)"
-          }`}
-          style={
-            view === "table"
-              ? { background: "#E89A6A", color: "white" }
-              : undefined
-          }
-        >
-          {t("reports.styleB")}
-        </Link>
       </div>
 
       {/* Income section */}
