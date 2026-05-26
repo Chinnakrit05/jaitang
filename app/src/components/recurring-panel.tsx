@@ -52,7 +52,10 @@ export function RecurringPanel({
   const router = useRouter();
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
-  const [showForm, setShowForm] = useState(rules.length === 0);
+  // Default closed even on an empty list — the header + button makes
+  // the create affordance obvious, and dropping straight into a long
+  // form on a fresh page was disorienting. User taps "+" to open it.
+  const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   function applyDue() {
@@ -107,7 +110,10 @@ export function RecurringPanel({
       )}
 
       {rules.length === 0 ? (
-        <p className="text-sm text-(--muted) px-1">{t("recurring.empty")}</p>
+        <div className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 py-10 px-6 text-center">
+          <p className="text-3xl mb-2" aria-hidden>📒</p>
+          <p className="text-sm text-(--muted)">{t("recurring.empty")}</p>
+        </div>
       ) : (
         <>
           <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border)/60 overflow-hidden">
