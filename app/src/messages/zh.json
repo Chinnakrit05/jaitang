@@ -814,5 +814,14 @@
     "reports": "报表",
     "accountsBook": "账户",
     "transferShort": "转账"
+  },
+  "reports": {
+    "title": "月度报表",
+    "balance": "结余",
+    "styleA": "样式 1",
+    "styleB": "样式 2 (表格)",
+    "empty": "暂无记录",
+    "totalIncome": "总收入",
+    "totalExpense": "总支出"
   }
 }

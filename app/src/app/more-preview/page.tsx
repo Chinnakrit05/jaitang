@@ -35,7 +35,7 @@ export default function MorePreviewPage() {
     fg: string;
   }> = [
     {
-      href: "/insights",
+      href: "/reports",
       label: t("more.reports"),
       icon: "insights",
       bg: "color-mix(in srgb, #FFD1E5 60%, var(--card))",

@@ -814,5 +814,14 @@
     "reports": "Reports",
     "accountsBook": "Accounts",
     "transferShort": "Transfer"
+  },
+  "reports": {
+    "title": "Monthly report",
+    "balance": "Balance",
+    "styleA": "Style 1",
+    "styleB": "Style 2 (table)",
+    "empty": "No entries yet",
+    "totalIncome": "Total income",
+    "totalExpense": "Total expense"
   }
 }
