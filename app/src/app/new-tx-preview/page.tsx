@@ -17,27 +17,27 @@ import type { Category } from "@/lib/types";
  * preview stays in sync with what users actually see when logged in.
  */
 export default function NewTransactionPreviewPage() {
-  const categories: Category[] = [
-    "อาหาร:🍜",
-    "คาเฟ่:☕",
-    "ของหวาน:🍰",
-    "เดินทาง:🚕",
-    "ของใช้:🧴",
-    "ไฟฟ้า:💡",
-    "Bts:🚕",
-  ].map((s, i) => {
-    const [name, icon] = s.split(":");
-    return {
-      id: `c${i + 1}`,
-      ledger_id: "demo",
-      name,
-      icon,
-      color: null,
-      kind: "expense" as const,
-      sort_order: i + 1,
-      parent_id: null,
-    };
-  });
+  // [name, icon, parent_id (or null)] — first two are top-level, rest
+  // are subs of อาหาร / เดินทาง so the parent-badge shows in the grid.
+  const raw: Array<[string, string, string | null]> = [
+    ["อาหาร", "🍜", null],
+    ["เดินทาง", "🚕", null],
+    ["คาเฟ่", "☕", "c1"],
+    ["ของหวาน", "🍰", "c1"],
+    ["น้ำมัน", "⛽", "c2"],
+    ["ขนส่งสาธารณะ", "🚇", "c2"],
+    ["Bts", "🚕", "c2"],
+  ];
+  const categories: Category[] = raw.map(([name, icon, parent_id], i) => ({
+    id: `c${i + 1}`,
+    ledger_id: "demo",
+    name,
+    icon,
+    color: null,
+    kind: "expense" as const,
+    sort_order: i + 1,
+    parent_id,
+  }));
 
   const accounts: AccountChoice[] = [
     { id: "a1", name: "yutuyt", icon: "💵", currency: "THB", archived: false },

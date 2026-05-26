@@ -144,6 +144,10 @@ export function NewTransactionForm({
   const visibleCats = sortByHierarchy(
     categories.filter((c) => c.kind === kind)
   );
+  // Lookup map for parent icons — used by CategoryTile to render a
+  // small badge in the top-right of any sub-category tile so the user
+  // can see what bucket it lives under at a glance.
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
   const eligibleAccounts = (accounts ?? []).filter(
     (a) => a.currency === txCurrency && !a.archived
   );
@@ -444,6 +448,7 @@ export function NewTransactionForm({
             <CategoryTile
               key={c.id}
               category={c}
+              parent={c.parent_id ? categoryById.get(c.parent_id) ?? null : null}
               selected={categoryId === c.id}
               onClick={() => setCategoryId(c.id)}
             />
@@ -599,10 +604,14 @@ function AccountPill({
 
 function CategoryTile({
   category,
+  parent,
   selected,
   onClick,
 }: {
   category: Category;
+  /** When the tile is a sub-category, the resolved parent. Drives the
+   *  small icon badge in the top-right corner. null = top-level. */
+  parent: Category | null;
   selected: boolean;
   onClick: () => void;
 }) {
@@ -616,6 +625,16 @@ function CategoryTile({
       )}
       style={selected ? { boxShadow: `inset 0 0 0 2px ${PEACH_STRONG}` } : undefined}
     >
+      {parent && (
+        <span
+          className="absolute top-1 right-1 h-5 w-5 rounded-full flex items-center justify-center bg-(--background) shadow-sm"
+          style={{ fontSize: 12, lineHeight: 1 }}
+          title={parent.name}
+          aria-label={parent.name}
+        >
+          <EmojiOrIcon value={parent.icon} fallback="sparkle" size={12} />
+        </span>
+      )}
       <EmojiOrIcon value={category.icon} fallback="sparkle" size={28} />
       <span className="text-xs font-medium leading-tight text-center line-clamp-1">
         {category.name}
