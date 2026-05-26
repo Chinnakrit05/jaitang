@@ -36,6 +36,10 @@ type Props = {
   currency?: string;
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   initial?: Initial;
+  /** Optional small control rendered in the header next to the title.
+   *  The new-tx flow uses this slot for the compact receipt-scan
+   *  button so OCR stays one tap away without taking a whole card. */
+  headerAction?: React.ReactNode;
 };
 
 const PEACH_STRONG = "#E89A6A";
@@ -66,6 +70,7 @@ export function NewTransactionForm({
   currency: homeCurrency = "THB",
   action,
   initial,
+  headerAction,
 }: Props) {
   const router = useRouter();
   const t = useTranslations();
@@ -222,14 +227,17 @@ export function NewTransactionForm({
         <h1 className="text-base font-semibold">
           {t("transactions.newTitle")}
         </h1>
-        <button
-          type="button"
-          onClick={clear}
-          className="text-sm font-medium px-2 py-1"
-          style={{ color: PEACH_STRONG }}
-        >
-          {t("common.clear")}
-        </button>
+        <div className="flex items-center gap-2">
+          {headerAction}
+          <button
+            type="button"
+            onClick={clear}
+            className="text-sm font-medium px-2 py-1"
+            style={{ color: PEACH_STRONG }}
+          >
+            {t("common.clear")}
+          </button>
+        </div>
       </div>
 
       {/* Kind toggle */}

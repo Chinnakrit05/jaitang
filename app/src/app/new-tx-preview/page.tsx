@@ -1,6 +1,7 @@
 "use client";
 
 import { NewTransactionForm } from "@/components/new-transaction-form";
+import { ReceiptUploader } from "@/components/receipt-uploader";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
 import type {
   AccountChoice,
@@ -64,6 +65,14 @@ export default function NewTransactionPreviewPage() {
           activeTrip={activeTrip}
           currency="THB"
           action={noopAction}
+          headerAction={
+            <ReceiptUploader
+              variant="compact"
+              onParsed={() => {
+                /* preview: ignore OCR result */
+              }}
+            />
+          }
         />
       </div>
       <MobileNav

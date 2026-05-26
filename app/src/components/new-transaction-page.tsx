@@ -56,18 +56,20 @@ export function NewTransactionPage({
   }
 
   return (
-    <div className="space-y-4">
-      {ocrEnabled && <ReceiptUploader onParsed={applyOcr} />}
-      <NewTransactionForm
-        key={formKey}
-        categories={categories}
-        accounts={accounts}
-        activeTrip={activeTrip}
-        noteSuggestions={noteSuggestions}
-        currency={currency}
-        action={action}
-        initial={initial}
-      />
-    </div>
+    <NewTransactionForm
+      key={formKey}
+      categories={categories}
+      accounts={accounts}
+      activeTrip={activeTrip}
+      noteSuggestions={noteSuggestions}
+      currency={currency}
+      action={action}
+      initial={initial}
+      headerAction={
+        ocrEnabled ? (
+          <ReceiptUploader variant="compact" onParsed={applyOcr} />
+        ) : undefined
+      }
+    />
   );
 }

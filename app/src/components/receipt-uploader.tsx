@@ -11,6 +11,11 @@ const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
 
 type Props = {
   onParsed: (result: ParsedReceipt) => void;
+  /** "card" (default) renders the full uploader card with title + hint.
+   *  "compact" renders a single circular icon button — used by the new
+   *  add-transaction layout where the scan affordance lives in the
+   *  header alongside other small controls. */
+  variant?: "card" | "compact";
 };
 
 async function fileToDataUrl(file: File, maxDim = 1600): Promise<string> {
@@ -40,7 +45,7 @@ async function fileToDataUrl(file: File, maxDim = 1600): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-export function ReceiptUploader({ onParsed }: Props) {
+export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
@@ -68,6 +73,39 @@ export function ReceiptUploader({ onParsed }: Props) {
         setError(e instanceof Error ? e.message : t("ocr.confidenceLow"));
       }
     });
+  }
+
+  if (variant === "compact") {
+    return (
+      <>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleFile(f);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={pending}
+          aria-label={t("ocr.selectImage")}
+          title={error ?? t("ocr.title")}
+          className="h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm hover:bg-(--background) transition disabled:opacity-60"
+        >
+          {pending ? (
+            <JtIcon name="loader-2" size={18} className="animate-spin" />
+          ) : (
+            <JtIcon name="camera" size={18} />
+          )}
+        </button>
+      </>
+    );
   }
 
   return (
