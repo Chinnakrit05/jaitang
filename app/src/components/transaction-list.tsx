@@ -195,23 +195,6 @@ export function TransactionList({
                               <span>·</span>
                             </>
                           )}
-                          {tx.payment_method && (
-                            <>
-                              <span className="inline-flex items-center gap-1">
-                                {tx.payment_method === "cash" ? (
-                                  <JtIcon name="banknote" size={14} />
-                                ) : (
-                                  <JtIcon name="landmark" size={14} />
-                                )}
-                                <span>
-                                  {tx.payment_method === "cash"
-                                    ? t("transactions.paymentCash")
-                                    : t("transactions.paymentTransfer")}
-                                </span>
-                              </span>
-                              <span>·</span>
-                            </>
-                          )}
                           {tx.fx_currency && tx.fx_amount !== null && (
                             <>
                               <span
@@ -231,36 +214,34 @@ export function TransactionList({
                               <span>·</span>
                             </>
                           )}
-                          {showAttribution && tx.user && (
-                            <>
-                              <span className="inline-flex items-center gap-1">
-                                {tx.user.image ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={tx.user.image}
-                                    alt={tx.user.name ?? tx.user.email}
-                                    className="h-3.5 w-3.5 rounded-full"
-                                  />
-                                ) : null}
-                                <span>
-                                  {tx.user.name?.split(" ")[0] ?? "?"}
-                                </span>
-                              </span>
-                              <span>·</span>
-                            </>
-                          )}
                           <span className="tabular-nums">{time}</span>
                         </div>
                       </div>
-                      <div
-                        className={`tabular-nums font-bold text-[15px] shrink-0 ${
-                          tx.kind === "income"
-                            ? "text-(--income)"
-                            : "text-(--foreground)"
-                        }`}
-                      >
-                        {tx.kind === "income" ? "+" : "−"}
-                        {formatCurrencyCompact(tx.amount, currency, fmtLocale)}
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <div
+                          className={`tabular-nums font-bold text-[15px] ${
+                            tx.kind === "income"
+                              ? "text-(--income)"
+                              : "text-(--foreground)"
+                          }`}
+                        >
+                          {tx.kind === "income" ? "+" : "−"}
+                          {formatCurrencyCompact(tx.amount, currency, fmtLocale)}
+                        </div>
+                        {tx.payment_method && (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-(--muted)">
+                            {tx.payment_method === "cash" ? (
+                              <JtIcon name="banknote" size={12} />
+                            ) : (
+                              <JtIcon name="landmark" size={12} />
+                            )}
+                            <span>
+                              {tx.payment_method === "cash"
+                                ? t("transactions.paymentCash")
+                                : t("transactions.paymentTransfer")}
+                            </span>
+                          </span>
+                        )}
                       </div>
                     </Link>
                     {/* Row actions: hover-revealed on desktop. Absolute-
