@@ -15,23 +15,35 @@ type Result = { ok: true } | { ok: false; error: string };
 export function InlineAmount({
   initial,
   currency = "THB",
+  placeholder = "0",
   action,
 }: {
-  initial: number;
+  /** Pass null when there's no current amount (e.g. variable-cost
+   *  recurring rule waiting for input). The field renders empty with
+   *  the placeholder, and committing sends the typed value to `action`. */
+  initial: number | null;
   currency?: string;
+  placeholder?: string;
   action: (amount: number) => Promise<Result>;
 }) {
-  const [value, setValue] = useState<string>(String(initial));
-  const [savedValue, setSavedValue] = useState<number>(initial);
+  const [value, setValue] = useState<string>(initial === null ? "" : String(initial));
+  const [savedValue, setSavedValue] = useState<number | null>(initial);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   function commit() {
     setError(null);
+    if (value === "") {
+      // Empty + already empty → nothing to commit. Empty + had a saved
+      // value → revert (we don't support "clear amount" through this
+      // control; the long form handles deletes).
+      if (savedValue !== null) setValue(String(savedValue));
+      return;
+    }
     const num = Number(value);
     if (!Number.isFinite(num) || num <= 0) {
       // Revert to last good value silently.
-      setValue(String(savedValue));
+      setValue(savedValue === null ? "" : String(savedValue));
       return;
     }
     if (num === savedValue) return;
@@ -41,7 +53,7 @@ export function InlineAmount({
         setSavedValue(num);
       } else {
         setError(result.error);
-        setValue(String(savedValue));
+        setValue(savedValue === null ? "" : String(savedValue));
       }
     });
   }
@@ -62,6 +74,7 @@ export function InlineAmount({
       <input
         type="text"
         inputMode="decimal"
+        placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value.replace(/[^\d.]/g, ""))}
         onBlur={commit}
@@ -71,7 +84,7 @@ export function InlineAmount({
             (e.currentTarget as HTMLInputElement).blur();
           }
           if (e.key === "Escape") {
-            setValue(String(savedValue));
+            setValue(savedValue === null ? "" : String(savedValue));
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}

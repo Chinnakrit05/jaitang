@@ -12,10 +12,12 @@ import type { RecurPeriod, RecurringRule } from "@/lib/recurring";
 import {
   createRecurringAction,
   deleteRecurringAction,
+  fillPendingRecurringAmountAction,
   runDueAction,
   toggleRecurringAction,
   updateRecurringAction,
 } from "@/app/(app)/recurring/actions";
+import { InlineAmount } from "@/app/(app)/reports/inline-amount";
 import { CurrencyPicker } from "@/components/currency-picker";
 import { SubscriptionStats } from "@/components/subscription-stats";
 import { formatCurrency, formatDate, cn, toLocalDateTimeInput } from "@/lib/utils";
@@ -453,92 +455,98 @@ function RuleRow({
     longPressTimer.current = null;
   }
 
+  async function fillAction(amount: number) {
+    return fillPendingRecurringAmountAction(rule.id, amount);
+  }
+
   return (
-    <li>
+    <li
+      onPointerDown={startLongPress}
+      onPointerUp={cancelLongPress}
+      onPointerLeave={cancelLongPress}
+      onContextMenu={(e) => {
+        // Long-press on some touch browsers fires `contextmenu` rather than
+        // our pointer-based timer — wire that path to delete too.
+        e.preventDefault();
+        commitDelete();
+      }}
+      className={cn(
+        "flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition",
+        !rule.active && "opacity-60",
+        (pending || busy) && "opacity-60 pointer-events-none"
+      )}
+    >
+      <span
+        className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
+        style={{
+          background: "color-mix(in srgb, #F9D5B4 40%, var(--card))",
+        }}
+        aria-hidden
+      >
+        <EmojiOrIcon value={rule.category?.icon} fallback="recurring" size={20} />
+      </span>
+      {/* Name + status — clickable target for editing the rule */}
       <button
         type="button"
         onClick={() => {
           if (longPressed.current) return;
           onEdit();
         }}
-        onPointerDown={startLongPress}
-        onPointerUp={cancelLongPress}
-        onPointerLeave={cancelLongPress}
-        onContextMenu={(e) => {
-          // Long-press on some touch browsers fires `contextmenu` rather than
-          // our pointer-based timer — wire that path to delete too.
-          e.preventDefault();
-          commitDelete();
-        }}
-        disabled={pending || busy}
-        className={cn(
-          "w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-(--background) transition disabled:opacity-60",
-          !rule.active && "opacity-60"
-        )}
+        className="flex-1 min-w-0 text-left"
       >
-        <span
-          className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
-          style={{
-            background: "color-mix(in srgb, #F9D5B4 40%, var(--card))",
-          }}
-          aria-hidden
-        >
-          <EmojiOrIcon value={rule.category?.icon} fallback="recurring" size={20} />
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[14px] leading-tight truncate">
-            {rule.note?.trim() || rule.category?.name || t("common.uncategorizedFull")}
-          </p>
-          <p className="text-[11px] text-(--muted) leading-tight mt-0.5 flex items-center gap-1 flex-wrap">
-            <span>{PERIOD_LABEL[rule.period]}</span>
-            <span>·</span>
-            {isVariable && (
-              <>
-                <span>{t("recurring.variableBillBadge")}</span>
-                <span>·</span>
-              </>
-            )}
-            {appliedThisPeriod ? (
-              <span className="text-(--income)">
-                {t("recurring.appliedThisPeriod")}
-              </span>
-            ) : (
-              <span>
-                {t("recurring.nextRun", {
-                  when: formatDate(rule.next_run_at, fmtLocale),
-                })}
-              </span>
-            )}
-            {ruleCurrency !== homeCurrency && (
-              <>
-                <span>·</span>
-                <span className="tabular-nums">{ruleCurrency}</span>
-              </>
-            )}
-          </p>
-        </div>
+        <p className="font-semibold text-[14px] leading-tight truncate">
+          {rule.note?.trim() || rule.category?.name || t("common.uncategorizedFull")}
+        </p>
+        <p className="text-[11px] text-(--muted) leading-tight mt-0.5 flex items-center gap-1 flex-wrap">
+          <span>{PERIOD_LABEL[rule.period]}</span>
+          <span>·</span>
+          {isVariable && (
+            <>
+              <span>{t("recurring.variableBillBadge")}</span>
+              <span>·</span>
+            </>
+          )}
+          {appliedThisPeriod ? (
+            <span className="text-(--income)">
+              {t("recurring.appliedThisPeriod")}
+            </span>
+          ) : (
+            <span>
+              {t("recurring.nextRun", {
+                when: formatDate(rule.next_run_at, fmtLocale),
+              })}
+            </span>
+          )}
+          {ruleCurrency !== homeCurrency && (
+            <>
+              <span>·</span>
+              <span className="tabular-nums">{ruleCurrency}</span>
+            </>
+          )}
+        </p>
+      </button>
+      {/* Amount — inline input when the rule is variable-cost. Saving
+          materialises the rule for this period (creates the tx and
+          bumps last_run_at / next_run_at). */}
+      {isVariable ? (
+        <InlineAmount
+          initial={null}
+          currency={ruleCurrency}
+          action={fillAction}
+        />
+      ) : (
         <div
           className={cn(
             "tabular-nums font-semibold shrink-0 text-[14px]",
-            isVariable
-              ? "text-(--muted)"
-              : rule.kind === "income"
+            rule.kind === "income"
               ? "text-(--income)"
               : "text-(--expense)"
           )}
         >
-          {isVariable ? (
-            <>
-              {ruleCurrency === "THB" ? "฿" : ruleCurrency}—
-            </>
-          ) : (
-            <>
-              {rule.kind === "income" ? "+" : "−"}
-              {formatCurrency(rule.amount!, ruleCurrency, fmtLocale)}
-            </>
-          )}
+          {rule.kind === "income" ? "+" : "−"}
+          {formatCurrency(rule.amount!, ruleCurrency, fmtLocale)}
         </div>
-      </button>
+      )}
     </li>
   );
 }

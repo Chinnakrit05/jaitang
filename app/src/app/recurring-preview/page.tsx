@@ -135,25 +135,30 @@ export default function RecurringPreviewPage() {
                     )}
                   </p>
                 </div>
-                <div
-                  className={cn(
-                    "tabular-nums font-semibold shrink-0 text-[14px]",
-                    r.amount === null
-                      ? "text-(--muted)"
-                      : r.kind === "income"
-                      ? "text-(--income)"
-                      : "text-(--expense)"
-                  )}
-                >
-                  {r.amount === null ? (
-                    "฿—"
-                  ) : (
-                    <>
-                      {r.kind === "income" ? "+" : "−"}฿
-                      {r.amount.toLocaleString()}
-                    </>
-                  )}
-                </div>
+                {r.amount === null ? (
+                  <span className="inline-flex items-center justify-end gap-0.5 tabular-nums">
+                    <span className="text-(--muted) text-xs">฿</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
+                      size={4}
+                      className="bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition"
+                    />
+                  </span>
+                ) : (
+                  <div
+                    className={cn(
+                      "tabular-nums font-semibold shrink-0 text-[14px]",
+                      r.kind === "income"
+                        ? "text-(--income)"
+                        : "text-(--expense)"
+                    )}
+                  >
+                    {r.kind === "income" ? "+" : "−"}฿
+                    {r.amount.toLocaleString()}
+                  </div>
+                )}
               </div>
             </li>
           ))}

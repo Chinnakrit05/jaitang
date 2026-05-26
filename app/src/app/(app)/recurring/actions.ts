@@ -183,3 +183,28 @@ export async function fillPendingRecurringAction(
   refresh();
   return { ok: true as const };
 }
+
+/**
+ * Lightweight wrapper around `fillPendingRecurring` for the inline
+ * amount field on the recurring list — same path as the pending
+ * panel, just a friendlier signature (no FormData) so the client
+ * component can call it directly from <InlineAmount>.
+ */
+export async function fillPendingRecurringAmountAction(
+  ruleId: string,
+  amount: number,
+) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+  const parsed = FillSchema.safeParse({ amount });
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid amount" };
+  }
+  await fillPendingRecurring({
+    ruleId,
+    ledgerId,
+    amount: parsed.data.amount,
+  });
+  refresh();
+  return { ok: true as const };
+}
