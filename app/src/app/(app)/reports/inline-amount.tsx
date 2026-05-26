@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { JtIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 type Result = { ok: true } | { ok: false; error: string };
@@ -30,6 +31,16 @@ export function InlineAmount({
   const [savedValue, setSavedValue] = useState<number | null>(initial);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // Flash a checkmark for ~1.2s after a successful save so the user
+  // has a clear "yes, it landed" signal even when the visible row
+  // state doesn't change much (variable-cost recurring rules in
+  // particular don't store the just-typed amount on the rule).
+  const [justSaved, setJustSaved] = useState(false);
+  useEffect(() => {
+    if (!justSaved) return;
+    const id = window.setTimeout(() => setJustSaved(false), 1200);
+    return () => window.clearTimeout(id);
+  }, [justSaved]);
 
   function commit() {
     setError(null);
@@ -51,6 +62,7 @@ export function InlineAmount({
       const result = await action(num);
       if (result.ok) {
         setSavedValue(num);
+        setJustSaved(true);
       } else {
         setError(result.error);
         setValue(savedValue === null ? "" : String(savedValue));
@@ -71,8 +83,7 @@ export function InlineAmount({
       className={cn(
         "inline-flex items-center justify-end gap-0.5 tabular-nums transition",
         emptyState &&
-          "border border-dashed border-(--accent)/60 rounded-md px-1.5 py-0.5 bg-(--accent)/5",
-        pending && "opacity-60"
+          "border border-dashed border-(--accent)/60 rounded-md px-1.5 py-0.5 bg-(--accent)/5"
       )}
       title={error ?? undefined}
     >
@@ -95,12 +106,32 @@ export function InlineAmount({
           }
         }}
         size={Math.max(3, value.length)}
+        disabled={pending}
         className={cn(
           "bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition",
           error ? "text-(--expense)" : "text-(--foreground)",
-          emptyState && "placeholder:text-(--accent)/70"
+          emptyState && "placeholder:text-(--accent)/70",
+          pending && "opacity-60"
         )}
       />
+      {/* Inline status indicator — spinning loader while the action is
+          in flight, brief check after a successful save. Sits flush
+          with the input so the row height stays the same. */}
+      {pending ? (
+        <JtIcon
+          name="loader-2"
+          size={14}
+          className="ml-0.5 animate-spin text-(--accent)"
+          aria-label="saving"
+        />
+      ) : justSaved ? (
+        <JtIcon
+          name="check"
+          size={14}
+          className="ml-0.5 text-(--income)"
+          aria-label="saved"
+        />
+      ) : null}
     </span>
   );
 }
