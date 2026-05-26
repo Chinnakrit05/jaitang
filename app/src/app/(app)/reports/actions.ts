@@ -7,6 +7,7 @@ import { updateTransaction } from "@/lib/transactions";
 import { updateRecurring } from "@/lib/recurring";
 
 const AmountSchema = z.coerce.number().positive().max(1e12);
+const NoteSchema = z.string().max(500);
 
 /**
  * Single-field amount update used by the inline-editable rows on the
@@ -53,6 +54,41 @@ export async function updateRecurringAmountAction(
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid amount" };
   }
   await updateRecurring(id, { amount: parsed.data });
+  revalidatePath("/reports");
+  revalidatePath("/recurring");
+  return { ok: true as const };
+}
+
+/**
+ * Inline note edit for a transaction row. Trim → empty string clears
+ * the note (stored as NULL) so the row falls back to category name as
+ * its primary line.
+ */
+export async function updateTransactionNoteAction(id: string, note: string) {
+  const { role } = await requireSession();
+  assertWritable(role);
+  const parsed = NoteSchema.safeParse(note);
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid note" };
+  }
+  const trimmed = parsed.data.trim();
+  await updateTransaction(id, { note: trimmed.length === 0 ? null : trimmed });
+  revalidatePath("/reports");
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
+/** Same as above for a recurring rule. */
+export async function updateRecurringNoteAction(id: string, note: string) {
+  const { role } = await requireSession();
+  assertWritable(role);
+  const parsed = NoteSchema.safeParse(note);
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid note" };
+  }
+  const trimmed = parsed.data.trim();
+  await updateRecurring(id, { note: trimmed.length === 0 ? null : trimmed });
   revalidatePath("/reports");
   revalidatePath("/recurring");
   return { ok: true as const };

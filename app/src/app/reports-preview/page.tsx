@@ -210,6 +210,7 @@ function ReportSection({
 
 function PreviewRow({ row, recurring }: { row: Row; recurring?: boolean }) {
   const [v, setV] = useState(String(row.amount));
+  const [name, setName] = useState(row.primary);
   return (
     <li className="flex items-center gap-2 px-3 py-1.5">
       {recurring && (
@@ -223,7 +224,12 @@ function PreviewRow({ row, recurring }: { row: Row; recurring?: boolean }) {
         </span>
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[13px] leading-tight truncate">{row.primary}</p>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full bg-transparent font-semibold text-[13px] leading-tight truncate focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition"
+        />
         {row.sub && (
           <p className="text-[11px] text-(--muted) leading-tight truncate">{row.sub}</p>
         )}

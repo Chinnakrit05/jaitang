@@ -9,9 +9,12 @@ import { intlLocale } from "@/lib/locale-format";
 import { formatCurrencyCompact } from "@/lib/utils";
 import {
   updateRecurringAmountAction,
+  updateRecurringNoteAction,
   updateTransactionAmountAction,
+  updateTransactionNoteAction,
 } from "./actions";
 import { InlineAmount } from "./inline-amount";
+import { InlineNote } from "./inline-note";
 
 /**
  * Monthly review page. Mirrors the Figma "รายงานรายเดือน" mockup:
@@ -265,43 +268,47 @@ function ReportSection({
 }
 
 function TxRow({ tx, currency }: { tx: Tx; currency: string }) {
-  const note = tx.note?.trim();
+  const note = tx.note ?? "";
   const catName = tx.category?.name ?? "";
-  const primary = note || catName || "—";
-  const sub = note && catName ? catName : "";
 
-  // Bind the txId into the action so the client component just sees a
-  // single-arg (amount) function. Server-side closure makes the txId
+  // Bind ids into the actions so the client components just see a
+  // single-arg function. Server-side closures make the txId
   // unforgeable from the client.
-  async function action(amount: number) {
+  async function amountAction(amount: number) {
     "use server";
     return updateTransactionAmountAction(tx.id, amount);
+  }
+  async function noteAction(next: string) {
+    "use server";
+    return updateTransactionNoteAction(tx.id, next);
   }
 
   return (
     <li className="flex items-center gap-2 px-3 py-1.5">
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[13px] leading-tight truncate">{primary}</p>
-        {sub && <p className="text-[11px] text-(--muted) leading-tight truncate">{sub}</p>}
+        <InlineNote initial={note} placeholder={catName || "—"} action={noteAction} />
+        {catName && <p className="text-[11px] text-(--muted) leading-tight truncate">{catName}</p>}
       </div>
       <InlineAmount
         initial={tx.amount}
         currency={currency}
-        action={action}
+        action={amountAction}
       />
     </li>
   );
 }
 
 function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
-  const note = rule.note?.trim();
+  const note = rule.note ?? "";
   const catName = rule.category?.name ?? "";
-  const primary = note || catName || "—";
-  const sub = note && catName ? catName : "";
 
-  async function action(amount: number) {
+  async function amountAction(amount: number) {
     "use server";
     return updateRecurringAmountAction(rule.id, amount);
+  }
+  async function noteAction(next: string) {
+    "use server";
+    return updateRecurringNoteAction(rule.id, next);
   }
 
   return (
@@ -317,15 +324,15 @@ function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
         <EmojiOrIcon value={rule.category?.icon} fallback="recurring" size={12} />
       </span>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[13px] leading-tight truncate">{primary}</p>
+        <InlineNote initial={note} placeholder={catName || "—"} action={noteAction} />
         <p className="text-[11px] text-(--muted) leading-tight truncate">
-          {sub || rule.period}
+          {catName || rule.period}
         </p>
       </div>
       <InlineAmount
         initial={rule.amount ?? 0}
         currency={currency}
-        action={action}
+        action={amountAction}
       />
     </li>
   );
