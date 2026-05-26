@@ -616,10 +616,15 @@ function CategoryTile({
     isDragging,
   } = sortable;
 
-  const style = {
+  const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-  } as React.CSSProperties;
+    // Mobile fix: without `touch-action: none`, the browser claims
+    // the touchstart for native scrolling and dnd-kit never gets to
+    // promote the press into a drag. Only apply while editing so
+    // normal scrolling of the page still works in the picker.
+    ...(editing ? { touchAction: "none" } : {}),
+  };
 
   return (
     <div
@@ -635,11 +640,14 @@ function CategoryTile({
       {...(editing ? { ...attributes, ...listeners } : {})}
     >
       <button
-        type={editing ? "button" : "button"}
+        type="button"
         onClick={editing ? undefined : onClick}
-        // Disable the inner button during edit so it doesn't intercept
-        // pointer events meant for sortable drag.
-        disabled={editing}
+        // Keep the button enabled even in edit mode so touchstart
+        // bubbles up to the sortable wrapper (iOS Safari swallows all
+        // events on `disabled` buttons, including touchstart, which
+        // was what blocked the drag). aria-disabled covers screen
+        // readers.
+        aria-disabled={editing}
         className={cn(
           "w-full aspect-square rounded-2xl border bg-(--card) flex flex-col items-center justify-center gap-1 p-2 transition",
           selected ? "border-transparent" : "border-(--border) hover:bg-(--background)",
@@ -711,10 +719,11 @@ function CategorySection({
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    // Touch needs a small long-press so a normal tap (= select category
-    // in non-edit mode) and finger-scrolls don't accidentally start a
-    // drag while wiggle mode is on.
-    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } })
+    // We're already in explicit reorder mode AND the editing tile has
+    // touch-action: none, so a short delay is enough — anything longer
+    // makes the drag feel sticky on phones. Tolerance keeps a 6px
+    // wobble during the press from canceling.
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 6 } })
   );
   const [saving, startSaving] = useTransition();
 
