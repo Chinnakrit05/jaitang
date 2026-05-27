@@ -14,7 +14,10 @@ import {
   updateTransactionNoteAction,
 } from "./actions";
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
-import { deleteRecurringAction } from "@/app/(app)/recurring/actions";
+import {
+  deleteRecurringAction,
+  fillPendingRecurringAmountAction,
+} from "@/app/(app)/recurring/actions";
 import { InlineAmount } from "./inline-amount";
 import { InlineNote } from "./inline-note";
 import { DeleteRowButton } from "./row-actions";
@@ -337,8 +340,28 @@ function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
   const note = rule.note ?? "";
   const catName = rule.category?.name ?? "";
 
+  // Three flavours of the amount cell:
+  //   1. Fixed rule (rule.amount != null) — edit updates the rule
+  //      template's amount permanently.
+  //   2. Variable rule (rule.amount = null), applied this period
+  //      with a cached last_fill_amount — show that value (it's the
+  //      number the user already filled). Tapping the inline input
+  //      sends a fresh fill (creates another transaction) which
+  //      isn't what the user wants here, so this branch renders
+  //      static text instead.
+  //   3. Variable rule, not yet applied — dashed inline input that
+  //      runs fillPendingRecurringAmountAction on commit.
+  const isVariable = rule.amount === null;
+  const appliedAndFilled =
+    isVariable &&
+    isAppliedThisPeriod(rule.last_run_at, rule.period) &&
+    rule.last_fill_amount !== null;
+
   async function amountAction(amount: number) {
     "use server";
+    if (isVariable) {
+      return fillPendingRecurringAmountAction(rule.id, amount);
+    }
     return updateRecurringAmountAction(rule.id, amount);
   }
   async function noteAction(next: string) {
@@ -368,11 +391,20 @@ function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
           {catName || rule.period}
         </p>
       </div>
-      <InlineAmount
-        initial={rule.amount ?? 0}
-        currency={currency}
-        action={amountAction}
-      />
+      {appliedAndFilled ? (
+        <span className="inline-flex items-center gap-0.5 tabular-nums text-[13px] font-semibold shrink-0 text-(--expense)">
+          <span className="text-(--muted) text-xs">
+            {currency === "THB" ? "฿" : currency}
+          </span>
+          {Math.round(rule.last_fill_amount!).toLocaleString()}
+        </span>
+      ) : (
+        <InlineAmount
+          initial={rule.amount ?? null}
+          currency={currency}
+          action={amountAction}
+        />
+      )}
       <DeleteRowButton action={deleteAction} confirmKey="recurring.deleteConfirm" />
     </li>
   );
