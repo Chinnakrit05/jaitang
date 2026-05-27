@@ -30,12 +30,14 @@ create table if not exists public.ledgers (
 
 create index if not exists idx_ledgers_owner on public.ledgers(owner_id);
 
--- A user has at most ONE personal ledger. Without this, a race during the
--- first sign-in can spawn duplicates because two concurrent requests both
--- pass the "does it exist?" check before either INSERT lands.
+-- A user has at most ONE *active* personal ledger. Without this, a race
+-- during the first sign-in can spawn duplicates because two concurrent
+-- requests both pass the "does it exist?" check before either INSERT
+-- lands. The `deleted_at is null` filter lets a user soft-delete their
+-- personal ledger and create a new one later.
 create unique index if not exists uniq_personal_ledger_per_owner
   on public.ledgers(owner_id)
-  where is_personal = true;
+  where is_personal = true and deleted_at is null;
 
 -- ============================================================
 -- Ledger members (สมาชิกของสมุดแชร์)
