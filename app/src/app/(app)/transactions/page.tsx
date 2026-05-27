@@ -36,19 +36,36 @@ export default async function TransactionsPage({
 
   const searchQ = sp.q?.trim() || undefined;
 
-  const [items, categories] = await Promise.all([
-    listTransactions({
-      ledgerId,
-      from: range.from,
-      to: range.to,
-      kind: kindParam,
-      categoryId: sp.category || undefined,
-      tripId: tripFilter as string | null | undefined,
-      search: searchQ,
-      limit: 500,
-    }),
-    listCategories(ledgerId),
-  ]);
+  // Categories are needed for both the filter pills AND to expand a
+  // picked parent into "parent + its subs" before querying. We fetch
+  // them first then derive the id list, so a tap on อาหาร surfaces
+  // คาเฟ่ / ของหวาน rows too instead of just rows tagged with the
+  // bare parent id.
+  const categories = await listCategories(ledgerId);
+  const picked = sp.category;
+  let categoryIds: string[] | undefined;
+  if (picked) {
+    const selected = categories.find((c) => c.id === picked);
+    if (selected && selected.parent_id === null) {
+      const subs = categories
+        .filter((c) => c.parent_id === selected.id)
+        .map((c) => c.id);
+      categoryIds = [selected.id, ...subs];
+    } else {
+      // Sub-category picked, or unknown id (deleted?) — match exact only.
+      categoryIds = [picked];
+    }
+  }
+  const items = await listTransactions({
+    ledgerId,
+    from: range.from,
+    to: range.to,
+    kind: kindParam,
+    categoryIds,
+    tripId: tripFilter as string | null | undefined,
+    search: searchQ,
+    limit: 500,
+  });
 
   const totalIncome = items
     .filter((tx) => tx.kind === "income")

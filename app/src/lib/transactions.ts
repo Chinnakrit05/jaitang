@@ -18,6 +18,11 @@ export type ListOptions = {
   to?: string; // ISO date
   kind?: TxKind;
   categoryId?: string;
+  /** Filter to rows whose category_id is in this set. Used when the
+   *  caller wants a parent + its sub-categories to all show up; the
+   *  page expands the picked id into [parent, ...subs] before
+   *  calling. Overrides `categoryId` when both are passed. */
+  categoryIds?: string[];
   /** Filter to rows tagged with this trip. Pass `null` for "no trip". */
   tripId?: string | null;
   /** Filter to rows tagged with this account. Pass `null` for "no account". */
@@ -45,7 +50,11 @@ export async function listTransactions(
   if (opts.from) q = q.gte("occurred_at", opts.from);
   if (opts.to) q = q.lt("occurred_at", opts.to);
   if (opts.kind) q = q.eq("kind", opts.kind);
-  if (opts.categoryId) q = q.eq("category_id", opts.categoryId);
+  if (opts.categoryIds && opts.categoryIds.length > 0) {
+    q = q.in("category_id", opts.categoryIds);
+  } else if (opts.categoryId) {
+    q = q.eq("category_id", opts.categoryId);
+  }
   if (opts.tripId === null) q = q.is("trip_id", null);
   else if (typeof opts.tripId === "string") q = q.eq("trip_id", opts.tripId);
   if (opts.accountId === null) q = q.is("account_id", null);
