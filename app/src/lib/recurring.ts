@@ -487,6 +487,44 @@ export function isAppliedThisPeriod(
 }
 
 /**
+ * Mark a recurring rule as "no value this period" — advance the
+ * cron anchor without creating a transaction. The rule's
+ * `last_run_at` is set to now (so the row picks up the "applied
+ * this period" status), `next_run_at` advances per the rule's
+ * cadence, and `last_fill_amount` is 0 as a sentinel that the
+ * display layer reads as a "-" instead of a number.
+ */
+export async function skipRecurringPeriod(input: {
+  ruleId: string;
+  ledgerId: string;
+}): Promise<void> {
+  const sb = getServerSupabase();
+  const { data: rule, error } = await sb
+    .from("recurring_transactions")
+    .select("id, period, day_of_month, day_of_week, next_run_at")
+    .eq("id", input.ruleId)
+    .eq("ledger_id", input.ledgerId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!rule) throw new Error("Rule not found");
+  const nextRun = computeNextRun({
+    period: rule.period as RecurPeriod,
+    day_of_month: rule.day_of_month,
+    day_of_week: rule.day_of_week,
+    next_run_at: rule.next_run_at,
+  });
+  const { error: upErr } = await sb
+    .from("recurring_transactions")
+    .update({
+      last_run_at: new Date().toISOString(),
+      next_run_at: nextRun.toISOString(),
+      last_fill_amount: 0,
+    })
+    .eq("id", input.ruleId);
+  if (upErr) throw upErr;
+}
+
+/**
  * Correct the amount on the most recent fill of a variable-cost
  * recurring rule. Used by the /reports row inline editor when the
  * user wants to fix a number they already typed without creating a

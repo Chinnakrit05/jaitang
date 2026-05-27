@@ -17,6 +17,7 @@ import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import {
   deleteRecurringAction,
   fillPendingRecurringAmountAction,
+  skipRecurringPeriodAction,
   updateRecurringFillAmountAction,
 } from "@/app/(app)/recurring/actions";
 import { InlineAmount } from "./inline-amount";
@@ -421,10 +422,19 @@ function RuleRow({
   //   - Current month + variable + pending → null (dashed input)
   //   - Past month → displayAmount (matches what really happened),
   //     0 falls through to a read-only-looking zero
+  // Skipped = the rule's been marked "no value this period" via the
+  // "-" input. Sentinel = last_fill_amount === 0 + applied this
+  // period (so we don't confuse with a brand-new ledger that has
+  // never filled this rule).
+  const isSkipped =
+    isAppliedThisPeriod(rule.last_run_at, rule.period) &&
+    rule.last_fill_amount === 0;
   const initialAmount: number | null = viewedIsFuture
     ? 0
     : viewedIsCurrent
-    ? isVariable
+    ? isSkipped
+      ? 0
+      : isVariable
       ? appliedAndFilled
         ? rule.last_fill_amount
         : null
@@ -440,6 +450,10 @@ function RuleRow({
       return updateRecurringFillAmountAction(rule.id, amount);
     }
     return fillPendingRecurringAmountAction(rule.id, amount);
+  }
+  async function skipAction() {
+    "use server";
+    return skipRecurringPeriodAction(rule.id);
   }
   async function noteAction(next: string) {
     "use server";
@@ -471,12 +485,18 @@ function RuleRow({
       {/* Key on the resolved initial so navigating between months
           actually remounts the inline editor — without it, React
           keeps the prior month's local useState (the input would
-          keep showing 2,438 when the next month's value is 0). */}
+          keep showing 2,438 when the next month's value is 0).
+          "Skipped" = last_fill_amount is the 0 sentinel from a "-"
+          fill, only meaningful when the rule is applied this period
+          (otherwise the row is just a fresh zero in a different
+          bucket). */}
       <InlineAmount
-        key={`amt-${initialAmount ?? "null"}`}
+        key={`amt-${initialAmount ?? "null"}-${isSkipped ? "skip" : "ok"}`}
         initial={initialAmount}
         currency={currency}
         action={amountAction}
+        onSkip={viewedIsCurrent ? skipAction : undefined}
+        skipped={isSkipped}
       />
       <DeleteRowButton action={deleteAction} confirmKey="recurring.deleteConfirm" />
     </li>

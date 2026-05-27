@@ -32,6 +32,7 @@ import {
   fillPendingRecurringAmountAction,
   reorderRecurringAction,
   runDueAction,
+  skipRecurringPeriodAction,
   toggleRecurringAction,
   updateRecurringAction,
 } from "@/app/(app)/recurring/actions";
@@ -515,6 +516,15 @@ function RuleRow({
   async function fillAction(amount: number) {
     return fillPendingRecurringAmountAction(rule.id, amount);
   }
+  async function skipAction() {
+    return skipRecurringPeriodAction(rule.id);
+  }
+  // Mirror /reports — the row is "skipped this period" when the
+  // cached fill is the 0 sentinel and we are inside the rule's
+  // current bucket.
+  const ruleIsSkipped =
+    isAppliedThisPeriod(rule.last_run_at, rule.period) &&
+    rule.last_fill_amount === 0;
 
   return (
     <li
@@ -606,9 +616,24 @@ function RuleRow({
           they typed last time. */}
       {isVariable && !(appliedThisPeriod && rule.last_fill_amount !== null) ? (
         <InlineAmount
-          initial={null}
+          key={ruleIsSkipped ? "skip" : "fill"}
+          initial={ruleIsSkipped ? 0 : null}
           currency={ruleCurrency}
           action={fillAction}
+          onSkip={skipAction}
+          skipped={ruleIsSkipped}
+        />
+      ) : ruleIsSkipped ? (
+        // Fixed (or variable + applied) rule the user marked
+        // "no value this period" — show "-" instead of the cached
+        // amount so it reads consistently with /reports.
+        <InlineAmount
+          key="skip-static"
+          initial={0}
+          currency={ruleCurrency}
+          action={fillAction}
+          onSkip={skipAction}
+          skipped
         />
       ) : (
         <div

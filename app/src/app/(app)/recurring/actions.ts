@@ -12,6 +12,7 @@ import {
   applyDueRecurring,
   fillPendingRecurring,
   updateRecurringFillAmount,
+  skipRecurringPeriod,
 } from "@/lib/recurring";
 import { SUPPORTED_CODES } from "@/lib/currencies";
 
@@ -311,6 +312,19 @@ export async function reorderRecurringAction(ids: string[]) {
       updateRecurring(id, { sortOrder: index + 1 })
     )
   );
+  refresh();
+  return { ok: true as const };
+}
+
+/**
+ * "No value this period" — user typed "-" in the inline amount.
+ * Bumps next_run_at and sets last_fill_amount = 0 as a sentinel so
+ * the row renders "-" instead of the cached number. No tx created.
+ */
+export async function skipRecurringPeriodAction(ruleId: string) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+  await skipRecurringPeriod({ ruleId, ledgerId });
   refresh();
   return { ok: true as const };
 }

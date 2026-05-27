@@ -24,6 +24,8 @@ export function InlineAmount({
   currency = "THB",
   placeholder = "0",
   action,
+  onSkip,
+  skipped: skippedProp = false,
 }: {
   /** Pass null when there's no current amount (e.g. variable-cost
    *  recurring rule waiting for input). The field renders empty with
@@ -32,6 +34,14 @@ export function InlineAmount({
   currency?: string;
   placeholder?: string;
   action: (amount: number) => Promise<Result>;
+  /** Optional "no value this period" handler. When provided, the
+   *  user can type "-" to fire this instead of an amount commit —
+   *  used by /reports + /recurring to skip a recurring rule's
+   *  current period without leaving a 0-amount tx behind. */
+  onSkip?: () => Promise<Result>;
+  /** True when the row has already been marked skipped — renders
+   *  the cell as "-" instead of a number on first paint. */
+  skipped?: boolean;
 }) {
   // Comma-formatted view of a numeric value — `1000` → `1,000`. Used
   // outside the edit cursor so the saved amount reads cleanly; while
@@ -39,7 +49,12 @@ export function InlineAmount({
   // caret behaviour stays predictable as the user types.
   const fmt = (n: number) =>
     Number.isInteger(n) ? n.toLocaleString("en-US") : String(n);
-  const [value, setValue] = useState<string>(initial === null ? "" : fmt(initial));
+  // "Skipped" rows render the cell as "-" instead of a number. The
+  // user marks one by typing "-" into the input when onSkip is wired.
+  const [skipped, setSkipped] = useState<boolean>(skippedProp);
+  const [value, setValue] = useState<string>(
+    skippedProp ? "-" : initial === null ? "" : fmt(initial)
+  );
   // Extra addends added via the "+" button. Each is an independent
   // input rendered to the left of the main one. Order: index 0 is
   // the leftmost (oldest "+" tap), main input sits to the right.
@@ -73,6 +88,26 @@ export function InlineAmount({
 
   function commit() {
     setError(null);
+    // "-" → skip this period. Only honoured when onSkip is wired
+    // (i.e. the row is a recurring rule). Falls through to normal
+    // parse otherwise so a stray "-" in a tx row doesn't accidentally
+    // hide the amount.
+    if (onSkip && value.trim() === "-" && extras.length === 0) {
+      if (skipped) return; // already skipped, no-op
+      startTransition(async () => {
+        const result = await onSkip();
+        if (result.ok) {
+          setSkipped(true);
+          setSavedValue(0);
+          setValue("-");
+          setJustSaved(true);
+        } else {
+          setError(result.error);
+          setValue(savedValue === null ? "" : fmt(savedValue));
+        }
+      });
+      return;
+    }
     // Sum strips commas (in case the input was populated from the
     // saved value) and skips empty addends.
     const parsed = [...extras, value]
@@ -81,6 +116,10 @@ export function InlineAmount({
     if (parsed.length === 0) {
       // Nothing to commit — revert + collapse extras.
       setExtras([]);
+      if (skipped) {
+        setValue("-");
+        return;
+      }
       if (savedValue !== null) setValue(fmt(savedValue));
       else setValue("");
       return;
@@ -203,10 +242,27 @@ export function InlineAmount({
         value={value}
         onFocus={() => {
           // Drop commas so the caret behaviour stays predictable
-          // while the user types — re-formatted on blur.
-          setValue((v) => v.replace(/,/g, ""));
+          // while the user types — re-formatted on blur. If the
+          // cell was rendering "-" (skipped), clear it so the user
+          // can start typing a fresh value.
+          setValue((v) => {
+            if (v === "-") return "";
+            return v.replace(/,/g, "");
+          });
         }}
-        onChange={(e) => setValue(e.target.value.replace(/[^\d.]/g, ""))}
+        onChange={(e) => {
+          // Allow a bare "-" so the user can mark "no value this
+          // period" when onSkip is wired. For anything else we
+          // strip non-digits.
+          const raw = e.target.value;
+          if (onSkip && raw.trim() === "-") {
+            setValue("-");
+            return;
+          }
+          // Typing a number overrides any prior skip flag.
+          if (skipped) setSkipped(false);
+          setValue(raw.replace(/[^\d.]/g, ""));
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
@@ -214,7 +270,13 @@ export function InlineAmount({
           }
           if (e.key === "Escape") {
             setExtras([]);
-            setValue(savedValue === null ? "" : fmt(savedValue));
+            setValue(
+              skipped
+                ? "-"
+                : savedValue === null
+                ? ""
+                : fmt(savedValue)
+            );
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}
