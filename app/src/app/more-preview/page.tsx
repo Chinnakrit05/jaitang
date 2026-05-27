@@ -57,18 +57,15 @@ export default function MorePreviewPage() {
     },
   ];
 
+  // Mirror the trim applied to /more — goals / loans / budgets /
+  // chat / quick are hidden for now.
   const general: Array<{ href: string; label: string; icon: IconName; desc: string }> = [
-    { href: "/goals",      label: t("nav.goals"),      icon: "goals",      desc: t("nav.descriptions.goals") },
-    { href: "/loans",      label: t("nav.loans"),      icon: "loans",      desc: t("nav.descriptions.loans") },
     { href: "/calendar",   label: t("nav.calendar"),   icon: "calendar",   desc: t("nav.descriptions.calendar") },
-    { href: "/budgets",    label: t("nav.budgets"),    icon: "budgets",    desc: t("nav.descriptions.budgets") },
     { href: "/categories", label: t("nav.categories"), icon: "categories", desc: t("nav.descriptions.categories") },
     { href: "/recurring",  label: t("nav.recurring"),  icon: "recurring",  desc: t("nav.descriptions.recurring") },
     { href: "/trips",      label: t("nav.trips"),      icon: "trips",      desc: t("nav.descriptions.trips") },
     { href: "/balances",   label: t("nav.balances"),   icon: "balances",   desc: t("nav.descriptions.balances") },
     { href: "/accounts",   label: t("nav.accounts"),   icon: "accounts",   desc: t("nav.descriptions.accounts") },
-    { href: "/chat",       label: t("nav.chat"),       icon: "chat",       desc: t("nav.descriptions.chat") },
-    { href: "/quick",      label: t("nav.quick"),      icon: "quick",      desc: t("nav.descriptions.quick") },
     { href: "/import",     label: t("nav.import"),     icon: "import",     desc: t("nav.descriptions.import") },
     { href: "/settings",   label: t("nav.settings"),   icon: "settings",   desc: t("nav.descriptions.settings") },
   ];
