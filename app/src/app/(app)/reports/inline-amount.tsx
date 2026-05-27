@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { JtIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,12 @@ type Result = { ok: true } | { ok: false; error: string };
  * and the field becomes a regular `<input>`. We call the action on
  * blur or Enter — losing focus is the cheapest "I'm done" signal on
  * mobile.
+ *
+ * "Sum on the fly" — when the user is editing, a "+" button sits to
+ * the left of the input. Tapping it prepends another input. The
+ * committed amount is the sum of every addend, so the user can type
+ * `50` `+` `100` instead of doing the math in their head. Extras
+ * collapse back into the formatted total once commit fires.
  */
 export function InlineAmount({
   initial,
@@ -34,6 +40,10 @@ export function InlineAmount({
   const fmt = (n: number) =>
     Number.isInteger(n) ? n.toLocaleString("en-US") : String(n);
   const [value, setValue] = useState<string>(initial === null ? "" : fmt(initial));
+  // Extra addends added via the "+" button. Each is an independent
+  // input rendered to the left of the main one. Order: index 0 is
+  // the leftmost (oldest "+" tap), main input sits to the right.
+  const [extras, setExtras] = useState<string[]>([]);
   const [savedValue, setSavedValue] = useState<number | null>(initial);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -48,27 +58,41 @@ export function InlineAmount({
     return () => window.clearTimeout(id);
   }, [justSaved]);
 
+  // Auto-focus the freshly-added extra input — the user just tapped
+  // "+" and expects to type into it immediately.
+  const extrasContainerRef = useRef<HTMLSpanElement | null>(null);
+  const pendingFocusRef = useRef(false);
+  useEffect(() => {
+    if (!pendingFocusRef.current) return;
+    pendingFocusRef.current = false;
+    const first = extrasContainerRef.current?.querySelector<HTMLInputElement>(
+      "input[data-addend]"
+    );
+    first?.focus();
+  }, [extras.length]);
+
   function commit() {
     setError(null);
-    // Parse — onChange filter strips commas already, but be safe in
-    // case the input was populated from the saved value (which has
-    // commas) and the user blurred without retyping.
-    const raw = value.replace(/,/g, "");
-    if (raw === "") {
-      // Empty + already empty → nothing to commit. Empty + had a saved
-      // value → revert (we don't support "clear amount" through this
-      // control; the long form handles deletes).
+    // Sum strips commas (in case the input was populated from the
+    // saved value) and skips empty addends.
+    const parsed = [...extras, value]
+      .map((v) => Number(v.replace(/,/g, "")))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    if (parsed.length === 0) {
+      // Nothing to commit — revert + collapse extras.
+      setExtras([]);
       if (savedValue !== null) setValue(fmt(savedValue));
+      else setValue("");
       return;
     }
-    const num = Number(raw);
+    const num = parsed.reduce((s, n) => s + n, 0);
     if (!Number.isFinite(num) || num <= 0) {
-      // Revert to last good value silently.
+      setExtras([]);
       setValue(savedValue === null ? "" : fmt(savedValue));
       return;
     }
     if (num === savedValue) {
-      // No change, but normalise display to formatted version.
+      setExtras([]);
       setValue(fmt(num));
       return;
     }
@@ -77,9 +101,11 @@ export function InlineAmount({
       if (result.ok) {
         setSavedValue(num);
         setValue(fmt(num));
+        setExtras([]);
         setJustSaved(true);
       } else {
         setError(result.error);
+        setExtras([]);
         setValue(savedValue === null ? "" : fmt(savedValue));
       }
     });
@@ -91,17 +117,80 @@ export function InlineAmount({
   // When the field has no committed value yet, surface a dashed pill
   // so the user can tell at a glance that the row is awaiting input.
   // Once they commit a number, fall back to the seamless text look.
-  const emptyState = savedValue === null;
+  const emptyState = savedValue === null && extras.length === 0;
 
   return (
     <span
+      ref={extrasContainerRef}
       className={cn(
         "inline-flex items-center justify-end gap-0.5 tabular-nums transition",
         emptyState &&
           "border border-dashed border-(--accent)/60 rounded-md px-1.5 py-0.5 bg-(--accent)/5"
       )}
       title={error ?? undefined}
+      onBlur={(e) => {
+        // Commit when focus leaves the pill entirely — moving
+        // between the addend inputs (and the "+" button) keeps the
+        // commit at bay so the user can finish their math.
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        commit();
+      }}
     >
+      {extras.map((v, i) => (
+        <span
+          key={`x-${i}`}
+          className="inline-flex items-center gap-0.5 tabular-nums"
+        >
+          <span className="text-(--muted) text-xs">{symbol}</span>
+          <input
+            data-addend
+            type="text"
+            inputMode="decimal"
+            pattern="[0-9]*\.?[0-9]*"
+            autoComplete="off"
+            placeholder="0"
+            value={v}
+            onChange={(e) => {
+              const next = e.target.value.replace(/[^\d.]/g, "");
+              setExtras((arr) => {
+                const out = [...arr];
+                out[i] = next;
+                return out;
+              });
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                (e.currentTarget as HTMLInputElement).blur();
+              }
+              if (e.key === "Escape") {
+                setExtras([]);
+                (e.currentTarget as HTMLInputElement).blur();
+              }
+            }}
+            size={Math.max(2, v.length)}
+            disabled={pending}
+            className={cn(
+              "bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition text-(--foreground)",
+              pending && "opacity-60"
+            )}
+          />
+          <span className="text-(--muted) text-xs">+</span>
+        </span>
+      ))}
+      <button
+        type="button"
+        onClick={() => {
+          pendingFocusRef.current = true;
+          setExtras((arr) => ["", ...arr]);
+        }}
+        disabled={pending}
+        aria-label="add"
+        title="add"
+        className="h-5 w-5 rounded-md flex items-center justify-center text-(--accent) hover:bg-(--accent)/10 transition disabled:opacity-50"
+      >
+        <JtIcon name="plus-fab" size={12} />
+      </button>
       <span className="text-(--muted) text-xs">{symbol}</span>
       <input
         type="text"
@@ -118,13 +207,13 @@ export function InlineAmount({
           setValue((v) => v.replace(/,/g, ""));
         }}
         onChange={(e) => setValue(e.target.value.replace(/[^\d.]/g, ""))}
-        onBlur={commit}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
             (e.currentTarget as HTMLInputElement).blur();
           }
           if (e.key === "Escape") {
+            setExtras([]);
             setValue(savedValue === null ? "" : fmt(savedValue));
             (e.currentTarget as HTMLInputElement).blur();
           }
