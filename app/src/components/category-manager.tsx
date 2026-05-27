@@ -288,6 +288,10 @@ function CategoryRow({
     >
       {editing ? (
         <div className="flex-1 flex flex-col gap-2">
+          {/* Name + live icon preview. Action buttons live on their
+              own row below (full-width text labels) — the previous
+              icon-only check/x inside this header row got lost next
+              to the parent dropdown on narrow mobile widths. */}
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 rounded-lg border border-(--border) bg-(--background) flex items-center justify-center shrink-0">
               <EmojiOrIcon value={icon} size={26} />
@@ -296,33 +300,27 @@ function CategoryRow({
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={50}
-              className="flex-1 px-2 py-1 rounded-lg border border-(--border) bg-(--background)"
+              className="flex-1 px-2 py-1.5 rounded-lg border border-(--border) bg-(--background)"
               autoFocus
             />
-            {eligibleParents.length > 0 && (
-              <select
-                value={parentId}
-                onChange={(e) => setParentId(e.target.value)}
-                className="px-2 py-1 rounded-lg border border-(--border) bg-(--background) text-xs max-w-[120px]"
-                aria-label={t("categories.parentLabel")}
-              >
-                <option value="">{t("categories.parentNone")}</option>
-                {eligibleParents.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            )}
-            <button
-              type="button"
-              onClick={save}
-              disabled={pending}
-              className="p-1.5 rounded-lg text-(--income) hover:bg-(--income)/10"
-              aria-label={t("common.save")}
+          </div>
+          {eligibleParents.length > 0 && (
+            <select
+              value={parentId}
+              onChange={(e) => setParentId(e.target.value)}
+              className="px-2 py-1.5 rounded-lg border border-(--border) bg-(--background) text-sm"
+              aria-label={t("categories.parentLabel")}
             >
-              <JtIcon name="check" size={22} />
-            </button>
+              <option value="">{t("categories.parentNone")}</option>
+              {eligibleParents.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {t("categories.parentLabel")}: {p.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <IconPickerGrid value={icon} onChange={setIcon} />
+          <div className="flex gap-2 pt-1">
             <button
               type="button"
               onClick={() => {
@@ -331,13 +329,20 @@ function CategoryRow({
                 setIcon(category.icon ?? DEFAULT_CATEGORY_ICON);
                 setParentId(category.parent_id ?? "");
               }}
-              className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
-              aria-label={t("common.cancel")}
+              className="flex-1 px-3 py-2 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium"
             >
-              <JtIcon name="x" size={22} />
+              {t("common.cancel")}
+            </button>
+            <button
+              type="button"
+              onClick={save}
+              disabled={pending || !name.trim()}
+              className="flex-[2] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) text-sm font-semibold disabled:opacity-50"
+            >
+              <JtIcon name="check" size={18} />
+              {pending ? t("common.saving") : t("common.save")}
             </button>
           </div>
-          <IconPickerGrid value={icon} onChange={setIcon} />
         </div>
       ) : (
         <>
