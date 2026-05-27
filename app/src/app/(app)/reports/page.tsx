@@ -468,7 +468,12 @@ function RuleRow({
           {catName || rule.period}
         </p>
       </div>
+      {/* Key on the resolved initial so navigating between months
+          actually remounts the inline editor — without it, React
+          keeps the prior month's local useState (the input would
+          keep showing 2,438 when the next month's value is 0). */}
       <InlineAmount
+        key={`amt-${initialAmount ?? "null"}`}
         initial={initialAmount}
         currency={currency}
         action={amountAction}
