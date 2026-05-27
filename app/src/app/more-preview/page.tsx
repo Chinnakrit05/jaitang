@@ -42,18 +42,18 @@ export default function MorePreviewPage() {
       fg: "#C0367C",
     },
     {
-      href: "/ledgers",
-      label: t("more.accountsBook"),
-      icon: "ledgers",
-      bg: "color-mix(in srgb, #B6F0D8 60%, var(--card))",
-      fg: "#1F8E62",
-    },
-    {
       href: "/recurring",
       label: t("nav.recurring"),
       icon: "recurring",
       bg: "color-mix(in srgb, #DDD6FE 60%, var(--card))",
       fg: "#6D28D9",
+    },
+    {
+      href: "/ledgers",
+      label: t("more.accountsBook"),
+      icon: "ledgers",
+      bg: "color-mix(in srgb, #B6F0D8 60%, var(--card))",
+      fg: "#1F8E62",
     },
   ];
 
