@@ -19,25 +19,29 @@ const PRESET_COLORS = [
   "#22c55e", "#84cc16", "#14b8a6", "#06b6d4",
 ];
 
-// 14 of the original 16 emoji map to Sticker Pop JtIcons; the two outliers
-// (shirt 👕, dog 🐶) don't have an equivalent yet so we drop them from the
-// picker. Old categories that picked those values still render fine via
-// EmojiOrIcon at display time.
+// Curated icon library for the category picker. Wider than the
+// original 14 because the click-to-cycle UX got tedious once we had
+// more than ~6 categories; the new grid picker shows them all at
+// once. Grouped loosely by use case so the spatial layout maps to
+// "what kind of thing am I logging" — food first, transport, etc.
+// Two old emoji choices (shirt 👕, dog 🐶) still don't have a Sticker
+// Pop equivalent so they're omitted; categories that picked those
+// previously still render fine via EmojiOrIcon at display time.
 const PRESET_ICONS: IconName[] = [
-  "ramen",
-  "coffee",
-  "car",
-  "shopping-cart",
-  "game-controller",
-  "pill",
-  "house",
-  "books",
-  "airplane",
-  "gift",
-  "money-bag",
-  "trending-up",
-  "tag",
-  "sparkle",
+  // Food + drink
+  "ramen", "coffee",
+  // Transport + travel
+  "car", "airplane", "cruise-ship", "backpack", "mountain", "beach", "camping",
+  // Shopping + lifestyle
+  "shopping-cart", "gift", "tag",
+  // Home + bills
+  "house", "pill", "shield-check",
+  // Tech + entertainment
+  "laptop", "smartphone", "game-controller", "books", "party", "mic", "volume-2",
+  // Money + finance
+  "money-bag", "piggy-bank", "credit-card", "cash-stack", "gold-coin", "bitcoin",
+  // Other catch-all
+  "award", "graduation-cap", "target-domain", "flame", "sparkle",
 ];
 const DEFAULT_CATEGORY_ICON: IconName = "sparkle";
 
@@ -164,17 +168,12 @@ function CreateCategoryForm({
       className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-3"
     >
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <span
           aria-label={t("ledgers.icon")}
-          className="px-3 py-2 rounded-lg border border-(--border) hover:bg-(--background) flex items-center justify-center"
-          onClick={() => {
-            const idx = PRESET_ICONS.indexOf(icon as IconName);
-            setIcon(PRESET_ICONS[(idx + 1) % PRESET_ICONS.length]);
-          }}
+          className="px-3 py-2 rounded-lg border border-(--border) bg-(--background) flex items-center justify-center shrink-0"
         >
           <EmojiOrIcon value={icon} size={28} />
-        </button>
+        </span>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -194,6 +193,11 @@ function CreateCategoryForm({
           <JtIcon name="plus-fab" size={20} /> {t("categories.addButton")}
         </button>
       </div>
+
+      {/* Visible icon picker grid — tap any tile to set the create
+          icon. Replaces the old click-to-cycle button so the user
+          can see all options at once. */}
+      <IconPickerGrid value={icon} onChange={setIcon} />
       <div className="flex flex-wrap gap-1.5">
         {PRESET_COLORS.map((c) => (
           <button
@@ -283,62 +287,58 @@ function CategoryRow({
       )}
     >
       {editing ? (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              const idx = PRESET_ICONS.indexOf(icon as IconName);
-              setIcon(PRESET_ICONS[(idx + 1) % PRESET_ICONS.length]);
-            }}
-            className="px-2 py-1 rounded-lg border border-(--border) flex items-center justify-center"
-          >
-            <EmojiOrIcon value={icon} size={26} />
-          </button>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={50}
-            className="flex-1 px-2 py-1 rounded-lg border border-(--border) bg-(--background)"
-            autoFocus
-          />
-          {eligibleParents.length > 0 && (
-            <select
-              value={parentId}
-              onChange={(e) => setParentId(e.target.value)}
-              className="px-2 py-1 rounded-lg border border-(--border) bg-(--background) text-xs max-w-[120px]"
-              aria-label={t("categories.parentLabel")}
+        <div className="flex-1 flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-1 rounded-lg border border-(--border) bg-(--background) flex items-center justify-center shrink-0">
+              <EmojiOrIcon value={icon} size={26} />
+            </span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={50}
+              className="flex-1 px-2 py-1 rounded-lg border border-(--border) bg-(--background)"
+              autoFocus
+            />
+            {eligibleParents.length > 0 && (
+              <select
+                value={parentId}
+                onChange={(e) => setParentId(e.target.value)}
+                className="px-2 py-1 rounded-lg border border-(--border) bg-(--background) text-xs max-w-[120px]"
+                aria-label={t("categories.parentLabel")}
+              >
+                <option value="">{t("categories.parentNone")}</option>
+                {eligibleParents.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button
+              type="button"
+              onClick={save}
+              disabled={pending}
+              className="p-1.5 rounded-lg text-(--income) hover:bg-(--income)/10"
+              aria-label={t("common.save")}
             >
-              <option value="">{t("categories.parentNone")}</option>
-              {eligibleParents.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button
-            type="button"
-            onClick={save}
-            disabled={pending}
-            className="p-1.5 rounded-lg text-(--income) hover:bg-(--income)/10"
-            aria-label={t("common.save")}
-          >
-            <JtIcon name="check" size={22} />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setEditing(false);
-              setName(category.name);
-              setIcon(category.icon ?? DEFAULT_CATEGORY_ICON);
-              setParentId(category.parent_id ?? "");
-            }}
-            className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
-            aria-label={t("common.cancel")}
-          >
-            <JtIcon name="x" size={22} />
-          </button>
-        </>
+              <JtIcon name="check" size={22} />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(false);
+                setName(category.name);
+                setIcon(category.icon ?? DEFAULT_CATEGORY_ICON);
+                setParentId(category.parent_id ?? "");
+              }}
+              className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card)"
+              aria-label={t("common.cancel")}
+            >
+              <JtIcon name="x" size={22} />
+            </button>
+          </div>
+          <IconPickerGrid value={icon} onChange={setIcon} />
+        </div>
       ) : (
         <>
           <EmojiOrIcon value={category.icon} fallback={DEFAULT_CATEGORY_ICON} size={28} />
@@ -366,6 +366,48 @@ function CategoryRow({
           </button>
         </>
       )}
+    </div>
+  );
+}
+
+/**
+ * Inline grid of preset icons for the category create + edit forms.
+ * Tap a tile to pick. Selected tile lights up with the accent
+ * background so the current pick is visible without having to click
+ * through a separate preview.
+ */
+function IconPickerGrid({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (icon: IconName) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-(--border) bg-(--background)/40 p-2">
+      <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
+        {PRESET_ICONS.map((name) => {
+          const isActive = value === name;
+          return (
+            <button
+              key={name}
+              type="button"
+              onClick={() => onChange(name)}
+              aria-label={name}
+              aria-pressed={isActive}
+              title={name}
+              className={cn(
+                "aspect-square rounded-lg flex items-center justify-center transition",
+                isActive
+                  ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
+                  : "hover:bg-(--card)"
+              )}
+            >
+              <EmojiOrIcon value={name} size={22} />
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
