@@ -6,8 +6,10 @@ import { requireSession } from "@/lib/session";
 import {
   createCategory,
   deleteCategory,
+  listCategories,
   updateCategory,
 } from "@/lib/categories";
+import { getServerSupabase } from "@/lib/supabase/server";
 
 const CategorySchema = z.object({
   name: z.string().min(1).max(50),
@@ -113,4 +115,108 @@ export async function deleteCategoryAction(id: string) {
   await requireSession();
   await deleteCategory(id);
   refresh();
+}
+
+/**
+ * Copy every category from `sourceLedgerId` into the user's active
+ * ledger. Skips rows that already exist in the destination by
+ * (kind, name) so re-running the action is idempotent.
+ *
+ * Parents are inserted first; a local id-translation map then lets
+ * subcategories point at the freshly-created parent in the
+ * destination ledger. Subs whose parent got deduped to an existing
+ * destination row reattach to that existing row.
+ *
+ * Returns counts so the UI can render a friendly summary.
+ */
+export async function copyCategoriesFromLedgerAction(sourceLedgerId: string) {
+  const { userId, ledgerId: destLedgerId } = await requireSession();
+  if (sourceLedgerId === destLedgerId) {
+    return { ok: false as const, error: "Source and destination are the same ledger" };
+  }
+  // Validate read access on the source: owner or member.
+  const sb = getServerSupabase();
+  const { data: srcLedger } = await sb
+    .from("ledgers")
+    .select("id, owner_id")
+    .eq("id", sourceLedgerId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!srcLedger) {
+    return { ok: false as const, error: "Source ledger not found" };
+  }
+  if (srcLedger.owner_id !== userId) {
+    const { data: member } = await sb
+      .from("ledger_members")
+      .select("user_id")
+      .eq("ledger_id", sourceLedgerId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!member) {
+      return { ok: false as const, error: "No access to source ledger" };
+    }
+  }
+
+  const [sourceCats, destCats] = await Promise.all([
+    listCategories(sourceLedgerId),
+    listCategories(destLedgerId),
+  ]);
+
+  // Dedupe key — same kind + same name reuses the destination's row.
+  const destByKey = new Map<string, string>();
+  for (const c of destCats) {
+    destByKey.set(`${c.kind}::${c.name}`, c.id);
+  }
+
+  let copied = 0;
+  let skipped = 0;
+  // old src id → resolved dest id (newly created OR existing dedupe target)
+  const idMap = new Map<string, string>();
+
+  // Parents first so subs can look up their (now-existing) parent.
+  const parents = sourceCats.filter((c) => c.parent_id === null);
+  const subs = sourceCats.filter((c) => c.parent_id !== null);
+
+  for (const c of parents) {
+    const key = `${c.kind}::${c.name}`;
+    const existing = destByKey.get(key);
+    if (existing) {
+      idMap.set(c.id, existing);
+      skipped++;
+      continue;
+    }
+    const created = await createCategory(destLedgerId, {
+      name: c.name,
+      icon: c.icon ?? undefined,
+      color: c.color ?? undefined,
+      kind: c.kind,
+      parentId: null,
+    });
+    idMap.set(c.id, created.id);
+    destByKey.set(key, created.id);
+    copied++;
+  }
+
+  for (const c of subs) {
+    const key = `${c.kind}::${c.name}`;
+    if (destByKey.has(key)) {
+      idMap.set(c.id, destByKey.get(key)!);
+      skipped++;
+      continue;
+    }
+    const mappedParent = c.parent_id ? idMap.get(c.parent_id) ?? null : null;
+    const created = await createCategory(destLedgerId, {
+      name: c.name,
+      icon: c.icon ?? undefined,
+      color: c.color ?? undefined,
+      kind: c.kind,
+      parentId: mappedParent,
+    });
+    idMap.set(c.id, created.id);
+    destByKey.set(key, created.id);
+    copied++;
+  }
+
+  refresh();
+  return { ok: true as const, copied, skipped };
 }

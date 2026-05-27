@@ -260,7 +260,13 @@
     "parentLabel": "上级分类",
     "parentNone": "— 无(顶级)—",
     "iconTab": "图标",
-    "emojiTab": "表情"
+    "emojiTab": "表情",
+    "copyFromButton": "📋 从其他账本复制",
+    "copyTitle": "从其他账本复制分类",
+    "copyHint": "选择源账本 — 所有分类将被复制到当前账本(同名跳过)",
+    "copyConfirm": "确认从 \"{name}\" 复制所有分类到此账本?",
+    "copyResult": "新增 {copied} · 跳过 {skipped} 个重复",
+    "copyShared": "共享账本"
   },
   "budgets": {
     "title": "预算",

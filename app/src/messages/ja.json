@@ -260,7 +260,13 @@
     "parentLabel": "親カテゴリ",
     "parentNone": "— なし(トップレベル)—",
     "iconTab": "アイコン",
-    "emojiTab": "絵文字"
+    "emojiTab": "絵文字",
+    "copyFromButton": "📋 別の帳簿からコピー",
+    "copyTitle": "他の帳簿からカテゴリをコピー",
+    "copyHint": "コピー元の帳簿を選択 — 全カテゴリが現在の帳簿にコピーされます(同名はスキップ)",
+    "copyConfirm": "\"{name}\" のカテゴリをすべてこの帳簿にコピーしますか?",
+    "copyResult": "{copied} 件追加 · {skipped} 件重複スキップ",
+    "copyShared": "共有帳簿"
   },
   "budgets": {
     "title": "予算",

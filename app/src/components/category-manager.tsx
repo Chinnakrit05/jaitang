@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 
 import type { Category, TxKind } from "@/lib/types";
 import {
+  copyCategoriesFromLedgerAction,
   createCategoryAction,
   deleteCategoryAction,
   updateCategoryAction,
@@ -45,9 +46,25 @@ const PRESET_ICONS: IconName[] = [
 ];
 const DEFAULT_CATEGORY_ICON: IconName = "sparkle";
 
-export function CategoryManager({ initial }: { initial: Category[] }) {
+type OtherLedger = {
+  id: string;
+  name: string;
+  icon: string | null;
+  isPersonal: boolean;
+};
+
+export function CategoryManager({
+  initial,
+  otherLedgers = [],
+}: {
+  initial: Category[];
+  /** Ledgers the user has read on (minus the active one). Drives the
+   *  copy-from-another-ledger picker. */
+  otherLedgers?: OtherLedger[];
+}) {
   const t = useTranslations();
   const [tab, setTab] = useState<TxKind>("expense");
+  const [showCopyPicker, setShowCopyPicker] = useState(false);
 
   const inTab = initial.filter((c) => c.kind === tab);
   // Parents go first, then each parent's subs collapsed underneath. Subs
@@ -93,7 +110,27 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
         </button>
       </div>
 
+      {/* Copy-from-another-ledger affordance. Only shows when the
+          user actually has another ledger to copy from. */}
+      {otherLedgers.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowCopyPicker(true)}
+          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-(--card) border border-(--border) hover:bg-(--background) transition"
+        >
+          <JtIcon name="copy" size={14} />
+          {t("categories.copyFromButton")}
+        </button>
+      )}
+
       <CreateCategoryForm kind={tab} parents={parentsInTab} key={tab} />
+
+      {showCopyPicker && (
+        <CopyFromLedgerSheet
+          ledgers={otherLedgers}
+          onClose={() => setShowCopyPicker(false)}
+        />
+      )}
 
       <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
         {parentsInTab.map((parent) => {
@@ -663,5 +700,128 @@ function IconPickerGrid({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Modal sheet that lets the user pick a source ledger to copy
+ * categories from. List shows every ledger they have read access to
+ * except the active one. Tap a row → confirm → run the server
+ * action → close with a result toast (rendered inline so we don't
+ * depend on a toast system).
+ */
+function CopyFromLedgerSheet({
+  ledgers,
+  onClose,
+}: {
+  ledgers: OtherLedger[];
+  onClose: () => void;
+}) {
+  const t = useTranslations();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ copied: number; skipped: number } | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  function pick(ledgerId: string, name: string) {
+    if (!confirm(t("categories.copyConfirm", { name }))) return;
+    setError(null);
+    setBusyId(ledgerId);
+    startTransition(async () => {
+      const r = await copyCategoriesFromLedgerAction(ledgerId);
+      setBusyId(null);
+      if (r.ok === false) {
+        setError(r.error);
+        return;
+      }
+      setResult({ copied: r.copied, skipped: r.skipped });
+      router.refresh();
+    });
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="close"
+        onClick={onClose}
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,440px)] max-h-[85vh] overflow-y-auto rounded-2xl bg-(--card) border border-(--border) shadow-2xl p-5 space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-lg">{t("categories.copyTitle")}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("common.close")}
+            className="p-1.5 rounded-lg text-(--muted) hover:bg-(--background)"
+          >
+            <JtIcon name="x" size={20} />
+          </button>
+        </div>
+        <p className="text-xs text-(--muted)">{t("categories.copyHint")}</p>
+
+        {result && (
+          <div className="rounded-lg bg-(--income)/10 text-(--income) px-3 py-2 text-sm">
+            {t("categories.copyResult", {
+              copied: result.copied,
+              skipped: result.skipped,
+            })}
+          </div>
+        )}
+        {error && (
+          <div className="rounded-lg bg-(--expense)/10 text-(--expense) px-3 py-2 text-sm">
+            {error}
+          </div>
+        )}
+
+        <ul className="space-y-1.5">
+          {ledgers.map((l) => (
+            <li key={l.id}>
+              <button
+                type="button"
+                onClick={() => pick(l.id, l.name)}
+                disabled={pending}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition disabled:opacity-50 text-left"
+              >
+                <span className="shrink-0">
+                  <EmojiOrIcon value={l.icon} fallback="ledgers" size={22} />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{l.name}</p>
+                  <p className="text-[11px] text-(--muted)">
+                    {l.isPersonal
+                      ? t("ledgers.personal")
+                      : t("categories.copyShared")}
+                  </p>
+                </div>
+                {busyId === l.id ? (
+                  <JtIcon
+                    name="loader-2"
+                    size={18}
+                    className="animate-spin text-(--accent)"
+                  />
+                ) : (
+                  <JtIcon name="chevron-right" size={18} className="text-(--muted)" />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full px-3 py-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium"
+        >
+          {result ? t("common.close") : t("common.cancel")}
+        </button>
+      </div>
+    </>
   );
 }
