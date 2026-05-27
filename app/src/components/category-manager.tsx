@@ -378,34 +378,152 @@ function CategoryRow({
 }
 
 /**
- * Curated emoji set for category icons. Stored as raw emoji strings
- * in the same `icon` column the JtIcon names use — `EmojiOrIcon`
- * branches on whether the value matches an icon name and falls
- * through to render the emoji directly otherwise.
+ * Curated emoji library for category icons. Stored as raw emoji
+ * strings in the same `icon` column the JtIcon names use —
+ * `EmojiOrIcon` branches on whether the value matches an icon name
+ * and falls through to render the emoji directly otherwise.
+ *
+ * Grouped so the picker can render a sub-tab strip (food, transport,
+ * etc.) and the user can jump straight to the relevant page instead
+ * of scrolling through a 300-tile wall.
  */
-const PRESET_EMOJIS = [
-  // Food + drink
-  "🍜", "☕", "🍰", "🍕", "🍔", "🍣", "🍱", "🥗", "🍦", "🍺", "🥤", "🍞",
-  // Transport
-  "🚕", "🚇", "🚗", "🚌", "🚲", "✈️", "⛽", "🛵",
-  // Shopping
-  "🛍️", "👕", "👟", "💄", "🎁",
-  // Home + bills
-  "🏠", "💡", "💧", "🛏️", "🧴",
-  // Health
-  "💊", "🏥", "🦷",
-  // Tech + entertainment
-  "📱", "💻", "🎮", "🎬", "🎵", "📚",
-  // Money
-  "💰", "💵", "💳", "💸",
-  // Pets + misc
-  "🐶", "🐱", "🌱", "🎫", "📦", "✨",
+const EMOJI_GROUPS: Array<{ key: string; label: string; emojis: string[] }> = [
+  {
+    key: "food",
+    label: "🍜",
+    emojis: [
+      "🍜","🍝","🍲","🍛","🍚","🍱","🍙","🍘","🍣","🍤","🍡","🍢","🍧","🍨","🍦","🥮",
+      "🍰","🧁","🍪","🍩","🍫","🍬","🍭","🍮","🥧","🥐","🥯","🥖","🍞","🧀","🥚","🍳",
+      "🥓","🥩","🍗","🍖","🌭","🍔","🍟","🍕","🥪","🌮","🌯","🥙","🍿","🧂","🍿","🥗",
+      "🍵","☕","🥛","🍺","🍻","🍷","🍸","🍹","🍶","🥃","🍾","🥤","🧃","🧉","🧊",
+    ],
+  },
+  {
+    key: "fruit",
+    label: "🍎",
+    emojis: [
+      "🍎","🍏","🍊","🍋","🍌","🍉","🍇","🍓","🫐","🍈","🍒","🍑","🥭","🍍","🥝","🥥",
+      "🥑","🫒","🍅","🌶️","🥬","🥒","🫑","🌽","🥕","🧄","🧅","🥔","🍠","🥦","🫛","🥜",
+    ],
+  },
+  {
+    key: "transport",
+    label: "🚕",
+    emojis: [
+      "🚗","🚕","🚙","🚌","🚎","🚓","🚑","🚒","🚐","🛻","🚚","🚛","🚜","🏍️","🛵","🚲",
+      "🛴","✈️","🛩️","🛫","🛬","🚀","🛸","🚁","🚂","🚄","🚆","🚇","🚊","⛴️","🚢","⛵",
+      "🛥️","🚤","⛽","🚏","🚦","🛣️","🛤️","🅿️","🚏","🚧",
+    ],
+  },
+  {
+    key: "shopping",
+    label: "🛍️",
+    emojis: [
+      "🛍️","🛒","💼","👜","👛","🎒","🧳","👕","👔","👗","👚","👙","👘","🥻","🩱","🩳",
+      "👖","🧦","👟","👞","👠","👡","👢","🥾","🥿","💄","💍","👑","🎩","🧢","🕶️","🧥",
+      "🥼","👓","🧤","🧣","🎀",
+    ],
+  },
+  {
+    key: "home",
+    label: "🏠",
+    emojis: [
+      "🏠","🏡","🏢","🏣","🏤","🏥","🏦","🏨","🏪","🏫","🏬","🏭","🏯","🏰","💒","🛏️",
+      "🛋️","🚪","🪑","🚽","🚿","🛁","💡","🕯️","🔌","🪫","🔋","💧","🔥","🧴","🧼","🧽",
+      "🧹","🧺","🪣","🪥","🧻","🚰","🪟","🪞","🧯","📺","📻",
+    ],
+  },
+  {
+    key: "health",
+    label: "💊",
+    emojis: [
+      "💊","💉","🩺","🩹","🩼","🦽","🦼","🦷","🧴","🧖","🧘","🏥","🩸","🤒","🤕","🤧",
+      "😷","🫀","🫁","🧠","👁️","👂","👃","👄","🦴","🥼","🚑","♿","🚭","🧬",
+    ],
+  },
+  {
+    key: "tech",
+    label: "💻",
+    emojis: [
+      "📱","📲","💻","🖥️","⌨️","🖱️","🖨️","💾","💿","📀","📷","📸","📹","🎥","📺","📻",
+      "🎙️","🎧","☎️","📞","📠","⏰","⌚","⏱️","⏲️","🔋","🪫","🔌","💡","🧰","🔧","🔨",
+      "⚙️","🪛","🔩","🛠️","📡","🛰️","📟","📺",
+    ],
+  },
+  {
+    key: "money",
+    label: "💰",
+    emojis: [
+      "💰","💵","💴","💶","💷","💸","💳","🪙","🧾","📊","📈","📉","🏦","🏧","💱","💲",
+      "🪪","📑","🧮","💎","🏆","🥇","🥈","🥉","🎁","🛍️","💼","📒","📓","📔",
+    ],
+  },
+  {
+    key: "fun",
+    label: "🎮",
+    emojis: [
+      "🎮","🕹️","🎯","🎲","🎰","🎨","🎭","🎬","🎤","🎼","🎵","🎶","🎟️","🎫","🎉","🎊",
+      "🎁","🎈","🎂","🍰","🎏","🎎","🎴","🃏","🪅","🪆","🧧","🎆","🎇","🎐","🎑","🧸",
+      "🪁","🪀","⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🥏","🎱","🏓","🏸","🥅","⛳",
+      "🏹","🎣","🥊","🥋","🎽","🛹","🛼","⛸️","🎿","⛷️","🏂","🏋️","🤸","⛹️",
+    ],
+  },
+  {
+    key: "animal",
+    label: "🐶",
+    emojis: [
+      "🐶","🐕","🦮","🐩","🐱","🐈","🐭","🐹","🐰","🦊","🐻","🐼","🐻‍❄️","🐨","🐯","🦁",
+      "🐮","🐷","🐽","🐸","🐵","🙈","🙉","🙊","🐒","🐔","🐧","🐦","🐤","🐣","🐺","🐗",
+      "🐴","🦄","🐝","🐛","🦋","🐌","🐞","🐜","🪲","🐢","🐍","🦎","🦂","🕷️","🐙","🦑",
+      "🦐","🦞","🦀","🐡","🐠","🐟","🐬","🐳","🐋","🦈","🐊","🐅","🐆","🦓","🦌","🦒",
+    ],
+  },
+  {
+    key: "nature",
+    label: "🌳",
+    emojis: [
+      "🌲","🌳","🌴","🌵","🌱","🌿","☘️","🍀","🎍","🎋","🍃","🍂","🍁","🌾","🌺","🌻",
+      "🌼","🌷","🥀","🌹","🌸","💐","🌞","🌝","🌛","🌜","🌚","🌕","🌖","🌗","🌘","🌑",
+      "🌒","🌓","🌔","⭐","🌟","💫","✨","🌌","⚡","🔥","💧","🌊","☔","☂️","❄️","☃️","⛄",
+    ],
+  },
+  {
+    key: "work",
+    label: "💼",
+    emojis: [
+      "💼","📝","📋","📊","📂","📁","📅","📆","🗓️","✏️","🖊️","🖋️","🖌️","🖍️","📚","📖",
+      "📓","📔","📒","📕","📗","📘","📙","📰","🗞️","🔍","🔎","⚒️","🛠️","🪚","🔧","🔨",
+      "⛏️","🪓","🧰","🪛","⚙️","🔩","⚖️","🪜","📌","📍","📎","🖇️","🗂️","📑","📇",
+    ],
+  },
+  {
+    key: "love",
+    label: "❤️",
+    emojis: [
+      "❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💝","💖","💞","💕","💔","❣️","💋",
+      "💯","💢","💥","💫","💦","💨","💬","💭","🗯️","😀","😃","😄","😁","😆","🥹","😅",
+      "😂","🤣","🥰","😍","🤩","😘","😋","😎","🤓","🧐","😏","😢","😭","😤","😡","🤬",
+    ],
+  },
 ];
+
+/** Flat lookup of every emoji we know about — used to detect whether
+ *  the stored `icon` value lives in the emoji or the JtIcon bucket. */
+const ALL_PRESET_EMOJIS = new Set(
+  EMOJI_GROUPS.flatMap((g) => g.emojis)
+);
 
 /**
  * Inline picker for the category create + edit forms. Two tabs:
  *   - Icons → curated JtIcons (PRESET_ICONS)
- *   - Emoji → curated emoji (PRESET_EMOJIS, raw strings)
+ *   - Emoji → 400+ emoji bucketed into category strips
+ *
+ * Emoji tab adds a second row of group pills (food / transport /
+ * shopping / …) so the user can jump straight to the relevant page
+ * instead of scrolling through every option. The grid itself caps
+ * height + scrolls vertically so a long group doesn't push the
+ * Save button off-screen.
+ *
  * Tap a tile to pick; selected tile lights up with the accent. The
  * stored `icon` column accepts either kind — display goes through
  * <EmojiOrIcon> which branches on whether the value matches an icon
@@ -421,10 +539,19 @@ function IconPickerGrid({
   const t = useTranslations();
   // Default to whichever bucket the current value is in so the user
   // sees their existing pick selected on open.
-  const valueIsEmoji = !PRESET_ICONS.includes(value as IconName);
+  const valueIsEmoji =
+    ALL_PRESET_EMOJIS.has(value) || !PRESET_ICONS.includes(value as IconName);
   const [tab, setTab] = useState<"icons" | "emoji">(
     valueIsEmoji ? "emoji" : "icons"
   );
+  // Open the emoji group that contains the current value, falling
+  // back to the first group otherwise.
+  const initialEmojiGroup =
+    EMOJI_GROUPS.find((g) => g.emojis.includes(value))?.key ??
+    EMOJI_GROUPS[0].key;
+  const [emojiGroup, setEmojiGroup] = useState<string>(initialEmojiGroup);
+  const activeGroup =
+    EMOJI_GROUPS.find((g) => g.key === emojiGroup) ?? EMOJI_GROUPS[0];
 
   return (
     <div className="rounded-lg border border-(--border) bg-(--background)/40 p-2 space-y-2">
@@ -482,27 +609,57 @@ function IconPickerGrid({
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
-          {PRESET_EMOJIS.map((e) => {
-            const isActive = value === e;
-            return (
-              <button
-                key={e}
-                type="button"
-                onClick={() => onChange(e)}
-                aria-label={e}
-                aria-pressed={isActive}
-                className={cn(
-                  "aspect-square rounded-lg flex items-center justify-center text-xl leading-none transition",
-                  isActive
-                    ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
-                    : "hover:bg-(--card)"
-                )}
-              >
-                {e}
-              </button>
-            );
-          })}
+        <div className="space-y-2">
+          {/* Group strip — emoji labels as compact chips so the row
+              stays scannable even with 13 groups. */}
+          <div className="flex gap-1 overflow-x-auto scrollbar-none -mx-2 px-2 pb-1">
+            {EMOJI_GROUPS.map((g) => {
+              const isActive = g.key === emojiGroup;
+              return (
+                <button
+                  key={g.key}
+                  type="button"
+                  onClick={() => setEmojiGroup(g.key)}
+                  aria-pressed={isActive}
+                  aria-label={g.key}
+                  className={cn(
+                    "shrink-0 h-8 w-8 rounded-md flex items-center justify-center text-base leading-none transition",
+                    isActive
+                      ? "bg-(--accent)/20 ring-2 ring-(--accent)/50"
+                      : "bg-(--card) hover:bg-(--background)"
+                  )}
+                >
+                  {g.label}
+                </button>
+              );
+            })}
+          </div>
+          {/* Scrollable grid, capped so very long groups don't push
+              the Save button off-screen. */}
+          <div className="max-h-64 overflow-y-auto pr-1">
+            <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
+              {activeGroup.emojis.map((e, idx) => {
+                const isActive = value === e;
+                return (
+                  <button
+                    key={`${e}-${idx}`}
+                    type="button"
+                    onClick={() => onChange(e)}
+                    aria-label={e}
+                    aria-pressed={isActive}
+                    className={cn(
+                      "aspect-square rounded-lg flex items-center justify-center text-xl leading-none transition",
+                      isActive
+                        ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
+                        : "hover:bg-(--card)"
+                    )}
+                  >
+                    {e}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>
