@@ -44,7 +44,9 @@ const PRESET_ICONS: IconName[] = [
   // Other catch-all
   "award", "graduation-cap", "target-domain", "flame", "sparkle",
 ];
-const DEFAULT_CATEGORY_ICON: IconName = "sparkle";
+// Plain emoji default so a freshly-opened create form shows the
+// same look users will pick from below (no JtIcon placeholder).
+const DEFAULT_CATEGORY_ICON = "✨";
 
 type OtherLedger = {
   id: string;
@@ -573,14 +575,12 @@ function IconPickerGrid({
   value: string;
   onChange: (icon: string) => void;
 }) {
-  const t = useTranslations();
-  // Default to whichever bucket the current value is in so the user
-  // sees their existing pick selected on open.
-  const valueIsEmoji =
-    ALL_PRESET_EMOJIS.has(value) || !PRESET_ICONS.includes(value as IconName);
-  const [tab, setTab] = useState<"icons" | "emoji">(
-    valueIsEmoji ? "emoji" : "icons"
-  );
+  // Icon (JtIcon) tab is hidden for now per product call — the emoji
+  // catalog covers the common cases and the JtIcon set looked too
+  // illustrative next to the rest of the iOS-style UI. Variables
+  // PRESET_ICONS / ALL_PRESET_EMOJIS are kept for the rare existing
+  // category that still references a JtIcon name (rendered via
+  // <EmojiOrIcon> at display time).
   // Open the emoji group that contains the current value, falling
   // back to the first group otherwise.
   const initialEmojiGroup =
@@ -592,100 +592,46 @@ function IconPickerGrid({
 
   return (
     <div className="rounded-lg border border-(--border) bg-(--background)/40 p-2 space-y-2">
-      <div className="grid grid-cols-2 gap-1 p-0.5 bg-(--card) rounded-md text-xs font-medium">
-        <button
-          type="button"
-          onClick={() => setTab("icons")}
-          aria-pressed={tab === "icons"}
-          className={cn(
-            "py-1 rounded transition",
-            tab === "icons"
-              ? "bg-(--accent) text-(--accent-foreground)"
-              : "text-(--muted)"
-          )}
-        >
-          {t("categories.iconTab")}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("emoji")}
-          aria-pressed={tab === "emoji"}
-          className={cn(
-            "py-1 rounded transition",
-            tab === "emoji"
-              ? "bg-(--accent) text-(--accent-foreground)"
-              : "text-(--muted)"
-          )}
-        >
-          {t("categories.emojiTab")}
-        </button>
-      </div>
-
-      {tab === "icons" ? (
-        <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
-          {PRESET_ICONS.map((name) => {
-            const isActive = value === name;
+      <div className="space-y-2">
+        {/* Group strip — emoji labels as compact chips so the row
+            stays scannable even with 13 groups. */}
+        <div className="flex gap-1 overflow-x-auto scrollbar-none -mx-2 px-2 pb-1">
+          {EMOJI_GROUPS.map((g) => {
+            const isActive = g.key === emojiGroup;
             return (
               <button
-                key={name}
+                key={g.key}
                 type="button"
-                onClick={() => onChange(name)}
-                aria-label={name}
+                onClick={() => setEmojiGroup(g.key)}
                 aria-pressed={isActive}
-                title={name}
+                aria-label={g.key}
                 className={cn(
-                  "aspect-square rounded-lg flex items-center justify-center transition",
+                  "shrink-0 h-8 w-8 rounded-md flex items-center justify-center text-base leading-none transition",
                   isActive
-                    ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
-                    : "hover:bg-(--card)"
+                    ? "bg-(--accent)/20 ring-2 ring-(--accent)/50"
+                    : "bg-(--card) hover:bg-(--background)"
                 )}
               >
-                <EmojiOrIcon value={name} size={22} />
+                {g.label}
               </button>
             );
           })}
         </div>
-      ) : (
-        <div className="space-y-2">
-          {/* Group strip — emoji labels as compact chips so the row
-              stays scannable even with 13 groups. */}
-          <div className="flex gap-1 overflow-x-auto scrollbar-none -mx-2 px-2 pb-1">
-            {EMOJI_GROUPS.map((g) => {
-              const isActive = g.key === emojiGroup;
+        {/* Scrollable grid, capped so very long groups don't push
+            the Save button off-screen. */}
+        <div className="max-h-64 overflow-y-auto pr-1">
+          <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
+            {activeGroup.emojis.map((e, idx) => {
+              const isActive = value === e;
               return (
                 <button
-                  key={g.key}
+                  key={`${e}-${idx}`}
                   type="button"
-                  onClick={() => setEmojiGroup(g.key)}
+                  onClick={() => onChange(e)}
+                  aria-label={e}
                   aria-pressed={isActive}
-                  aria-label={g.key}
                   className={cn(
-                    "shrink-0 h-8 w-8 rounded-md flex items-center justify-center text-base leading-none transition",
-                    isActive
-                      ? "bg-(--accent)/20 ring-2 ring-(--accent)/50"
-                      : "bg-(--card) hover:bg-(--background)"
-                  )}
-                >
-                  {g.label}
-                </button>
-              );
-            })}
-          </div>
-          {/* Scrollable grid, capped so very long groups don't push
-              the Save button off-screen. */}
-          <div className="max-h-64 overflow-y-auto pr-1">
-            <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
-              {activeGroup.emojis.map((e, idx) => {
-                const isActive = value === e;
-                return (
-                  <button
-                    key={`${e}-${idx}`}
-                    type="button"
-                    onClick={() => onChange(e)}
-                    aria-label={e}
-                    aria-pressed={isActive}
-                    className={cn(
-                      "aspect-square rounded-lg flex items-center justify-center text-xl leading-none transition",
+                    "aspect-square rounded-lg flex items-center justify-center text-xl leading-none transition",
                       isActive
                         ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
                         : "hover:bg-(--card)"
@@ -698,7 +644,6 @@ function IconPickerGrid({
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 }
