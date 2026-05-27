@@ -28,6 +28,7 @@ export function NewTransactionPage({
   accounts,
   noteSuggestions,
   currency,
+  defaultPaymentMethod,
 }: {
   categories: Category[];
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
@@ -36,6 +37,7 @@ export function NewTransactionPage({
   accounts?: AccountChoice[];
   noteSuggestions?: string[];
   currency?: string;
+  defaultPaymentMethod?: "cash" | "transfer" | null;
 }) {
   const [formKey, setFormKey] = useState(0);
   const [initial, setInitial] = useState<Initial | undefined>(undefined);
@@ -63,6 +65,7 @@ export function NewTransactionPage({
       activeTrip={activeTrip}
       noteSuggestions={noteSuggestions}
       currency={currency}
+      defaultPaymentMethod={defaultPaymentMethod}
       action={action}
       initial={initial}
       headerAction={

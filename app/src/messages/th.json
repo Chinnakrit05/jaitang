@@ -560,7 +560,10 @@
     "members": "สมาชิก",
     "editTitle": "แก้ไขสมุด",
     "iconLabel": "ไอคอน",
-    "nameLabel": "ชื่อสมุด"
+    "nameLabel": "ชื่อสมุด",
+    "defaultPaymentLabel": "วิธีจ่ายเริ่มต้น",
+    "defaultPaymentHint": "ตอนเพิ่มรายการใหม่จะเลือกอันนี้ให้อัตโนมัติ",
+    "defaultPaymentNone": "ไม่ระบุ"
   },
   "members": {
     "back": "กลับไปสมุดบัญชี",

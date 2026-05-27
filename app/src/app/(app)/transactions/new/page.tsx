@@ -51,6 +51,7 @@ export default async function NewTransaction() {
         accounts={accounts}
         noteSuggestions={noteSuggestions}
         currency={ledger.currency}
+        defaultPaymentMethod={ledger.default_payment_method}
       />
     </div>
   );

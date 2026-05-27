@@ -560,7 +560,10 @@
     "members": "メンバー",
     "editTitle": "帳簿を編集",
     "iconLabel": "アイコン",
-    "nameLabel": "帳簿名"
+    "nameLabel": "帳簿名",
+    "defaultPaymentLabel": "デフォルトの支払い方法",
+    "defaultPaymentHint": "新規入力時に自動で選択されます。",
+    "defaultPaymentNone": "指定なし"
   },
   "members": {
     "back": "帳簿一覧に戻る",

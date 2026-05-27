@@ -22,6 +22,9 @@ export type ActiveLedgerInfo = {
   icon: string | null;
   is_personal: boolean;
   currency: string;
+  /** Pre-selects the payment pill on /transactions/new. Null = no
+   *  preference; the form falls back to "cash". */
+  default_payment_method: "cash" | "transfer" | null;
 };
 
 export type SessionContext = {
@@ -56,7 +59,9 @@ export const requireSession = cache(async (): Promise<SessionContext> => {
   const sb = getServerSupabase();
   const { data: ledgerRow, error: lErr } = await sb
     .from("ledgers")
-    .select("id, name, icon, currency, is_personal, owner_id")
+    .select(
+      "id, name, icon, currency, is_personal, owner_id, default_payment_method"
+    )
     .eq("id", ledgerId)
     .is("deleted_at", null)
     .single();
@@ -94,6 +99,9 @@ export const requireSession = cache(async (): Promise<SessionContext> => {
       icon: ledgerRow.icon,
       is_personal: ledgerRow.is_personal,
       currency: ledgerRow.currency ?? "THB",
+      default_payment_method:
+        (ledgerRow.default_payment_method as "cash" | "transfer" | null) ??
+        null,
     },
     activeTripId,
   };

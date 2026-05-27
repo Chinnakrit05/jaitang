@@ -9,6 +9,9 @@ export type LedgerSummary = {
   is_personal: boolean;
   owner_id: string;
   created_at: string;
+  /** When set, /transactions/new pre-selects this payment method.
+   *  Null = no preference (form falls back to "cash"). */
+  default_payment_method: "cash" | "transfer" | null;
   role: "owner" | "editor" | "viewer";
 };
 
@@ -85,13 +88,15 @@ export async function listLedgersForUser(userId: string): Promise<LedgerSummary[
   const [ownedRes, memberRes] = await Promise.all([
     sb
       .from("ledgers")
-      .select("id, name, icon, color, currency, is_personal, owner_id, created_at")
+      .select(
+        "id, name, icon, color, currency, is_personal, owner_id, created_at, default_payment_method"
+      )
       .eq("owner_id", userId)
       .is("deleted_at", null),
     sb
       .from("ledger_members")
       .select(
-        "role, ledgers!inner(id, name, icon, color, currency, is_personal, owner_id, created_at)"
+        "role, ledgers!inner(id, name, icon, color, currency, is_personal, owner_id, created_at, default_payment_method)"
       )
       .eq("user_id", userId)
       // Filter on the joined `ledgers` table — PostgREST allows this even
@@ -139,12 +144,18 @@ export async function listLedgersForUser(userId: string): Promise<LedgerSummary[
  */
 export async function updateLedger(
   id: string,
-  patch: { name?: string; icon?: string | null }
+  patch: {
+    name?: string;
+    icon?: string | null;
+    default_payment_method?: "cash" | "transfer" | null;
+  }
 ) {
   const sb = getServerSupabase();
   const update: Record<string, unknown> = {};
   if (patch.name !== undefined) update.name = patch.name.trim();
   if (patch.icon !== undefined) update.icon = patch.icon;
+  if (patch.default_payment_method !== undefined)
+    update.default_payment_method = patch.default_payment_method;
   const { error } = await sb
     .from("ledgers")
     .update(update)

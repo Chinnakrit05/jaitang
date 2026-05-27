@@ -89,6 +89,7 @@ export default async function EditTransactionPage({
         activeTrip={activeTrip}
         noteSuggestions={noteSuggestions}
         currency={ledger.currency}
+        defaultPaymentMethod={ledger.default_payment_method}
         action={boundAction}
         initial={{
           kind: tx.kind,

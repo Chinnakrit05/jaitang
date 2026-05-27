@@ -560,7 +560,10 @@
     "members": "Members",
     "editTitle": "Edit ledger",
     "iconLabel": "Icon",
-    "nameLabel": "Ledger name"
+    "nameLabel": "Ledger name",
+    "defaultPaymentLabel": "Default payment method",
+    "defaultPaymentHint": "Pre-selected when you add a new entry.",
+    "defaultPaymentNone": "Either"
   },
   "members": {
     "back": "Back to ledgers",

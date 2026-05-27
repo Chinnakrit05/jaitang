@@ -560,7 +560,10 @@
     "members": "成员",
     "editTitle": "编辑账本",
     "iconLabel": "图标",
-    "nameLabel": "账本名称"
+    "nameLabel": "账本名称",
+    "defaultPaymentLabel": "默认支付方式",
+    "defaultPaymentHint": "新增记录时会自动选中。",
+    "defaultPaymentNone": "不指定"
   },
   "members": {
     "back": "返回账本列表",

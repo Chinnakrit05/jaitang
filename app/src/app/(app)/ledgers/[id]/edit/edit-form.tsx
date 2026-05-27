@@ -31,24 +31,30 @@ const EMOJI_PRESETS = [
   "✈️", "🛍️", "🎉", "🎁", "📚", "💳",
 ];
 
+type PayPref = "cash" | "transfer" | null;
+
 export function EditLedgerForm({
   ledgerId,
   initialName,
   initialIcon,
+  initialDefaultPaymentMethod,
   action,
 }: {
   ledgerId: string;
   initialName: string;
   initialIcon: string | null;
+  initialDefaultPaymentMethod: PayPref;
   action: (patch: {
     name?: string;
     icon?: string | null;
+    defaultPaymentMethod?: PayPref;
   }) => Promise<Result>;
 }) {
   const router = useRouter();
   const t = useTranslations();
   const [name, setName] = useState(initialName);
   const [icon, setIcon] = useState<string>(initialIcon ?? "users");
+  const [payPref, setPayPref] = useState<PayPref>(initialDefaultPaymentMethod);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +66,11 @@ export function EditLedgerForm({
       return;
     }
     startTransition(async () => {
-      const result = await action({ name: trimmed, icon });
+      const result = await action({
+        name: trimmed,
+        icon,
+        defaultPaymentMethod: payPref,
+      });
       if (result.ok === false) {
         setError(result.error);
         return;
@@ -153,6 +163,35 @@ export function EditLedgerForm({
         </div>
       </div>
 
+      <div>
+        <label className="block text-sm font-medium mb-1.5">
+          {t("ledgers.defaultPaymentLabel")}
+        </label>
+        <p className="text-[11px] text-(--muted) mb-2">
+          {t("ledgers.defaultPaymentHint")}
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          <PayChoice
+            label={t("ledgers.defaultPaymentNone")}
+            icon="—"
+            selected={payPref === null}
+            onClick={() => setPayPref(null)}
+          />
+          <PayChoice
+            label={t("transactions.paymentCash")}
+            icon="💵"
+            selected={payPref === "cash"}
+            onClick={() => setPayPref("cash")}
+          />
+          <PayChoice
+            label={t("transactions.paymentTransfer")}
+            icon="💳"
+            selected={payPref === "transfer"}
+            onClick={() => setPayPref("transfer")}
+          />
+        </div>
+      </div>
+
       {error && (
         <div className="rounded-lg bg-(--expense)/10 text-(--expense) px-3 py-2 text-sm">
           {error}
@@ -184,5 +223,34 @@ export function EditLedgerForm({
           for future use (audit log / debug links). */}
       <span hidden>{ledgerId}</span>
     </div>
+  );
+}
+
+function PayChoice({
+  label,
+  icon,
+  selected,
+  onClick,
+}: {
+  label: string;
+  icon: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={cn(
+        "flex flex-col items-center justify-center gap-1 px-2 py-3 rounded-xl border text-sm font-medium transition",
+        selected
+          ? "border-(--accent) bg-(--accent)/10 text-(--accent)"
+          : "border-(--border) bg-(--card) hover:bg-(--background)"
+      )}
+    >
+      <span aria-hidden className="text-lg leading-none">{icon}</span>
+      <span>{label}</span>
+    </button>
   );
 }

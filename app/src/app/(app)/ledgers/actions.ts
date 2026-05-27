@@ -194,11 +194,16 @@ export async function removeMemberAction(memberId: string) {
 const UpdateLedgerSchema = z.object({
   name: z.string().min(1).max(60).optional(),
   icon: z.string().max(64).nullable().optional(),
+  defaultPaymentMethod: z.enum(["cash", "transfer"]).nullable().optional(),
 });
 
 export async function updateLedgerAction(
   ledgerId: string,
-  patch: { name?: string; icon?: string | null }
+  patch: {
+    name?: string;
+    icon?: string | null;
+    defaultPaymentMethod?: "cash" | "transfer" | null;
+  }
 ) {
   const session = await auth();
   const userId = (session?.user as { id?: string } | undefined)?.id;
@@ -225,7 +230,13 @@ export async function updateLedgerAction(
   if (ledger.owner_id !== userId) {
     return { ok: false as const, error: "Not the owner" };
   }
-  await updateLedger(ledgerId, parsed.data);
+  const { defaultPaymentMethod, ...rest } = parsed.data;
+  await updateLedger(ledgerId, {
+    ...rest,
+    ...(defaultPaymentMethod !== undefined
+      ? { default_payment_method: defaultPaymentMethod }
+      : {}),
+  });
   refreshAll();
   return { ok: true as const };
 }

@@ -20,7 +20,7 @@ export default async function EditLedgerPage({
   const sb = getServerSupabase();
   const { data: ledger } = await sb
     .from("ledgers")
-    .select("id, name, icon, owner_id")
+    .select("id, name, icon, owner_id, default_payment_method")
     .eq("id", ledgerId)
     .is("deleted_at", null)
     .maybeSingle();
@@ -28,7 +28,11 @@ export default async function EditLedgerPage({
   if (!ledger) notFound();
   if (ledger.owner_id !== userId) redirect("/ledgers");
 
-  async function save(patch: { name?: string; icon?: string | null }) {
+  async function save(patch: {
+    name?: string;
+    icon?: string | null;
+    defaultPaymentMethod?: "cash" | "transfer" | null;
+  }) {
     "use server";
     return updateLedgerAction(ledgerId, patch);
   }
@@ -40,6 +44,9 @@ export default async function EditLedgerPage({
         ledgerId={ledgerId}
         initialName={ledger.name}
         initialIcon={ledger.icon}
+        initialDefaultPaymentMethod={
+          (ledger.default_payment_method as "cash" | "transfer" | null) ?? null
+        }
         action={save}
       />
     </div>

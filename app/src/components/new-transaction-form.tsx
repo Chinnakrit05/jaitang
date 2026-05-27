@@ -56,6 +56,10 @@ type Props = {
   activeTrip?: TripChoice | null;
   noteSuggestions?: string[];
   currency?: string;
+  /** Ledger-level fallback for the payment pill on create flow.
+   *  Edit flow still wins via `initial.paymentMethod`. Null = no
+   *  preference; we then fall back to "cash". */
+  defaultPaymentMethod?: "cash" | "transfer" | null;
   action: (formData: FormData) => Promise<{ ok: false; error: string } | void>;
   initial?: Initial;
   /** Optional small control rendered in the header next to the title.
@@ -90,6 +94,7 @@ export function NewTransactionForm({
   activeTrip,
   noteSuggestions,
   currency: homeCurrency = "THB",
+  defaultPaymentMethod = null,
   action,
   initial,
   headerAction,
@@ -106,7 +111,7 @@ export function NewTransactionForm({
   );
   const [note, setNote] = useState<string>(initial?.note ?? "");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
-    initial?.paymentMethod ?? "cash"
+    initial?.paymentMethod ?? defaultPaymentMethod ?? "cash"
   );
   const [categoryId, setCategoryId] = useState<string | null>(
     initial?.categoryId ?? null
@@ -190,7 +195,7 @@ export function NewTransactionForm({
     setNote("");
     setCategoryId(null);
     setAccountId(null);
-    setPaymentMethod("cash");
+    setPaymentMethod(defaultPaymentMethod ?? "cash");
     setKind("expense");
     setError(null);
     setAiHint(null);

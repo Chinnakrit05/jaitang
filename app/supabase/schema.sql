@@ -262,6 +262,9 @@ alter table public.ledgers
   add column if not exists updated_at timestamptz not null default now();
 alter table public.ledgers
   add column if not exists deleted_at timestamptz;
+alter table public.ledgers
+  add column if not exists default_payment_method text
+    check (default_payment_method in ('cash', 'transfer'));
 drop trigger if exists trg_ledgers_updated_at on public.ledgers;
 create trigger trg_ledgers_updated_at
 before update on public.ledgers
