@@ -88,10 +88,8 @@ export function InlineAmount({
 
   function commit() {
     setError(null);
-    // "-" → skip this period. Only honoured when onSkip is wired
-    // (i.e. the row is a recurring rule). Falls through to normal
-    // parse otherwise so a stray "-" in a tx row doesn't accidentally
-    // hide the amount.
+    // "-" → skip this period and render as "-". Only honoured when
+    // onSkip is wired (recurring rule rows).
     if (onSkip && value.trim() === "-" && extras.length === 0) {
       if (skipped) return; // already skipped, no-op
       startTransition(async () => {
@@ -108,11 +106,10 @@ export function InlineAmount({
       });
       return;
     }
-    // Sum strips commas (in case the input was populated from the
-    // saved value) and skips empty addends.
+    // Sum strips commas first. Allow 0 here — we'll branch below.
     const parsed = [...extras, value]
       .map((v) => Number(v.replace(/,/g, "")))
-      .filter((n) => Number.isFinite(n) && n > 0);
+      .filter((n) => Number.isFinite(n) && n >= 0);
     if (parsed.length === 0) {
       // Nothing to commit — revert + collapse extras.
       setExtras([]);
@@ -125,14 +122,43 @@ export function InlineAmount({
       return;
     }
     const num = parsed.reduce((s, n) => s + n, 0);
-    if (!Number.isFinite(num) || num <= 0) {
+    if (!Number.isFinite(num) || num < 0) {
       setExtras([]);
       setValue(savedValue === null ? "" : fmt(savedValue));
       return;
     }
-    if (num === savedValue) {
+    if (num === savedValue && !skipped) {
       setExtras([]);
       setValue(fmt(num));
+      return;
+    }
+    // 0 baht has the same semantics as "-": no money moved this
+    // period. We share the skip path so the underlying state stays
+    // single-sourced (last_fill_amount = 0 + last_run_at advanced).
+    // The display flips to "-" because that's what the row reads
+    // as on the next render anyway. For tx rows (no onSkip), 0
+    // stays rejected — the DB constraint requires positive amounts.
+    if (onSkip && num === 0) {
+      startTransition(async () => {
+        const result = await onSkip();
+        if (result.ok) {
+          setSkipped(true);
+          setSavedValue(0);
+          setValue("-");
+          setExtras([]);
+          setJustSaved(true);
+        } else {
+          setError(result.error);
+          setExtras([]);
+          setValue(savedValue === null ? "" : fmt(savedValue));
+        }
+      });
+      return;
+    }
+    if (num === 0) {
+      // No onSkip wired — 0 isn't a valid commit for a tx row.
+      setExtras([]);
+      setValue(savedValue === null ? "" : fmt(savedValue));
       return;
     }
     startTransition(async () => {
