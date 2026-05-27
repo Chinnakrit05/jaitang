@@ -49,11 +49,11 @@ export default function MorePreviewPage() {
       fg: "#1F8E62",
     },
     {
-      href: "/transfers/new",
-      label: t("more.transferShort"),
-      icon: "arrow-left-right",
-      bg: "color-mix(in srgb, #FFD1E5 60%, var(--card))",
-      fg: "#C0367C",
+      href: "/recurring",
+      label: t("nav.recurring"),
+      icon: "recurring",
+      bg: "color-mix(in srgb, #DDD6FE 60%, var(--card))",
+      fg: "#6D28D9",
     },
   ];
 
@@ -62,7 +62,6 @@ export default function MorePreviewPage() {
   const general: Array<{ href: string; label: string; icon: IconName; desc: string }> = [
     { href: "/calendar",   label: t("nav.calendar"),   icon: "calendar",   desc: t("nav.descriptions.calendar") },
     { href: "/categories", label: t("nav.categories"), icon: "categories", desc: t("nav.descriptions.categories") },
-    { href: "/recurring",  label: t("nav.recurring"),  icon: "recurring",  desc: t("nav.descriptions.recurring") },
     { href: "/trips",      label: t("nav.trips"),      icon: "trips",      desc: t("nav.descriptions.trips") },
     { href: "/balances",   label: t("nav.balances"),   icon: "balances",   desc: t("nav.descriptions.balances") },
     { href: "/accounts",   label: t("nav.accounts"),   icon: "accounts",   desc: t("nav.descriptions.accounts") },
