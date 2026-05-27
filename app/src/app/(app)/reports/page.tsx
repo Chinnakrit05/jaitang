@@ -13,8 +13,11 @@ import {
   updateTransactionAmountAction,
   updateTransactionNoteAction,
 } from "./actions";
+import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
+import { deleteRecurringAction } from "@/app/(app)/recurring/actions";
 import { InlineAmount } from "./inline-amount";
 import { InlineNote } from "./inline-note";
+import { DeleteRowButton } from "./row-actions";
 
 /**
  * Monthly review page. Mirrors the Figma "รายงานรายเดือน" mockup:
@@ -282,6 +285,10 @@ function TxRow({ tx, currency }: { tx: Tx; currency: string }) {
     "use server";
     return updateTransactionNoteAction(tx.id, next);
   }
+  async function deleteAction() {
+    "use server";
+    return deleteTransactionAction(tx.id);
+  }
 
   return (
     <li className="flex items-center gap-2 px-3 py-1.5">
@@ -294,6 +301,7 @@ function TxRow({ tx, currency }: { tx: Tx; currency: string }) {
         currency={currency}
         action={amountAction}
       />
+      <DeleteRowButton action={deleteAction} confirmKey="transactions.deleteConfirm" />
     </li>
   );
 }
@@ -309,6 +317,10 @@ function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
   async function noteAction(next: string) {
     "use server";
     return updateRecurringNoteAction(rule.id, next);
+  }
+  async function deleteAction() {
+    "use server";
+    return deleteRecurringAction(rule.id);
   }
 
   return (
@@ -334,6 +346,7 @@ function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
         currency={currency}
         action={amountAction}
       />
+      <DeleteRowButton action={deleteAction} confirmKey="recurring.deleteConfirm" />
     </li>
   );
 }
