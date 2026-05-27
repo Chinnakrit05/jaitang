@@ -43,6 +43,11 @@ type Initial = {
   paymentMethod: PaymentMethod | null;
   occurredAt: string;
   tripId: string | null;
+  /** Edit-mode extras — preserved on save so the row keeps its
+   *  account / FX flavour even though the new form doesn't expose
+   *  every field. */
+  accountId?: string | null;
+  fxCurrency?: string | null;
 };
 
 type Props = {
@@ -106,11 +111,14 @@ export function NewTransactionForm({
   const [categoryId, setCategoryId] = useState<string | null>(
     initial?.categoryId ?? null
   );
-  const [accountId, setAccountId] = useState<string | null>(null);
+  const [accountId, setAccountId] = useState<string | null>(
+    initial?.accountId ?? null
+  );
   const [txCurrency, setTxCurrency] = useState<string>(
-    activeTrip?.currency && activeTrip.currency !== homeCurrency
-      ? activeTrip.currency
-      : homeCurrency
+    initial?.fxCurrency ??
+      (activeTrip?.currency && activeTrip.currency !== homeCurrency
+        ? activeTrip.currency
+        : homeCurrency)
   );
   const [previewRate, setPreviewRate] = useState<number | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -219,7 +227,14 @@ export function NewTransactionForm({
         const fd = new FormData(e.currentTarget);
         // No datetime-local picker — set occurredAt to "now" in ISO so
         // the server's zod offset validator is happy.
-        fd.set("occurredAt", new Date().toISOString());
+        // Edit mode keeps the original occurred_at — the new layout
+        // doesn't expose a date picker, but we shouldn't clobber the
+        // historical timestamp just because the user tweaked the
+        // amount. Create flow falls through to "now".
+        fd.set(
+          "occurredAt",
+          initial?.occurredAt ?? new Date().toISOString()
+        );
         startTransition(async () => {
           const result = await action(fd);
           if (result && "ok" in result && result.ok === false) {
@@ -241,7 +256,13 @@ export function NewTransactionForm({
       {/* Silently inherit the active trip — same UX as the old form's
           default-on toggle. User can detach via the trip page after
           saving if needed. */}
-      <input type="hidden" name="tripId" value={activeTrip?.id ?? ""} />
+      {/* Trip pinning: prefer whatever the row already had on edit;
+          otherwise inherit the session's active trip silently. */}
+      <input
+        type="hidden"
+        name="tripId"
+        value={initial?.tripId ?? activeTrip?.id ?? ""}
+      />
 
       {/* Header */}
       <div className="flex items-center justify-between">

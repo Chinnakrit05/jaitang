@@ -1,21 +1,19 @@
 import { requireSession } from "@/lib/session";
-import { JtIcon } from "@/components/icons";
 import { listCategories } from "@/lib/categories";
-import {
-  TransactionForm,
-  type AccountChoice,
-  type SplitMember,
+import { NewTransactionForm } from "@/components/new-transaction-form";
+import type {
+  AccountChoice,
+  TripChoice,
 } from "@/components/transaction-form";
-import { updateTransactionAction, deleteTransactionAction } from "../../actions";
+import {
+  updateTransactionAction,
+  deleteTransactionAction,
+} from "../../actions";
 import { getServerSupabase } from "@/lib/supabase/server";
-import { listMembers } from "@/lib/members";
-import { listSplits } from "@/lib/splits";
 import { listTrips } from "@/lib/trips";
 import { listAccounts } from "@/lib/accounts";
 import { listDistinctNotes } from "@/lib/transactions";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 
 import { DeleteForm } from "./delete-form";
 
@@ -24,60 +22,40 @@ export default async function EditTransactionPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const [{ id }, { ledgerId, userId, ledger }, t] = await Promise.all([
+  const [{ id }, { ledgerId, ledger, activeTripId }] = await Promise.all([
     params,
     requireSession(),
-    getTranslations(),
   ]);
 
   const sb = getServerSupabase();
 
-  // Fetch transaction + categories + (members/splits if shared) + trips + accounts + note suggestions in parallel
-  const [
-    txRes,
-    categories,
-    members,
-    existingSplits,
-    allTrips,
-    accountRows,
-    noteSuggestions,
-  ] = await Promise.all([
-    sb
-      .from("transactions")
-      .select(
-        "id, ledger_id, kind, amount, category_id, trip_id, account_id, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, user_id"
-      )
-      .eq("id", id)
-      .eq("ledger_id", ledgerId)
-      .maybeSingle(),
-    listCategories(ledgerId),
-    ledger.is_personal ? Promise.resolve(null) : listMembers(ledgerId),
-    ledger.is_personal ? Promise.resolve([]) : listSplits(id),
-    listTrips(ledgerId),
-    listAccounts(ledgerId, { includeArchived: true }),
-    listDistinctNotes(ledgerId, 200),
-  ]);
+  // Edit screen now reuses the same NewTransactionForm shell as the
+  // create flow. The long-form (split / trip-change / date-time)
+  // surface has been removed for parity with the mobile mockup —
+  // amount / note / payment / category / account are the fields
+  // we expect users to tweak day-to-day; trip + occurredAt are
+  // preserved silently from the row's existing state.
+  const [txRes, categories, allTrips, accountRows, noteSuggestions] =
+    await Promise.all([
+      sb
+        .from("transactions")
+        .select(
+          "id, kind, amount, category_id, trip_id, account_id, note, payment_method, fx_currency, fx_amount, occurred_at"
+        )
+        .eq("id", id)
+        .eq("ledger_id", ledgerId)
+        .maybeSingle(),
+      listCategories(ledgerId),
+      listTrips(ledgerId),
+      listAccounts(ledgerId, { includeArchived: true }),
+      listDistinctNotes(ledgerId, 200),
+    ]);
 
   if (txRes.error) throw txRes.error;
   const tx = txRes.data;
   if (!tx) notFound();
 
   const boundAction = updateTransactionAction.bind(null, id);
-
-  const splitMembers: SplitMember[] | undefined = members
-    ? members.map((m) => ({
-        userId: m.user_id,
-        name: m.user?.name ?? m.user?.email ?? "?",
-        email: m.user?.email ?? null,
-        image: m.user?.image ?? null,
-        isYou: m.user_id === userId,
-      }))
-    : undefined;
-
-  const splitWith =
-    splitMembers && existingSplits.length > 0
-      ? [tx.user_id, ...existingSplits.map((s) => s.user_id)]
-      : undefined;
 
   const accounts: AccountChoice[] = accountRows.map((a) => ({
     id: a.id,
@@ -87,36 +65,36 @@ export default async function EditTransactionPage({
     archived: a.archived,
   }));
 
+  // Active-trip pinning mirrors the create flow: if the row already
+  // belongs to a trip, surface that as `activeTrip`; otherwise fall
+  // back to the session's active trip (if any).
+  const tripId = tx.trip_id ?? activeTripId ?? null;
+  const tripRow = tripId
+    ? allTrips.find((tr) => tr.id === tripId)
+    : null;
+  const activeTrip: TripChoice | null = tripRow
+    ? {
+        id: tripRow.id,
+        name: tripRow.name,
+        icon: tripRow.icon,
+        currency: tripRow.currency,
+      }
+    : null;
+
   return (
-    <div className="max-w-xl mx-auto">
-      <Link
-        href="/transactions"
-        className="inline-flex items-center gap-1 text-sm text-(--muted) hover:text-(--foreground) mb-4"
-      >
-        <JtIcon name="arrow-left" size={20} />
-        {t("common.back")}
-      </Link>
-      <h1 className="text-2xl font-bold mb-6">{t("transactions.editTitle")}</h1>
-      <TransactionForm
+    <div className="max-w-md mx-auto pb-28">
+      <NewTransactionForm
         categories={categories}
-        splitMembers={splitMembers}
-        trips={allTrips
-          .filter((tr) => !tr.archived)
-          .map((tr) => ({
-            id: tr.id,
-            name: tr.name,
-            icon: tr.icon,
-            currency: tr.currency,
-          }))}
         accounts={accounts}
+        activeTrip={activeTrip}
         noteSuggestions={noteSuggestions}
         currency={ledger.currency}
+        action={boundAction}
         initial={{
-          id: tx.id,
           kind: tx.kind,
-          // For FX rows we want the form to display the NATIVE amount, not
-          // the home value — that's what the user originally typed and
-          // expects to edit. fx_amount falls back to amount for legacy rows.
+          // Foreign-currency rows store fx_amount as the typed value;
+          // amount is the home-currency conversion. Show the native
+          // figure so the user edits what they originally typed.
           amount:
             tx.fx_amount !== null && tx.fx_amount !== undefined
               ? Number(tx.fx_amount)
@@ -127,15 +105,10 @@ export default async function EditTransactionPage({
           tripId: tx.trip_id ?? null,
           accountId: tx.account_id ?? null,
           fxCurrency: tx.fx_currency ?? null,
-          fxAmount: tx.fx_amount ?? null,
-          fxRate: tx.fx_rate ?? null,
           occurredAt: tx.occurred_at,
-          splitWith,
         }}
-        action={boundAction}
-        submitLabel={t("transactions.submitUpdate")}
       />
-      <div className="mt-8 pt-6 border-t border-(--border)">
+      <div className="mt-6 px-4">
         <DeleteForm
           id={id}
           deleteAction={async () => {
