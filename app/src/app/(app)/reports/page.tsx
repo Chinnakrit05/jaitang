@@ -495,7 +495,7 @@ function RuleRow({
         initial={initialAmount}
         currency={currency}
         action={amountAction}
-        onSkip={viewedIsCurrent ? skipAction : undefined}
+        onSkip={skipAction}
         skipped={isSkipped}
       />
       <DeleteRowButton action={deleteAction} confirmKey="recurring.deleteConfirm" />
