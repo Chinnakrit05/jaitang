@@ -96,7 +96,7 @@ export function MobileNav({
   return (
     <>
       <nav
-        className="md:hidden border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20"
+        className="border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20"
         style={{
           // Push the bar's bottom edge above the iPhone home indicator
           // when running standalone (PWA). `env(safe-area-inset-bottom)`
@@ -105,7 +105,7 @@ export function MobileNav({
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className="flex items-end justify-around py-2 px-2">
+        <div className="max-w-md mx-auto flex items-end justify-around py-2 px-2">
           {leftItems.map(renderTab)}
 
           {/* Center FAB — quick-add path. Raised above the bar with the

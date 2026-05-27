@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import { signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
-import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { NavbarStat } from "@/components/navbar-stat";
 import { ActiveTripBanner } from "@/components/active-trip-banner";
 import { sumPeriod } from "@/lib/transactions";
@@ -97,10 +96,16 @@ export async function DashboardShell({
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top bar — desktop only. On mobile the chrome lives in the
-          hero card greeting row + the bottom nav FAB/more drawer, so
-          the header is just visual noise and we hide it entirely. */}
-      <header className="hidden md:flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-(--border) header-accent-edge sticky top-0 z-20 bg-(--background)/80 backdrop-blur">
+      {/* Top bar — fully hidden. We adopted the mobile shell as the
+          canonical layout for every viewport, so the desktop header
+          (logo / ledger pill / period stat / theme toggle / logout)
+          is gone. Those controls live on /more and /settings instead.
+
+          Keeping the <header> markup as `hidden` rather than deleted
+          so the props (NavbarStat / ThemeToggle / signOut form) still
+          have a stable home if we ever want a tablet/desktop variant
+          back. */}
+      <header className="hidden items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-(--border) header-accent-edge sticky top-0 z-20 bg-(--background)/80 backdrop-blur">
         <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
           <span className="text-xl">📒</span>
           <span className="font-semibold hidden sm:inline">{t("appName")}</span>
@@ -176,23 +181,18 @@ export async function DashboardShell({
         />
       )}
 
-      <div className="flex flex-1">
-        <DesktopSidebar items={NAV} />
-
-        <main
-          className="flex-1 px-4 sm:px-6 lg:px-10 py-6 max-w-6xl w-full mx-auto pb-20 md:pb-6"
-          style={{
-            // Standalone mode (no Safari URL bar) puts our content
-            // under the Dynamic Island / notch. Push the top edge down
-            // by the safe-area inset so the layout toolbar + hero card
-            // stay below it. Desktop already has the visible header
-            // taking the space, so this is mainly a mobile concern.
-            paddingTop: "max(env(safe-area-inset-top), 1.5rem)",
-          }}
-        >
-          {children}
-        </main>
-      </div>
+      {/* DesktopSidebar removed from the tree — every viewport now
+          uses the mobile shell. Clamp the main column to a mobile
+          width so tablet / desktop look like a phone window centered
+          on a darker page rather than a stretched-wide spreadsheet. */}
+      <main
+        className="w-full max-w-md mx-auto px-4 pb-24"
+        style={{
+          paddingTop: "max(env(safe-area-inset-top), 1.5rem)",
+        }}
+      >
+        {children}
+      </main>
 
       <MobileNav
         primary={MOBILE_NAV}
