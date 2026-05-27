@@ -812,6 +812,28 @@ function EditRecurringModal({
               {pending ? t("common.saving") : t("common.save")}
             </button>
           </div>
+
+          {/* Destructive action lives below the primary row so it
+              can't be mistaken for the Save CTA. Deleting the rule
+              only removes the template — past transactions that the
+              cron / inline-fill already materialised stay put,
+              because nothing in `transactions` references the rule. */}
+          <button
+            type="button"
+            onClick={() => {
+              if (!confirm(t("recurring.deleteConfirm"))) return;
+              startTransition(async () => {
+                await deleteRecurringAction(rule.id);
+                router.refresh();
+                onClose();
+              });
+            }}
+            disabled={pending}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-(--expense) hover:bg-(--expense)/10 transition disabled:opacity-50"
+          >
+            <JtIcon name="trash2" size={16} />
+            {t("common.delete")}
+          </button>
         </div>
       </div>
     </>
