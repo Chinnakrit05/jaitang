@@ -62,19 +62,38 @@ export default async function ReportsPage({
   const from = new Date(Date.UTC(year, month - 1, 1)).toISOString();
   const to = new Date(Date.UTC(year, month, 1)).toISOString();
 
-  const [txs, recurring] = await Promise.all([
+  const [allTxs, recurring] = await Promise.all([
     listTransactions({ ledgerId, from, to }),
     listRecurring(ledgerId),
   ]);
   const activeRecurring = recurring.filter((r) => r.active);
 
-  const incomeTxs = txs.filter((tx) => tx.kind === "income");
-  const expenseTxs = txs.filter((tx) => tx.kind === "expense");
+  // Drop transactions that were materialised from a recurring rule
+  // from the list rendering — `fillPendingRecurring` /
+  // `applyDueRecurring` tag those with a "[ค่าประจำ]" note prefix.
+  // They already surface above as their parent rule row (with the
+  // cached last_fill_amount), so showing them again as a "regular"
+  // tx below would double-count visually and the "[ค่าประจำ]" prefix
+  // was confusing.
+  //
+  // Totals still use the full set so the summary card stays
+  // accurate — recurring expenses count toward the month's spend,
+  // we just don't render them twice.
+  const isRecurringTx = (tx: (typeof allTxs)[number]) =>
+    (tx.note ?? "").trimStart().startsWith("[ค่าประจำ]");
+  const listTxs = allTxs.filter((tx) => !isRecurringTx(tx));
+
+  const incomeTxs = listTxs.filter((tx) => tx.kind === "income");
+  const expenseTxs = listTxs.filter((tx) => tx.kind === "expense");
   const incomeRules = activeRecurring.filter((r) => r.kind === "income");
   const expenseRules = activeRecurring.filter((r) => r.kind === "expense");
 
-  const totalIncome = incomeTxs.reduce((s, tx) => s + tx.amount, 0);
-  const totalExpense = expenseTxs.reduce((s, tx) => s + tx.amount, 0);
+  const totalIncome = allTxs
+    .filter((tx) => tx.kind === "income")
+    .reduce((s, tx) => s + tx.amount, 0);
+  const totalExpense = allTxs
+    .filter((tx) => tx.kind === "expense")
+    .reduce((s, tx) => s + tx.amount, 0);
   const balance = totalIncome - totalExpense;
 
   const monthLabel = new Intl.DateTimeFormat(fmtLocale, {
