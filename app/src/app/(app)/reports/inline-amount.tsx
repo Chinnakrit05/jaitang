@@ -27,7 +27,13 @@ export function InlineAmount({
   placeholder?: string;
   action: (amount: number) => Promise<Result>;
 }) {
-  const [value, setValue] = useState<string>(initial === null ? "" : String(initial));
+  // Comma-formatted view of a numeric value — `1000` → `1,000`. Used
+  // outside the edit cursor so the saved amount reads cleanly; while
+  // the input is focused we drop back to the raw digits so the
+  // caret behaviour stays predictable as the user types.
+  const fmt = (n: number) =>
+    Number.isInteger(n) ? n.toLocaleString("en-US") : String(n);
+  const [value, setValue] = useState<string>(initial === null ? "" : fmt(initial));
   const [savedValue, setSavedValue] = useState<number | null>(initial);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -44,28 +50,37 @@ export function InlineAmount({
 
   function commit() {
     setError(null);
-    if (value === "") {
+    // Parse — onChange filter strips commas already, but be safe in
+    // case the input was populated from the saved value (which has
+    // commas) and the user blurred without retyping.
+    const raw = value.replace(/,/g, "");
+    if (raw === "") {
       // Empty + already empty → nothing to commit. Empty + had a saved
       // value → revert (we don't support "clear amount" through this
       // control; the long form handles deletes).
-      if (savedValue !== null) setValue(String(savedValue));
+      if (savedValue !== null) setValue(fmt(savedValue));
       return;
     }
-    const num = Number(value);
+    const num = Number(raw);
     if (!Number.isFinite(num) || num <= 0) {
       // Revert to last good value silently.
-      setValue(savedValue === null ? "" : String(savedValue));
+      setValue(savedValue === null ? "" : fmt(savedValue));
       return;
     }
-    if (num === savedValue) return;
+    if (num === savedValue) {
+      // No change, but normalise display to formatted version.
+      setValue(fmt(num));
+      return;
+    }
     startTransition(async () => {
       const result = await action(num);
       if (result.ok) {
         setSavedValue(num);
+        setValue(fmt(num));
         setJustSaved(true);
       } else {
         setError(result.error);
-        setValue(savedValue === null ? "" : String(savedValue));
+        setValue(savedValue === null ? "" : fmt(savedValue));
       }
     });
   }
@@ -97,6 +112,11 @@ export function InlineAmount({
         autoComplete="off"
         placeholder={placeholder}
         value={value}
+        onFocus={() => {
+          // Drop commas so the caret behaviour stays predictable
+          // while the user types — re-formatted on blur.
+          setValue((v) => v.replace(/,/g, ""));
+        }}
         onChange={(e) => setValue(e.target.value.replace(/[^\d.]/g, ""))}
         onBlur={commit}
         onKeyDown={(e) => {
@@ -105,7 +125,7 @@ export function InlineAmount({
             (e.currentTarget as HTMLInputElement).blur();
           }
           if (e.key === "Escape") {
-            setValue(savedValue === null ? "" : String(savedValue));
+            setValue(savedValue === null ? "" : fmt(savedValue));
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}

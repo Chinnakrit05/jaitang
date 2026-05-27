@@ -485,3 +485,103 @@ export function isAppliedThisPeriod(
       return false;
   }
 }
+
+/**
+ * Correct the amount on the most recent fill of a variable-cost
+ * recurring rule. Used by the /reports row inline editor when the
+ * user wants to fix a number they already typed without creating a
+ * duplicate transaction (which is what fillPendingRecurring would
+ * do).
+ *
+ * Find heuristics: ledger + category + the "[ค่าประจำ]" note prefix
+ * narrows the candidate set to fills generated from any rule with
+ * the same category; we then pick the row whose occurred_at is in
+ * the rule's current period bucket. The rule's last_fill_amount
+ * cache is also bumped so the UI stays consistent.
+ */
+export async function updateRecurringFillAmount(input: {
+  ruleId: string;
+  ledgerId: string;
+  amount: number;
+}): Promise<void> {
+  const sb = getServerSupabase();
+  const { data: rule } = await sb
+    .from("recurring_transactions")
+    .select("id, category_id, period, last_run_at, fx_currency")
+    .eq("id", input.ruleId)
+    .eq("ledger_id", input.ledgerId)
+    .maybeSingle();
+  if (!rule) throw new Error("Rule not found");
+
+  // Bounds for the current period bucket — same logic as
+  // isAppliedThisPeriod, just expressed as ISO window bounds.
+  const now = new Date();
+  let from: Date, to: Date;
+  switch (rule.period) {
+    case "daily":
+      from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      break;
+    case "weekly": {
+      const dow = (now.getDay() + 6) % 7;
+      from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+      from.setHours(0, 0, 0, 0);
+      to = new Date(from);
+      to.setDate(to.getDate() + 7);
+      break;
+    }
+    case "monthly":
+      from = new Date(now.getFullYear(), now.getMonth(), 1);
+      to = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      break;
+    case "yearly":
+      from = new Date(now.getFullYear(), 0, 1);
+      to = new Date(now.getFullYear() + 1, 0, 1);
+      break;
+    default:
+      from = new Date(0);
+      to = new Date(now);
+  }
+
+  // Find the matching tx — same category, [ค่าประจำ] prefix, inside
+  // the period window, ordered newest-first.
+  const { data: txs } = await sb
+    .from("transactions")
+    .select("id, fx_currency, fx_amount, fx_rate")
+    .eq("ledger_id", input.ledgerId)
+    .eq("category_id", rule.category_id)
+    .like("note", "[ค่าประจำ]%")
+    .is("deleted_at", null)
+    .gte("occurred_at", from.toISOString())
+    .lt("occurred_at", to.toISOString())
+    .order("occurred_at", { ascending: false })
+    .limit(1);
+  const tx = txs?.[0];
+
+  if (tx) {
+    // Re-resolve FX so a foreign-currency rule's tx stays internally
+    // consistent (fx_amount is the typed value, amount is the home
+    // equivalent at the stored fx_rate — we keep that rate to avoid
+    // shifting the historic record).
+    let homeAmount = input.amount;
+    const updates: Record<string, unknown> = {};
+    if (tx.fx_currency && tx.fx_rate) {
+      homeAmount =
+        Math.round(input.amount * Number(tx.fx_rate) * 100) / 100;
+      updates.fx_amount = input.amount;
+    }
+    updates.amount = homeAmount;
+    const { error: tErr } = await sb
+      .from("transactions")
+      .update(updates)
+      .eq("id", tx.id);
+    if (tErr) throw tErr;
+  }
+  // Always update the cache, even if no tx was matched — keeps the
+  // /reports row in sync with whatever number the user typed.
+  const { error: rErr } = await sb
+    .from("recurring_transactions")
+    .update({ last_fill_amount: input.amount })
+    .eq("id", input.ruleId);
+  if (rErr) throw rErr;
+}

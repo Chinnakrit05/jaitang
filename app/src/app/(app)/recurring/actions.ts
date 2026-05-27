@@ -11,6 +11,7 @@ import {
   updateRecurring,
   applyDueRecurring,
   fillPendingRecurring,
+  updateRecurringFillAmount,
 } from "@/lib/recurring";
 import { SUPPORTED_CODES } from "@/lib/currencies";
 
@@ -250,6 +251,31 @@ export async function fillPendingRecurringAmountAction(
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid amount" };
   }
   await fillPendingRecurring({
+    ruleId,
+    ledgerId,
+    amount: parsed.data.amount,
+  });
+  refresh();
+  return { ok: true as const };
+}
+
+/**
+ * Correct the amount on the most recent fill of a variable-cost
+ * rule. Used by the /reports inline editor when the user wants to
+ * tweak a number they already typed without creating a duplicate tx
+ * (which is what fillPendingRecurring would do on re-fire).
+ */
+export async function updateRecurringFillAmountAction(
+  ruleId: string,
+  amount: number,
+) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+  const parsed = FillSchema.safeParse({ amount });
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid amount" };
+  }
+  await updateRecurringFillAmount({
     ruleId,
     ledgerId,
     amount: parsed.data.amount,
