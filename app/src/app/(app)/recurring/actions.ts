@@ -103,7 +103,11 @@ export async function createRecurringAction(formData: FormData) {
     period: formData.get("period"),
     dayOfMonth: formData.get("dayOfMonth") || null,
     dayOfWeek: formData.get("dayOfWeek") || null,
-    startDate: formData.get("startDate"),
+    // `formData.get` returns null when the input is absent; zod's
+    // `.optional()` only accepts undefined, so coerce here. Without
+    // this the create form errored "expected string, received null"
+    // as soon as the user pressed save.
+    startDate: formData.get("startDate") || undefined,
   });
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
