@@ -457,22 +457,27 @@ export function NewTransactionForm({
       )}
 
       {/* Save CTA — sticks above the fixed mobile bottom nav so the
-          button is always reachable without scrolling to the end. */}
-      <div className="sticky bottom-24 pt-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-full py-4 text-base font-bold text-white shadow-lg active:scale-[0.99] transition flex items-center justify-center gap-2 disabled:opacity-60"
-          style={{
-            background: `linear-gradient(135deg, ${PEACH_STRONG} 0%, ${PEACH_DEEP} 100%)`,
-            boxShadow:
-              "0 10px 24px -8px color-mix(in srgb, var(--peach-strong) 65%, transparent)",
-          }}
-        >
-          <span aria-hidden className="text-lg">🦴</span>
-          {pending ? t("common.saving") : t("common.save")}
-        </button>
-      </div>
+          button is always reachable without scrolling to the end.
+          Hidden while the user is in category-reorder mode so the
+          peach pill doesn't fight the wiggle UI or accept an
+          accidental tap during the drag/edit. */}
+      {!editingCats && (
+        <div className="sticky bottom-24 pt-2">
+          <button
+            type="submit"
+            disabled={pending}
+            className="w-full rounded-full py-4 text-base font-bold text-white shadow-lg active:scale-[0.99] transition flex items-center justify-center gap-2 disabled:opacity-60"
+            style={{
+              background: `linear-gradient(135deg, ${PEACH_STRONG} 0%, ${PEACH_DEEP} 100%)`,
+              boxShadow:
+                "0 10px 24px -8px color-mix(in srgb, var(--peach-strong) 65%, transparent)",
+            }}
+          >
+            <span aria-hidden className="text-lg">🦴</span>
+            {pending ? t("common.saving") : t("common.save")}
+          </button>
+        </div>
+      )}
     </form>
   );
 }
