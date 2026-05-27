@@ -554,7 +554,13 @@
     "roleOwner": "Owner",
     "roleEditor": "Editor",
     "roleViewer": "Viewer",
-    "joinHint": "Want to join a ledger someone shared? Use the invite link in the form {pattern}"
+    "joinHint": "Want to join a ledger someone shared? Use the invite link in the form {pattern}",
+    "useLedger": "Use",
+    "inUse": "In use",
+    "members": "Members",
+    "editTitle": "Edit ledger",
+    "iconLabel": "Icon",
+    "nameLabel": "Ledger name"
   },
   "members": {
     "back": "Back to ledgers",

@@ -132,16 +132,28 @@ export async function listLedgersForUser(userId: string): Promise<LedgerSummary[
 }
 
 /**
- * Update a single ledger's name. Other fields aren't user-editable
- * inline yet (currency / icon stay with the create flow). Caller is
- * expected to verify owner role before invoking — this helper trusts
- * the input.
+ * Update editable fields on a ledger — currently name + icon. The
+ * caller is expected to verify owner role before invoking; this
+ * helper trusts the input. Partial: undefined fields are left
+ * alone, empty string for icon clears it.
  */
-export async function renameLedger(id: string, name: string) {
+export async function updateLedger(
+  id: string,
+  patch: { name?: string; icon?: string | null }
+) {
   const sb = getServerSupabase();
+  const update: Record<string, unknown> = {};
+  if (patch.name !== undefined) update.name = patch.name.trim();
+  if (patch.icon !== undefined) update.icon = patch.icon;
   const { error } = await sb
     .from("ledgers")
-    .update({ name: name.trim() })
+    .update(update)
     .eq("id", id);
   if (error) throw error;
+}
+
+/** @deprecated — use `updateLedger`. Kept so existing callers don't
+ *  break mid-deploy. */
+export async function renameLedger(id: string, name: string) {
+  return updateLedger(id, { name });
 }

@@ -554,7 +554,13 @@
     "roleOwner": "所有者",
     "roleEditor": "编辑者",
     "roleViewer": "查看者",
-    "joinHint": "想加入他人共享的账本?使用形如 {pattern} 的邀请链接"
+    "joinHint": "想加入他人共享的账本?使用形如 {pattern} 的邀请链接",
+    "useLedger": "使用",
+    "inUse": "使用中",
+    "members": "成员",
+    "editTitle": "编辑账本",
+    "iconLabel": "图标",
+    "nameLabel": "账本名称"
   },
   "members": {
     "back": "返回账本列表",

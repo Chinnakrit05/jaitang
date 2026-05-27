@@ -13,7 +13,7 @@ import {
   deleteInvite,
 } from "@/lib/invites";
 import { removeMember, updateMemberRole } from "@/lib/members";
-import { renameLedger } from "@/lib/ledgers";
+import { updateLedger } from "@/lib/ledgers";
 
 function refreshAll() {
   revalidatePath("/dashboard");
@@ -186,25 +186,30 @@ export async function removeMemberAction(memberId: string) {
 }
 
 /**
- * Rename a ledger. Owner-only on the target ledger; we re-verify
- * ownership by reading the row before mutating so a stale cookie or
- * a non-owner member can't repurpose someone else's book by id.
+ * Edit a ledger's name and/or icon. Owner-only on the target
+ * ledger; we re-verify ownership by reading the row before mutating
+ * so a stale cookie or a non-owner member can't repurpose someone
+ * else's book by id.
  */
-const RenameSchema = z.object({
-  name: z.string().min(1).max(60),
+const UpdateLedgerSchema = z.object({
+  name: z.string().min(1).max(60).optional(),
+  icon: z.string().max(64).nullable().optional(),
 });
 
-export async function renameLedgerAction(ledgerId: string, name: string) {
+export async function updateLedgerAction(
+  ledgerId: string,
+  patch: { name?: string; icon?: string | null }
+) {
   const session = await auth();
   const userId = (session?.user as { id?: string } | undefined)?.id;
   if (!userId) {
     return { ok: false as const, error: "Not signed in" };
   }
-  const parsed = RenameSchema.safeParse({ name });
+  const parsed = UpdateLedgerSchema.safeParse(patch);
   if (!parsed.success) {
     return {
       ok: false as const,
-      error: parsed.error.issues[0]?.message ?? "Invalid name",
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
     };
   }
   const sb = getServerSupabase();
@@ -220,7 +225,12 @@ export async function renameLedgerAction(ledgerId: string, name: string) {
   if (ledger.owner_id !== userId) {
     return { ok: false as const, error: "Not the owner" };
   }
-  await renameLedger(ledgerId, parsed.data.name);
+  await updateLedger(ledgerId, parsed.data);
   refreshAll();
   return { ok: true as const };
+}
+
+/** @deprecated — use `updateLedgerAction({ name })`. */
+export async function renameLedgerAction(ledgerId: string, name: string) {
+  return updateLedgerAction(ledgerId, { name });
 }
