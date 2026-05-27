@@ -88,18 +88,45 @@ export default async function ReportsPage({
   const incomeRules = activeRecurring.filter((r) => r.kind === "income");
   const expenseRules = activeRecurring.filter((r) => r.kind === "expense");
 
-  // Section totals match what's visible: sum of rule-row amounts
-  // (last_fill_amount when applied this period, else rule.amount for
-  // fixed rules, else 0 for variable bills awaiting fill) PLUS the
-  // non-recurring transactions in the period. This avoids the
-  // confusing case where a fixed rule shows ฿X in its row but the
-  // total reads ฿0 because the cron hasn't materialised the tx yet.
+  // What month bucket is the user viewing relative to today? Drives
+  // the rule-row amount logic — future months should reset to 0 since
+  // no fill has happened yet (the user explicitly asked for this).
+  const currentYear = now.getUTCFullYear();
+  const currentMonth = now.getUTCMonth() + 1;
+  const viewedIsFuture =
+    year > currentYear || (year === currentYear && month > currentMonth);
+  const viewedIsCurrent = year === currentYear && month === currentMonth;
+
+  // Section totals match what's visible. For each rule, prefer the
+  // amount of a matching '[ค่าประจำ]' tx inside the viewed window
+  // (that's the real materialised value). Fall back to rule.amount
+  // for fixed rules only when the viewed bucket is the current
+  // month — past months without a tx mean the rule wasn't run yet,
+  // and future months haven't happened. Otherwise show 0.
+  function findRuleTx(r: (typeof activeRecurring)[number]) {
+    return allTxs.find(
+      (tx) =>
+        isRecurringTx(tx) &&
+        tx.kind === r.kind &&
+        tx.category_id === r.category_id
+    );
+  }
   function ruleRowAmount(r: (typeof activeRecurring)[number]) {
-    if (r.amount !== null) return r.amount;
-    return isAppliedThisPeriod(r.last_run_at, r.period) &&
-      r.last_fill_amount !== null
-      ? r.last_fill_amount
-      : 0;
+    if (viewedIsFuture) return 0;
+    const matched = findRuleTx(r);
+    if (matched) return matched.amount;
+    if (viewedIsCurrent && r.amount !== null) return r.amount;
+    if (viewedIsCurrent) {
+      // Variable bill, not yet filled this period — fall through to 0
+      // for total math (the row component will show a dashed input
+      // via the matching null check in RuleRow).
+      return isAppliedThisPeriod(r.last_run_at, r.period) &&
+        r.last_fill_amount !== null
+        ? r.last_fill_amount
+        : 0;
+    }
+    // Past month with no materialised tx — rule didn't run.
+    return 0;
   }
   const sumRules = (rs: typeof activeRecurring) =>
     rs.reduce((s, r) => s + ruleRowAmount(r), 0);
@@ -185,6 +212,9 @@ export default async function ReportsPage({
         currency={currency}
         emptyLabel={t("reports.empty")}
         totalLabel={t("reports.totalIncome")}
+        viewedIsCurrent={viewedIsCurrent}
+        viewedIsFuture={viewedIsFuture}
+        ruleAmountFor={ruleRowAmount}
       />
 
       {/* Expense section */}
@@ -197,6 +227,9 @@ export default async function ReportsPage({
         currency={currency}
         emptyLabel={t("reports.empty")}
         totalLabel={t("reports.totalExpense")}
+        viewedIsCurrent={viewedIsCurrent}
+        viewedIsFuture={viewedIsFuture}
+        ruleAmountFor={ruleRowAmount}
       />
     </div>
   );
@@ -245,6 +278,9 @@ function ReportSection({
   currency,
   emptyLabel,
   totalLabel,
+  viewedIsCurrent,
+  viewedIsFuture,
+  ruleAmountFor,
 }: {
   kind: "income" | "expense";
   title: string;
@@ -254,6 +290,9 @@ function ReportSection({
   currency: string;
   emptyLabel: string;
   totalLabel: string;
+  viewedIsCurrent: boolean;
+  viewedIsFuture: boolean;
+  ruleAmountFor: (r: Rule) => number;
 }) {
   const headerColor = kind === "income" ? "#16A34A" : "#DC2626";
   const isEmpty = rules.length === 0 && txs.length === 0;
@@ -275,7 +314,14 @@ function ReportSection({
               at the top of each section so the user can scrub through
               them without diving into /recurring. */}
           {rules.map((r) => (
-            <RuleRow key={`r-${r.id}`} rule={r} currency={currency} />
+            <RuleRow
+              key={`r-${r.id}`}
+              rule={r}
+              currency={currency}
+              displayAmount={ruleAmountFor(r)}
+              viewedIsCurrent={viewedIsCurrent}
+              viewedIsFuture={viewedIsFuture}
+            />
           ))}
           {txs.map((tx) => (
             <TxRow key={tx.id} tx={tx} currency={currency} />
@@ -337,7 +383,21 @@ function TxRow({ tx, currency }: { tx: Tx; currency: string }) {
   );
 }
 
-function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
+function RuleRow({
+  rule,
+  currency,
+  displayAmount,
+  viewedIsCurrent,
+  viewedIsFuture,
+}: {
+  rule: Rule;
+  currency: string;
+  /** Pre-computed amount for the viewed month — already accounts for
+   *  past/future buckets resetting to 0 and for matching tx lookup. */
+  displayAmount: number;
+  viewedIsCurrent: boolean;
+  viewedIsFuture: boolean;
+}) {
   const note = rule.note ?? "";
   const catName = rule.category?.name ?? "";
 
@@ -354,13 +414,22 @@ function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
     isVariable &&
     isAppliedThisPeriod(rule.last_run_at, rule.period) &&
     rule.last_fill_amount !== null;
-  // Initial value the input shows: rule.amount for fixed, the cached
-  // last_fill_amount when applied, otherwise null (empty + dashed).
-  const initialAmount = isVariable
-    ? appliedAndFilled
-      ? rule.last_fill_amount
-      : null
-    : rule.amount;
+  // Initial value the input shows:
+  //   - Future month → 0 across the board (the user can't fill ahead)
+  //   - Current month + fixed → rule.amount
+  //   - Current month + variable + applied → last_fill_amount
+  //   - Current month + variable + pending → null (dashed input)
+  //   - Past month → displayAmount (matches what really happened),
+  //     0 falls through to a read-only-looking zero
+  const initialAmount: number | null = viewedIsFuture
+    ? 0
+    : viewedIsCurrent
+    ? isVariable
+      ? appliedAndFilled
+        ? rule.last_fill_amount
+        : null
+      : rule.amount
+    : displayAmount;
 
   async function amountAction(amount: number) {
     "use server";
