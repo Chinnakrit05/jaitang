@@ -33,6 +33,9 @@ export type RecurringRule = {
    *  null for fixed-amount rules — those already keep the value on
    *  `amount`. */
   last_fill_amount: number | null;
+  /** User-controlled display order on /recurring. 0 = unsorted (the
+   *  default). Reorder action assigns increasing values. */
+  sort_order: number;
   active: boolean;
   created_at: string;
   category?: { id: string; name: string; icon: string | null; color: string | null } | null;
@@ -86,9 +89,13 @@ export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> 
   const { data, error } = await sb
     .from("recurring_transactions")
     .select(
-      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)"
+      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, sort_order, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)"
     )
     .eq("ledger_id", ledgerId)
+    // sort_order first so the wiggle-reorder UI controls the list;
+    // next_run_at is the tiebreaker so rules that haven't been moved
+    // (sort_order = 0 by default) stay in their original order.
+    .order("sort_order", { ascending: true })
     .order("next_run_at", { ascending: true });
   if (error) throw error;
   return (data ?? []).map((r) => ({
@@ -98,6 +105,7 @@ export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> 
       r.last_fill_amount === null || r.last_fill_amount === undefined
         ? null
         : Number(r.last_fill_amount),
+    sort_order: typeof r.sort_order === "number" ? r.sort_order : 0,
     account_id: r.account_id ?? null,
     trip_id: r.trip_id ?? null,
     fx_currency: r.fx_currency ?? null,
@@ -168,6 +176,8 @@ export async function updateRecurring(
     dayOfWeek: number | null;
     nextRunAt: Date;
     active: boolean;
+    /** User-visible order on /recurring. */
+    sortOrder: number;
   }>
 ) {
   const sb = getServerSupabase();
@@ -185,6 +195,7 @@ export async function updateRecurring(
   if (patch.nextRunAt !== undefined)
     update.next_run_at = patch.nextRunAt.toISOString();
   if (patch.active !== undefined) update.active = patch.active;
+  if (patch.sortOrder !== undefined) update.sort_order = patch.sortOrder;
 
   const { data, error } = await sb
     .from("recurring_transactions")
@@ -319,7 +330,7 @@ export async function listPendingRecurring(
   const { data, error } = await sb
     .from("recurring_transactions")
     .select(
-      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)",
+      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, sort_order, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)",
     )
     .eq("ledger_id", ledgerId)
     .eq("active", true)
@@ -334,6 +345,7 @@ export async function listPendingRecurring(
       r.last_fill_amount === null || r.last_fill_amount === undefined
         ? null
         : Number(r.last_fill_amount),
+    sort_order: typeof r.sort_order === "number" ? r.sort_order : 0,
     account_id: r.account_id ?? null,
     trip_id: r.trip_id ?? null,
     fx_currency: r.fx_currency ?? null,

@@ -309,7 +309,9 @@
     "editTitle": "定期取引を編集",
     "appliedThisPeriod": "✓ 今期は記録済み",
     "variableBillBadge": "📝 金額待ち",
-    "listHelper": "💡 タップで編集・長押しで削除"
+    "listHelper": "💡 タップで編集・長押しで削除",
+    "reorderButton": "並べ替え",
+    "reorderHelper": "💡 行をドラッグして並べ替え · ✓ 完了で保存"
   },
   "balances": {
     "title": "精算",

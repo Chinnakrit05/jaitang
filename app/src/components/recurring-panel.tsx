@@ -1,11 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { JtIcon, EmojiOrIcon, iconNameToEmoji } from "@/components/icons";
 import { sortByHierarchy } from "@/lib/categories";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import type { Category, TxKind } from "@/lib/types";
 import type { RecurPeriod, RecurringRule } from "@/lib/recurring";
@@ -13,6 +29,7 @@ import {
   createRecurringAction,
   deleteRecurringAction,
   fillPendingRecurringAmountAction,
+  reorderRecurringAction,
   runDueAction,
   toggleRecurringAction,
   updateRecurringAction,
@@ -57,6 +74,13 @@ export function RecurringPanel({
   // form on a fresh page was disorienting. User taps "+" to open it.
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Reorder mode for the list. While true, every row gets a wiggle
+  // animation, tap-to-edit / long-press-to-delete are suspended, and
+  // the "+" button in the header flips to "✓ เสร็จ" which commits
+  // the new order.
+  const [reordering, setReordering] = useState(false);
+  const [orderOverride, setOrderOverride] = useState<string[] | null>(null);
+  const [savingOrder, startSavingOrder] = useTransition();
 
   function applyDue() {
     startTransition(async () => {
@@ -74,7 +98,7 @@ export function RecurringPanel({
 
   return (
     <div className="space-y-4 max-w-md mx-auto pb-28">
-      {/* Mobile header — back / title / + add */}
+      {/* Mobile header — back / title / + add (or ✓ done in reorder mode) */}
       <div className="flex items-center justify-between">
         <Link
           href="/more"
@@ -84,17 +108,45 @@ export function RecurringPanel({
           <JtIcon name="chevron-left" size={18} />
         </Link>
         <h1 className="text-base font-semibold">{t("recurring.title")}</h1>
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          aria-label={t("recurring.addButton")}
-          className="h-10 w-10 rounded-full flex items-center justify-center text-white shadow-sm transition active:scale-95"
-          style={{
-            background: "linear-gradient(135deg, var(--peach-strong) 0%, var(--peach-deep) 100%)",
-          }}
-        >
-          <JtIcon name="plus-fab" size={20} />
-        </button>
+        {reordering ? (
+          <button
+            type="button"
+            onClick={() => {
+              const ids = orderOverride;
+              if (!ids || ids.length === 0) {
+                setReordering(false);
+                return;
+              }
+              startSavingOrder(async () => {
+                await reorderRecurringAction(ids);
+                setOrderOverride(null);
+                setReordering(false);
+                router.refresh();
+              });
+            }}
+            disabled={savingOrder}
+            aria-label={t("common.done")}
+            className="h-10 px-3 rounded-full flex items-center justify-center gap-1 text-white text-sm font-semibold shadow-sm transition active:scale-95 disabled:opacity-60"
+            style={{
+              background: "linear-gradient(135deg, var(--peach-strong) 0%, var(--peach-deep) 100%)",
+            }}
+          >
+            <span aria-hidden>{savingOrder ? "…" : "✓"}</span>
+            {t("common.done")}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            aria-label={t("recurring.addButton")}
+            className="h-10 w-10 rounded-full flex items-center justify-center text-white shadow-sm transition active:scale-95"
+            style={{
+              background: "linear-gradient(135deg, var(--peach-strong) 0%, var(--peach-deep) 100%)",
+            }}
+          >
+            <JtIcon name="plus-fab" size={20} />
+          </button>
+        )}
       </div>
 
       <SubscriptionStats rules={rules} homeCurrency={homeCurrency} />
@@ -116,20 +168,40 @@ export function RecurringPanel({
         </div>
       ) : (
         <>
-          <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border)/60 overflow-hidden">
-            {rules.map((r) => (
-              <RuleRow
-                key={r.id}
-                rule={r}
-                homeCurrency={homeCurrency}
-                pending={pending}
-                onEdit={() => setEditingId(r.id)}
-              />
-            ))}
-          </ul>
-          <p className="text-center text-xs text-(--muted)">
-            {t("recurring.listHelper")}
-          </p>
+          <ReorderableRuleList
+            rules={rules}
+            homeCurrency={homeCurrency}
+            pending={pending}
+            reordering={reordering}
+            orderOverride={orderOverride}
+            onOrderChange={setOrderOverride}
+            onEdit={(id) => setEditingId(id)}
+          />
+          {/* Reorder entry / helper. Tap to enter wiggle mode; once in,
+              the helper text guides the gesture and the header "+"
+              flips to "✓ เสร็จ". */}
+          {reordering ? (
+            <p className="text-center text-xs text-(--muted)">
+              {t("recurring.reorderHelper")}
+            </p>
+          ) : (
+            <div className="flex items-center justify-center gap-2 text-xs text-(--muted)">
+              <span>{t("recurring.listHelper")}</span>
+              {rules.length > 1 && (
+                <>
+                  <span>·</span>
+                  <button
+                    type="button"
+                    onClick={() => setReordering(true)}
+                    className="inline-flex items-center gap-1 font-medium text-(--accent) hover:underline"
+                  >
+                    <JtIcon name="layers" size={12} />
+                    {t("recurring.reorderButton")}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </>
       )}
 
@@ -384,11 +456,15 @@ function RuleRow({
   homeCurrency,
   pending,
   onEdit,
+  reordering = false,
 }: {
   rule: RecurringRule;
   homeCurrency: string;
   pending: boolean;
   onEdit: () => void;
+  /** When true, tap-to-edit and long-press-to-delete are suspended
+   *  so the gesture goes to the drag/reorder wrapper instead. */
+  reordering?: boolean;
 }) {
   const router = useRouter();
   const t = useTranslations();
@@ -441,15 +517,20 @@ function RuleRow({
 
   return (
     <li
-      onPointerDown={startLongPress}
-      onPointerUp={cancelLongPress}
-      onPointerLeave={cancelLongPress}
-      onContextMenu={(e) => {
-        // Long-press on some touch browsers fires `contextmenu` rather than
-        // our pointer-based timer — wire that path to delete too.
-        e.preventDefault();
-        commitDelete();
-      }}
+      onPointerDown={reordering ? undefined : startLongPress}
+      onPointerUp={reordering ? undefined : cancelLongPress}
+      onPointerLeave={reordering ? undefined : cancelLongPress}
+      onContextMenu={
+        reordering
+          ? undefined
+          : (e) => {
+              // Long-press on some touch browsers fires `contextmenu`
+              // rather than our pointer-based timer — wire that path
+              // to delete too.
+              e.preventDefault();
+              commitDelete();
+            }
+      }
       className={cn(
         "flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition",
         !rule.active && "opacity-60",
@@ -465,14 +546,24 @@ function RuleRow({
       >
         <EmojiOrIcon value={rule.category?.icon} fallback="recurring" size={20} />
       </span>
-      {/* Name + status — clickable target for editing the rule */}
+      {/* Name + status — clickable target for editing the rule.
+          During reorder mode the tap target is inert so the gesture
+          falls through to the drag wrapper. iOS Safari swallows
+          events on `disabled` buttons (including touchstart that
+          dnd-kit needs), so we use aria-disabled + an onClick
+          guard instead. */}
       <button
         type="button"
         onClick={() => {
+          if (reordering) return;
           if (longPressed.current) return;
           onEdit();
         }}
-        className="flex-1 min-w-0 text-left"
+        aria-disabled={reordering}
+        className={cn(
+          "flex-1 min-w-0 text-left",
+          reordering && "cursor-grab"
+        )}
       >
         <p className="font-semibold text-[14px] leading-tight truncate">
           {rule.note?.trim() || rule.category?.name || t("common.uncategorizedFull")}
@@ -811,5 +902,163 @@ function EditRecurringModal({
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * Renders the recurring rule list, optionally wrapped in a dnd-kit
+ * SortableContext so the rows can be dragged into a new order. The
+ * `orderOverride` lifted state lets the parent commit (or cancel)
+ * the reordering with the "✓ เสร็จ" / nav-back gestures.
+ *
+ * Outside of reorder mode, this falls through to a plain `<ul>` of
+ * RuleRows — no DnD overhead.
+ */
+function ReorderableRuleList({
+  rules,
+  homeCurrency,
+  pending,
+  reordering,
+  orderOverride,
+  onOrderChange,
+  onEdit,
+}: {
+  rules: RecurringRule[];
+  homeCurrency: string;
+  pending: boolean;
+  reordering: boolean;
+  orderOverride: string[] | null;
+  onOrderChange: (next: string[] | null) => void;
+  onEdit: (id: string) => void;
+}) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    // Short touch delay so we don't fight the surrounding scroll
+    // outside reorder mode (irrelevant here since the sensor is only
+    // active while `reordering`, but consistent with the category
+    // grid feel).
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 6 } })
+  );
+
+  // Materialize the rendered order. While editing, the user's local
+  // reorders take precedence; otherwise we follow the server-sorted
+  // `rules`.
+  const orderedRules = useMemo(() => {
+    if (!orderOverride) return rules;
+    const byId = new Map(rules.map((r) => [r.id, r] as const));
+    const out: RecurringRule[] = [];
+    for (const id of orderOverride) {
+      const r = byId.get(id);
+      if (r) out.push(r);
+    }
+    for (const r of rules) {
+      if (!orderOverride.includes(r.id)) out.push(r);
+    }
+    return out;
+  }, [rules, orderOverride]);
+
+  const ids = orderedRules.map((r) => r.id);
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const from = ids.indexOf(active.id as string);
+    const to = ids.indexOf(over.id as string);
+    if (from === -1 || to === -1) return;
+    onOrderChange(arrayMove(ids, from, to));
+  }
+
+  const listClass =
+    "rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border)/60 overflow-hidden";
+
+  if (!reordering) {
+    return (
+      <ul className={listClass}>
+        {orderedRules.map((r) => (
+          <RuleRow
+            key={r.id}
+            rule={r}
+            homeCurrency={homeCurrency}
+            pending={pending}
+            onEdit={() => onEdit(r.id)}
+          />
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+        <ul className={listClass}>
+          {orderedRules.map((r, i) => (
+            <SortableRuleRow
+              key={r.id}
+              rule={r}
+              homeCurrency={homeCurrency}
+              pending={pending}
+              onEdit={() => onEdit(r.id)}
+              wiggleVariant={i % 2 === 0 ? "a" : "b"}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
+function SortableRuleRow({
+  rule,
+  homeCurrency,
+  pending,
+  onEdit,
+  wiggleVariant,
+}: {
+  rule: RecurringRule;
+  homeCurrency: string;
+  pending: boolean;
+  onEdit: () => void;
+  wiggleVariant: "a" | "b";
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: rule.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    // Without `touch-action: none` mobile browsers claim touchstart
+    // for native scroll and the press never promotes into a drag.
+    touchAction: "none",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        wiggleVariant === "a" ? "wiggle-a" : "wiggle-b",
+        isDragging && "z-10 opacity-80"
+      )}
+      {...attributes}
+      {...listeners}
+    >
+      <RuleRow
+        rule={rule}
+        homeCurrency={homeCurrency}
+        pending={pending}
+        onEdit={onEdit}
+        reordering
+      />
+    </div>
   );
 }

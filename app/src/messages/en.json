@@ -309,7 +309,9 @@
     "editTitle": "Edit recurring rule",
     "appliedThisPeriod": "✓ Logged this period",
     "variableBillBadge": "📝 Awaiting amount",
-    "listHelper": "💡 Tap a row to edit · long-press to delete"
+    "listHelper": "💡 Tap a row to edit · long-press to delete",
+    "reorderButton": "Reorder",
+    "reorderHelper": "💡 Drag a row to reorder · tap ✓ Done to save"
   },
   "balances": {
     "title": "Balances",

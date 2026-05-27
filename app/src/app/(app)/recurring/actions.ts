@@ -252,3 +252,30 @@ export async function fillPendingRecurringAmountAction(
   refresh();
   return { ok: true as const };
 }
+
+/**
+ * Bulk reorder for /recurring's wiggle mode. Caller passes the rule
+ * ids in the new visual order; we write `sort_order = index + 1`
+ * across the set. Each updateRecurring write inherits its own ledger
+ * guard so there's no cross-ledger leakage even if a stale id slips
+ * in.
+ */
+const ReorderSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(500),
+});
+
+export async function reorderRecurringAction(ids: string[]) {
+  const { role } = await requireSession();
+  assertWritable(role);
+  const parsed = ReorderSchema.safeParse({ ids });
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  await Promise.all(
+    parsed.data.ids.map((id, index) =>
+      updateRecurring(id, { sortOrder: index + 1 })
+    )
+  );
+  refresh();
+  return { ok: true as const };
+}

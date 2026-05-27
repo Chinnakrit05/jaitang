@@ -379,6 +379,15 @@ end $$;
 alter table public.recurring_transactions
   add column if not exists last_fill_amount numeric;
 
+-- v5: user-controlled order of recurring rules on the list page.
+-- Default 0 leaves existing rules in their original next_run_at
+-- order; reordering writes increasing values. Same shape as
+-- categories.sort_order.
+alter table public.recurring_transactions
+  add column if not exists sort_order int not null default 0;
+create index if not exists idx_recur_ledger_order
+  on public.recurring_transactions(ledger_id, sort_order);
+
 -- ============================================================
 -- Transaction splits (หารบิล — ใครติดเงินคนจ่ายเท่าไหร่)
 --

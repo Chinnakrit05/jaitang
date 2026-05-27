@@ -309,7 +309,9 @@
     "editTitle": "编辑定期规则",
     "appliedThisPeriod": "✓ 本期已记录",
     "variableBillBadge": "📝 金额待填",
-    "listHelper": "💡 点击编辑 · 长按删除"
+    "listHelper": "💡 点击编辑 · 长按删除",
+    "reorderButton": "重新排序",
+    "reorderHelper": "💡 拖动行以重新排序 · 点 ✓ 完成保存"
   },
   "balances": {
     "title": "结算",
