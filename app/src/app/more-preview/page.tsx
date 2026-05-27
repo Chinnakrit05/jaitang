@@ -6,9 +6,9 @@ import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import type { IconName } from "@/components/icons";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
 
-const PEACH_STRONG = "#E89A6A";
+const PEACH_STRONG = "var(--peach-strong)";
 const PEACH_GRADIENT =
-  "linear-gradient(135deg, color-mix(in srgb, #F9D5B4 70%, var(--card)) 0%, color-mix(in srgb, #F4B58A 40%, var(--card)) 100%)";
+  "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 70%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 40%, var(--card)) 100%)";
 
 /**
  * Public preview for the redesigned /more page. Mirrors the layout of
@@ -89,7 +89,7 @@ export default function MorePreviewPage() {
           className="block rounded-2xl px-4 py-3 border"
           style={{
             background: PEACH_GRADIENT,
-            borderColor: "color-mix(in srgb, #E89A6A 25%, transparent)",
+            borderColor: "color-mix(in srgb, var(--peach-strong) 25%, transparent)",
           }}
         >
           <div className="flex items-center gap-3">
@@ -151,7 +151,7 @@ export default function MorePreviewPage() {
                   <span
                     className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
                     style={{
-                      background: "color-mix(in srgb, #F9D5B4 40%, var(--card))",
+                      background: "color-mix(in srgb, var(--peach-soft) 40%, var(--card))",
                       color: PEACH_STRONG,
                     }}
                     aria-hidden

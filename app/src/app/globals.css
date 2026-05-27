@@ -13,6 +13,27 @@
   --accent-foreground: #001a22;
   --income: #22c55e;
   --expense: #ef4444;
+
+  /* ========================================================
+     Peach palette — the brand warmth used on the new mobile
+     surfaces (hero card, amount card, reports, recurring, more,
+     insights). Two-pair design:
+       --peach-soft / -mid → bg base (light = cream peach,
+                              dark   = deep terracotta)
+       --peach-strong / -deep → button + chip accents
+                                 (constant across themes)
+       --peach-fg → text color on peach surfaces
+                    (dark text in light, cream text in dark)
+     Card backgrounds keep using `color-mix(... var(--peach-soft) X%,
+     var(--card))` so per-surface mix ratios stay tunable; only the
+     base color changes between themes.
+     ======================================================== */
+  --peach-soft: #F9D5B4;
+  --peach-mid: #F4B58A;
+  --peach-strong: #E89A6A;
+  --peach-deep: #D87A45;
+  --peach-fg: #6E3A12;
+  --peach-chip-fg: #8A4A1C;
 }
 
 .dark {
@@ -26,6 +47,17 @@
   --accent-foreground: #001a22;
   --income: #4ade80;
   --expense: #f87171;
+
+  /* Peach palette — dark variants. The strong/deep accents stay so
+     buttons and badges keep their warmth; the bg base shifts to a
+     deep terracotta and the text-on-peach flips to a cream tone so
+     contrast survives a dark page background. */
+  --peach-soft: #5A3320;
+  --peach-mid: #794326;
+  --peach-strong: #E89A6A;
+  --peach-deep: #D87A45;
+  --peach-fg: #FCE4CE;
+  --peach-chip-fg: #FCE4CE;
 }
 
 /* ============================================================

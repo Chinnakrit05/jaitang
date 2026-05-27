@@ -9,8 +9,8 @@ import { MobileNav, type NavItem } from "@/components/mobile-nav";
 import { formatCurrencyCompact } from "@/lib/utils";
 
 const PEACH_GRADIENT =
-  "linear-gradient(135deg, color-mix(in srgb, #F9D5B4 65%, var(--card)) 0%, color-mix(in srgb, #F4B58A 30%, var(--card)) 100%)";
-const PEACH_STRONG = "#E89A6A";
+  "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 65%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 30%, var(--card)) 100%)";
+const PEACH_STRONG = "var(--peach-strong)";
 const CATEGORY_PALETTE = [
   "#FF7BAC",
   "#A78BFA",
@@ -86,7 +86,7 @@ export default function InsightsPreviewPage() {
           className="rounded-2xl px-4 py-3 border flex items-center gap-3"
           style={{
             background: PEACH_GRADIENT,
-            borderColor: "color-mix(in srgb, #E89A6A 25%, transparent)",
+            borderColor: "color-mix(in srgb, var(--peach-strong) 25%, transparent)",
           }}
         >
           <div className="h-14 w-14 rounded-full bg-(--card)/70 flex items-center justify-center shrink-0">
@@ -101,7 +101,7 @@ export default function InsightsPreviewPage() {
           className="rounded-3xl px-5 py-5 border space-y-4"
           style={{
             background: PEACH_GRADIENT,
-            borderColor: "color-mix(in srgb, #E89A6A 25%, transparent)",
+            borderColor: "color-mix(in srgb, var(--peach-strong) 25%, transparent)",
           }}
         >
           <div className="flex items-center justify-between gap-3">
@@ -116,7 +116,7 @@ export default function InsightsPreviewPage() {
                   style={
                     p === period
                       ? { background: "white", color: PEACH_STRONG }
-                      : { color: "color-mix(in srgb, #6E3A12 75%, transparent)" }
+                      : { color: "color-mix(in srgb, var(--peach-fg) 75%, transparent)" }
                   }
                 >
                   {t(
@@ -221,7 +221,7 @@ export default function InsightsPreviewPage() {
             <header className="flex items-center gap-3 px-4 py-3 bg-(--background)/40">
               <span
                 className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: "color-mix(in srgb, #F9D5B4 50%, var(--card))" }}
+                style={{ background: "color-mix(in srgb, var(--peach-soft) 50%, var(--card))" }}
               >
                 <EmojiOrIcon value={selectedRow.icon} fallback="sparkle" size={18} />
               </span>

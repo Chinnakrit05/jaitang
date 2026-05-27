@@ -22,7 +22,7 @@ export async function TransactionsHero({
       className="relative overflow-hidden rounded-3xl border border-(--border) px-4 py-4 sm:px-5 sm:py-5 fade-rise"
       style={{
         background:
-          "linear-gradient(135deg, color-mix(in srgb, #F9D5B4 55%, var(--card)) 0%, color-mix(in srgb, #F4B58A 22%, var(--card)) 100%)",
+          "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 55%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 22%, var(--card)) 100%)",
       }}
     >
       <div className="flex items-center gap-4">

@@ -316,7 +316,7 @@ function RuleRow({ rule, currency }: { rule: Rule; currency: string }) {
       <span
         className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
         style={{
-          background: "color-mix(in srgb, #F9D5B4 50%, var(--card))",
+          background: "color-mix(in srgb, var(--peach-soft) 50%, var(--card))",
         }}
         title="recurring"
         aria-label="recurring"

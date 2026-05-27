@@ -140,7 +140,7 @@ export function TransactionList({
                         className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
                         style={{
                           background:
-                            "color-mix(in srgb, #F9D5B4 35%, var(--card))",
+                            "color-mix(in srgb, var(--peach-soft) 35%, var(--card))",
                         }}
                         aria-hidden
                       >

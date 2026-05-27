@@ -5,9 +5,9 @@ import { requireSession } from "@/lib/session";
 import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import type { IconName } from "@/components/icons";
 
-const PEACH_STRONG = "#E89A6A";
+const PEACH_STRONG = "var(--peach-strong)";
 const PEACH_GRADIENT =
-  "linear-gradient(135deg, color-mix(in srgb, #F9D5B4 70%, var(--card)) 0%, color-mix(in srgb, #F4B58A 40%, var(--card)) 100%)";
+  "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 70%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 40%, var(--card)) 100%)";
 
 /**
  * Mobile-first "more" page. Replaces the cramped bottom-sheet drawer
@@ -87,7 +87,7 @@ export default async function MorePage() {
         className="block rounded-2xl px-4 py-3 border"
         style={{
           background: PEACH_GRADIENT,
-          borderColor: "color-mix(in srgb, #E89A6A 25%, transparent)",
+          borderColor: "color-mix(in srgb, var(--peach-strong) 25%, transparent)",
         }}
       >
         <div className="flex items-center gap-3">
@@ -160,7 +160,7 @@ export default async function MorePage() {
                 <span
                   className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
                   style={{
-                    background: "color-mix(in srgb, #F9D5B4 40%, var(--card))",
+                    background: "color-mix(in srgb, var(--peach-soft) 40%, var(--card))",
                     color: PEACH_STRONG,
                   }}
                   aria-hidden

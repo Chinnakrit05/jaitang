@@ -90,7 +90,7 @@ export function RecurringPanel({
           aria-label={t("recurring.addButton")}
           className="h-10 w-10 rounded-full flex items-center justify-center text-white shadow-sm transition active:scale-95"
           style={{
-            background: "linear-gradient(135deg, #E89A6A 0%, #D87A45 100%)",
+            background: "linear-gradient(135deg, var(--peach-strong) 0%, var(--peach-deep) 100%)",
           }}
         >
           <JtIcon name="plus-fab" size={20} />
@@ -485,7 +485,7 @@ function RuleRow({
       <span
         className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
         style={{
-          background: "color-mix(in srgb, #F9D5B4 40%, var(--card))",
+          background: "color-mix(in srgb, var(--peach-soft) 40%, var(--card))",
         }}
         aria-hidden
       >

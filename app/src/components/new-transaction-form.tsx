@@ -59,12 +59,12 @@ type Props = {
   headerAction?: React.ReactNode;
 };
 
-const PEACH_STRONG = "#E89A6A";
-const PEACH_SOFT = "#F9D5B4";
-const PEACH_DEEP = "#D87A45";
-const PEACH_TEXT = "#6E3A12";
+const PEACH_STRONG = "var(--peach-strong)";
+const PEACH_SOFT = "var(--peach-soft)";
+const PEACH_DEEP = "var(--peach-deep)";
+const PEACH_TEXT = "var(--peach-fg)";
 const PEACH_GRADIENT =
-  "linear-gradient(135deg, color-mix(in srgb, #F9D5B4 65%, var(--card)) 0%, color-mix(in srgb, #F4B58A 38%, var(--card)) 100%)";
+  "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 65%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 38%, var(--card)) 100%)";
 
 /**
  * Redesigned add-transaction form. Matches the Figma mockup: peach
@@ -300,7 +300,7 @@ export function NewTransactionForm({
         className="relative rounded-3xl px-5 py-6 border"
         style={{
           background: PEACH_GRADIENT,
-          borderColor: "color-mix(in srgb, #E89A6A 30%, transparent)",
+          borderColor: "color-mix(in srgb, var(--peach-strong) 30%, transparent)",
         }}
       >
         <div className="absolute top-3 right-3">
@@ -466,7 +466,7 @@ export function NewTransactionForm({
           style={{
             background: `linear-gradient(135deg, ${PEACH_STRONG} 0%, ${PEACH_DEEP} 100%)`,
             boxShadow:
-              "0 10px 24px -8px color-mix(in srgb, #E89A6A 65%, transparent)",
+              "0 10px 24px -8px color-mix(in srgb, var(--peach-strong) 65%, transparent)",
           }}
         >
           <span aria-hidden className="text-lg">🦴</span>
@@ -783,7 +783,7 @@ function CategorySection({
               className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: `color-mix(in srgb, ${PEACH_SOFT} 55%, var(--card))`,
-                color: "#8A4A1C",
+                color: "var(--peach-chip-fg)",
               }}
             >
               <JtIcon
@@ -803,7 +803,7 @@ function CategorySection({
               background: editing
                 ? PEACH_STRONG
                 : `color-mix(in srgb, ${PEACH_SOFT} 55%, var(--card))`,
-              color: editing ? "white" : "#8A4A1C",
+              color: editing ? "white" : "var(--peach-chip-fg)",
             }}
           >
             <span aria-hidden>{editing ? (saving ? "…" : "✓") : "✏️"}</span>

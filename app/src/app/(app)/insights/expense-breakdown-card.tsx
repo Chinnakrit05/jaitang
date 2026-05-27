@@ -95,8 +95,8 @@ export function ExpenseBreakdownCard({
         className="rounded-3xl px-5 py-5 border space-y-4"
         style={{
           background:
-            "linear-gradient(135deg, color-mix(in srgb, #F9D5B4 65%, var(--card)) 0%, color-mix(in srgb, #F4B58A 30%, var(--card)) 100%)",
-          borderColor: "color-mix(in srgb, #E89A6A 25%, transparent)",
+            "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 65%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 30%, var(--card)) 100%)",
+          borderColor: "color-mix(in srgb, var(--peach-strong) 25%, transparent)",
         }}
       >
         <div className="flex items-center justify-between gap-3">
@@ -225,7 +225,7 @@ export function ExpenseBreakdownCard({
             <span
               className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
               style={{
-                background: "color-mix(in srgb, #F9D5B4 50%, var(--card))",
+                background: "color-mix(in srgb, var(--peach-soft) 50%, var(--card))",
               }}
               aria-hidden
             >
@@ -301,8 +301,8 @@ function PeriodLink({
       className="px-3 py-1.5 rounded-full text-xs font-semibold transition"
       style={
         active
-          ? { background: "white", color: "#E89A6A" }
-          : { color: "color-mix(in srgb, #6E3A12 75%, transparent)" }
+          ? { background: "white", color: "var(--peach-strong)" }
+          : { color: "color-mix(in srgb, var(--peach-fg) 75%, transparent)" }
       }
     >
       {label}

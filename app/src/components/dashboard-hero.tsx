@@ -106,7 +106,7 @@ export async function DashboardHero({
         className="relative overflow-hidden rounded-3xl p-5 sm:p-6 border border-(--border)"
         style={{
           background:
-            "linear-gradient(140deg, color-mix(in srgb, #F9D5B4 60%, var(--card)) 0%, color-mix(in srgb, #F4B58A 30%, var(--card)) 100%)",
+            "linear-gradient(140deg, color-mix(in srgb, var(--peach-soft) 60%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 30%, var(--card)) 100%)",
         }}
       >
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 pointer-events-none mascot-float">

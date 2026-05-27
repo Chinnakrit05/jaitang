@@ -6,7 +6,7 @@ import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { MobileNav, type NavItem } from "@/components/mobile-nav";
 import { cn } from "@/lib/utils";
 
-const PEACH = "linear-gradient(135deg, #E89A6A 0%, #D87A45 100%)";
+const PEACH = "linear-gradient(135deg, var(--peach-strong) 0%, var(--peach-deep) 100%)";
 
 type Row = {
   id: string;
@@ -106,7 +106,7 @@ export default function RecurringPreviewPage() {
                 <span
                   className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
                   style={{
-                    background: "color-mix(in srgb, #F9D5B4 40%, var(--card))",
+                    background: "color-mix(in srgb, var(--peach-soft) 40%, var(--card))",
                   }}
                 >
                   <EmojiOrIcon value={r.icon} fallback="recurring" size={20} />

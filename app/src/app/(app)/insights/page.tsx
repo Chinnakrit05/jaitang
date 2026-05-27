@@ -11,7 +11,7 @@ import { formatCurrencyCompact } from "@/lib/utils";
 import { ExpenseBreakdownCard } from "./expense-breakdown-card";
 
 const PEACH_GRADIENT =
-  "linear-gradient(135deg, color-mix(in srgb, #F9D5B4 65%, var(--card)) 0%, color-mix(in srgb, #F4B58A 30%, var(--card)) 100%)";
+  "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 65%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 30%, var(--card)) 100%)";
 
 type Period = "week" | "month" | "year";
 
@@ -96,7 +96,7 @@ export default async function InsightsPage({
           className="rounded-2xl px-4 py-3 border flex items-center gap-3"
           style={{
             background: PEACH_GRADIENT,
-            borderColor: "color-mix(in srgb, #E89A6A 25%, transparent)",
+            borderColor: "color-mix(in srgb, var(--peach-strong) 25%, transparent)",
           }}
         >
           <div className="h-14 w-14 rounded-full bg-(--card)/70 flex items-center justify-center shrink-0">
