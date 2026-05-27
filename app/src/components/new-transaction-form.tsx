@@ -325,6 +325,12 @@ export function NewTransactionForm({
             <input
               type="text"
               inputMode="decimal"
+              // iOS Safari prefers the legacy `pattern` heuristic
+              // alongside `inputMode` for the decimal keypad. Without
+              // the pattern hint, iOS shows the regular text keyboard
+              // even on inputMode="decimal".
+              pattern="[0-9]*\.?[0-9]*"
+              autoComplete="off"
               value={amountInput}
               onChange={(e) =>
                 setAmountInput(e.target.value.replace(/[^\d.]/g, ""))

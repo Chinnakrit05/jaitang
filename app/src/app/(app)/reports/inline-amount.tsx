@@ -91,6 +91,10 @@ export function InlineAmount({
       <input
         type="text"
         inputMode="decimal"
+        // iOS Safari needs the legacy `pattern` hint alongside
+        // `inputMode` to actually surface the decimal keypad.
+        pattern="[0-9]*\.?[0-9]*"
+        autoComplete="off"
         placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value.replace(/[^\d.]/g, ""))}
