@@ -169,7 +169,7 @@ export default function TransactionsPreviewPage() {
   const navPrimary: NavItem[] = [
     { href: "/dashboard", label: "หลัก", icon: "home" },
     { href: "/transactions", label: "รายการ", icon: "transactions" },
-    { href: "/insights", label: "วิเคราะห์", icon: "insights" },
+    { href: "/reports", label: "รายงาน", icon: "insights" },
   ];
 
   return (

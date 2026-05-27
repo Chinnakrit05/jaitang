@@ -84,7 +84,10 @@ export async function DashboardShell({
   const MOBILE_NAV: NavItem[] = [
     { href: "/dashboard",   label: t("nav.homeShort"),    icon: "home" },
     { href: "/transactions",label: t("nav.transactions"), icon: "transactions" },
-    { href: "/insights",    label: t("nav.insights"),     icon: "insights" },
+    // Reports replaced Insights on the footer bar — Insights stays
+    // reachable via /more and the URL itself, just no longer in the
+    // primary tab strip.
+    { href: "/reports",     label: t("more.reports"),     icon: "insights" },
   ];
 
   const ROLE_LABEL: Record<string, string> = {
