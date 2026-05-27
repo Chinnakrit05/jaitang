@@ -258,7 +258,9 @@
     "empty": "No categories yet — add one above.",
     "deleteConfirm": "Delete this category? Transactions using it will become 'No category' (they aren't deleted).",
     "parentLabel": "Subcategory of",
-    "parentNone": "— none (top-level) —"
+    "parentNone": "— none (top-level) —",
+    "iconTab": "Icons",
+    "emojiTab": "Emoji"
   },
   "budgets": {
     "title": "Budgets",

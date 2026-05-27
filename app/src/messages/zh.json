@@ -258,7 +258,9 @@
     "empty": "暂无分类 — 在上方添加。",
     "deleteConfirm": "删除此分类?使用此分类的记录将变为「无分类」(不会被删除)。",
     "parentLabel": "上级分类",
-    "parentNone": "— 无(顶级)—"
+    "parentNone": "— 无(顶级)—",
+    "iconTab": "图标",
+    "emojiTab": "表情"
   },
   "budgets": {
     "title": "预算",

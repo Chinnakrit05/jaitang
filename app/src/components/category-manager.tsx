@@ -371,43 +371,133 @@ function CategoryRow({
 }
 
 /**
- * Inline grid of preset icons for the category create + edit forms.
- * Tap a tile to pick. Selected tile lights up with the accent
- * background so the current pick is visible without having to click
- * through a separate preview.
+ * Curated emoji set for category icons. Stored as raw emoji strings
+ * in the same `icon` column the JtIcon names use — `EmojiOrIcon`
+ * branches on whether the value matches an icon name and falls
+ * through to render the emoji directly otherwise.
+ */
+const PRESET_EMOJIS = [
+  // Food + drink
+  "🍜", "☕", "🍰", "🍕", "🍔", "🍣", "🍱", "🥗", "🍦", "🍺", "🥤", "🍞",
+  // Transport
+  "🚕", "🚇", "🚗", "🚌", "🚲", "✈️", "⛽", "🛵",
+  // Shopping
+  "🛍️", "👕", "👟", "💄", "🎁",
+  // Home + bills
+  "🏠", "💡", "💧", "🛏️", "🧴",
+  // Health
+  "💊", "🏥", "🦷",
+  // Tech + entertainment
+  "📱", "💻", "🎮", "🎬", "🎵", "📚",
+  // Money
+  "💰", "💵", "💳", "💸",
+  // Pets + misc
+  "🐶", "🐱", "🌱", "🎫", "📦", "✨",
+];
+
+/**
+ * Inline picker for the category create + edit forms. Two tabs:
+ *   - Icons → curated JtIcons (PRESET_ICONS)
+ *   - Emoji → curated emoji (PRESET_EMOJIS, raw strings)
+ * Tap a tile to pick; selected tile lights up with the accent. The
+ * stored `icon` column accepts either kind — display goes through
+ * <EmojiOrIcon> which branches on whether the value matches an icon
+ * name.
  */
 function IconPickerGrid({
   value,
   onChange,
 }: {
   value: string;
-  onChange: (icon: IconName) => void;
+  onChange: (icon: string) => void;
 }) {
+  const t = useTranslations();
+  // Default to whichever bucket the current value is in so the user
+  // sees their existing pick selected on open.
+  const valueIsEmoji = !PRESET_ICONS.includes(value as IconName);
+  const [tab, setTab] = useState<"icons" | "emoji">(
+    valueIsEmoji ? "emoji" : "icons"
+  );
+
   return (
-    <div className="rounded-lg border border-(--border) bg-(--background)/40 p-2">
-      <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
-        {PRESET_ICONS.map((name) => {
-          const isActive = value === name;
-          return (
-            <button
-              key={name}
-              type="button"
-              onClick={() => onChange(name)}
-              aria-label={name}
-              aria-pressed={isActive}
-              title={name}
-              className={cn(
-                "aspect-square rounded-lg flex items-center justify-center transition",
-                isActive
-                  ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
-                  : "hover:bg-(--card)"
-              )}
-            >
-              <EmojiOrIcon value={name} size={22} />
-            </button>
-          );
-        })}
+    <div className="rounded-lg border border-(--border) bg-(--background)/40 p-2 space-y-2">
+      <div className="grid grid-cols-2 gap-1 p-0.5 bg-(--card) rounded-md text-xs font-medium">
+        <button
+          type="button"
+          onClick={() => setTab("icons")}
+          aria-pressed={tab === "icons"}
+          className={cn(
+            "py-1 rounded transition",
+            tab === "icons"
+              ? "bg-(--accent) text-(--accent-foreground)"
+              : "text-(--muted)"
+          )}
+        >
+          {t("categories.iconTab")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("emoji")}
+          aria-pressed={tab === "emoji"}
+          className={cn(
+            "py-1 rounded transition",
+            tab === "emoji"
+              ? "bg-(--accent) text-(--accent-foreground)"
+              : "text-(--muted)"
+          )}
+        >
+          {t("categories.emojiTab")}
+        </button>
       </div>
+
+      {tab === "icons" ? (
+        <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
+          {PRESET_ICONS.map((name) => {
+            const isActive = value === name;
+            return (
+              <button
+                key={name}
+                type="button"
+                onClick={() => onChange(name)}
+                aria-label={name}
+                aria-pressed={isActive}
+                title={name}
+                className={cn(
+                  "aspect-square rounded-lg flex items-center justify-center transition",
+                  isActive
+                    ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
+                    : "hover:bg-(--card)"
+                )}
+              >
+                <EmojiOrIcon value={name} size={22} />
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
+          {PRESET_EMOJIS.map((e) => {
+            const isActive = value === e;
+            return (
+              <button
+                key={e}
+                type="button"
+                onClick={() => onChange(e)}
+                aria-label={e}
+                aria-pressed={isActive}
+                className={cn(
+                  "aspect-square rounded-lg flex items-center justify-center text-xl leading-none transition",
+                  isActive
+                    ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
+                    : "hover:bg-(--card)"
+                )}
+              >
+                {e}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
