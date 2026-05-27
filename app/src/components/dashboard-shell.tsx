@@ -182,11 +182,13 @@ export async function DashboardShell({
       )}
 
       {/* DesktopSidebar removed from the tree — every viewport now
-          uses the mobile shell. Clamp the main column to a mobile
-          width so tablet / desktop look like a phone window centered
-          on a darker page rather than a stretched-wide spreadsheet. */}
+          uses the mobile shell. Phone keeps the strict mobile width;
+          tablet / desktop get a roomier column so forms with grids
+          (categories, insights drill-downs, etc.) don't choke on
+          448px. Still narrower than the old multi-col layout so the
+          page reads as a phone-style stack, just less cramped. */}
       <main
-        className="w-full max-w-md mx-auto px-4 pb-24"
+        className="w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-4 pb-24"
         style={{
           paddingTop: "max(env(safe-area-inset-top), 1.5rem)",
         }}

@@ -319,8 +319,9 @@ function CategoryRow({
               ))}
             </select>
           )}
-          <IconPickerGrid value={icon} onChange={setIcon} />
-          <div className="flex gap-2 pt-1">
+          {/* Action row lives ABOVE the icon picker so it stays
+              visible without scrolling past 50 tiles. */}
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => {
@@ -343,6 +344,7 @@ function CategoryRow({
               {pending ? t("common.saving") : t("common.save")}
             </button>
           </div>
+          <IconPickerGrid value={icon} onChange={setIcon} />
         </div>
       ) : (
         <>

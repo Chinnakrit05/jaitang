@@ -105,7 +105,7 @@ export function MobileNav({
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className="max-w-md mx-auto flex items-end justify-around py-2 px-2">
+        <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto flex items-end justify-around py-2 px-2">
           {leftItems.map(renderTab)}
 
           {/* Center FAB — quick-add path. Raised above the bar with the
