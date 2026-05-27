@@ -13,6 +13,7 @@ import {
   deleteInvite,
 } from "@/lib/invites";
 import { removeMember, updateMemberRole } from "@/lib/members";
+import { renameLedger } from "@/lib/ledgers";
 
 function refreshAll() {
   revalidatePath("/dashboard");
@@ -182,4 +183,44 @@ export async function removeMemberAction(memberId: string) {
   assertOwner(role);
   await removeMember(memberId);
   refreshAll();
+}
+
+/**
+ * Rename a ledger. Owner-only on the target ledger; we re-verify
+ * ownership by reading the row before mutating so a stale cookie or
+ * a non-owner member can't repurpose someone else's book by id.
+ */
+const RenameSchema = z.object({
+  name: z.string().min(1).max(60),
+});
+
+export async function renameLedgerAction(ledgerId: string, name: string) {
+  const session = await auth();
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!userId) {
+    return { ok: false as const, error: "Not signed in" };
+  }
+  const parsed = RenameSchema.safeParse({ name });
+  if (!parsed.success) {
+    return {
+      ok: false as const,
+      error: parsed.error.issues[0]?.message ?? "Invalid name",
+    };
+  }
+  const sb = getServerSupabase();
+  const { data: ledger } = await sb
+    .from("ledgers")
+    .select("owner_id")
+    .eq("id", ledgerId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!ledger) {
+    return { ok: false as const, error: "Ledger not found" };
+  }
+  if (ledger.owner_id !== userId) {
+    return { ok: false as const, error: "Not the owner" };
+  }
+  await renameLedger(ledgerId, parsed.data.name);
+  refreshAll();
+  return { ok: true as const };
 }

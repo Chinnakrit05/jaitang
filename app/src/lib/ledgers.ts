@@ -130,3 +130,18 @@ export async function listLedgersForUser(userId: string): Promise<LedgerSummary[
     return a.created_at.localeCompare(b.created_at);
   });
 }
+
+/**
+ * Update a single ledger's name. Other fields aren't user-editable
+ * inline yet (currency / icon stay with the create flow). Caller is
+ * expected to verify owner role before invoking — this helper trusts
+ * the input.
+ */
+export async function renameLedger(id: string, name: string) {
+  const sb = getServerSupabase();
+  const { error } = await sb
+    .from("ledgers")
+    .update({ name: name.trim() })
+    .eq("id", id);
+  if (error) throw error;
+}
