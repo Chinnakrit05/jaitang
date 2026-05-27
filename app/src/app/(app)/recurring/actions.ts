@@ -35,13 +35,52 @@ const Schema = z.object({
   dayOfWeek: z.coerce.number().int().min(0).max(6).nullable().optional(),
   // Same TZ-correctness reasoning as transactions.actions.ts — see comment
   // there. Form converts the wall-clock string to UTC ISO before submit.
-  startDate: z.iso.datetime({ offset: true }),
+  // Now optional: when the create form omits it, the server defaults
+  // the start anchor based on the chosen period (start of this month /
+  // year / week / today) — the user no longer needs to pick a date.
+  startDate: z.iso.datetime({ offset: true }).optional(),
 });
 
 function refresh() {
   revalidatePath("/recurring");
   revalidatePath("/dashboard");
   revalidatePath("/transactions");
+}
+
+/**
+ * Sensible first-run anchor for a fresh rule when the user didn't
+ * pick a date. Matches the natural read of the period choice:
+ *
+ *   daily   → today at this hour (rule is "live as of now")
+ *   weekly  → start of this week (Monday)
+ *   monthly → 1st of this month
+ *   yearly  → Jan 1 of this year
+ *
+ * All anchored "now or in the recent past" so the rule shows as
+ * applicable to the current period — variable bills surface as
+ * pending immediately, fixed-amount rules let the cron pick the next
+ * future occurrence via computeNextRun.
+ */
+function defaultStartForPeriod(
+  period: "daily" | "weekly" | "monthly" | "yearly"
+): Date {
+  const now = new Date();
+  switch (period) {
+    case "daily":
+      return now;
+    case "weekly": {
+      // ISO week — Monday-anchored.
+      const dow = (now.getDay() + 6) % 7;
+      const d = new Date(now);
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - dow);
+      return d;
+    }
+    case "monthly":
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+    case "yearly":
+      return new Date(now.getFullYear(), 0, 1);
+  }
 }
 
 export async function createRecurringAction(formData: FormData) {
@@ -64,7 +103,12 @@ export async function createRecurringAction(formData: FormData) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const start = new Date(parsed.data.startDate);
+  // Period-aware default for when the form skips the date input.
+  // The current calendar bucket gives the cron a sensible first
+  // anchor that maps to "this month / this year" in the user's head.
+  const start = parsed.data.startDate
+    ? new Date(parsed.data.startDate)
+    : defaultStartForPeriod(parsed.data.period);
   await createRecurring({
     ledgerId,
     userId,

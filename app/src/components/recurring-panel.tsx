@@ -20,7 +20,7 @@ import {
 import { InlineAmount } from "@/app/(app)/reports/inline-amount";
 import { CurrencyPicker } from "@/components/currency-picker";
 import { SubscriptionStats } from "@/components/subscription-stats";
-import { formatCurrency, formatDate, cn, toLocalDateTimeInput } from "@/lib/utils";
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 
 export type RecurringAccountChoice = {
@@ -189,13 +189,6 @@ function CreateRecurringForm({
     categories.filter((c) => c.kind === kind),
   );
 
-  const startRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const el = startRef.current;
-    if (!el) return;
-    el.value = toLocalDateTimeInput(new Date(Date.now() + 60_000));
-  }, []);
-
   return (
     <form
       onSubmit={(e) => {
@@ -206,13 +199,8 @@ function CreateRecurringForm({
         if (accountId) fd.set("accountId", accountId);
         if (tripId) fd.set("tripId", tripId);
         if (currency && currency !== homeCurrency) fd.set("fxCurrency", currency);
-        const startRaw = fd.get("startDate");
-        if (typeof startRaw === "string" && startRaw.length > 0) {
-          const inst = new Date(startRaw);
-          if (!Number.isNaN(inst.getTime())) {
-            fd.set("startDate", inst.toISOString());
-          }
-        }
+        // No startDate input on the form — server fills a period-aware
+        // default ("this month / this year / this week / today").
         startTransition(async () => {
           const result = await createRecurringAction(fd);
           if (result?.ok === false) setError(result.error);
@@ -354,20 +342,6 @@ function CreateRecurringForm({
             ))}
           </select>
         </div>
-      </div>
-
-      <div>
-        <label className="block text-xs font-medium mb-1 text-(--muted)">
-          {t("recurring.startDate")}
-        </label>
-        <input
-          ref={startRef}
-          name="startDate"
-          type="datetime-local"
-          required
-          suppressHydrationWarning
-          className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--background)"
-        />
       </div>
 
       <div>
