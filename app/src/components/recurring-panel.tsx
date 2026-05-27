@@ -25,6 +25,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import type { Category, TxKind } from "@/lib/types";
 import type { RecurPeriod, RecurringRule } from "@/lib/recurring";
+import { isAppliedThisPeriod } from "@/lib/recurring";
 import {
   createRecurringAction,
   deleteRecurringAction,
@@ -628,45 +629,6 @@ function RuleRow({
       )}
     </li>
   );
-}
-
-/** True when `last_run_at` falls in the current period bucket. */
-function isAppliedThisPeriod(
-  lastRunAt: string | null,
-  period: RecurPeriod
-): boolean {
-  if (!lastRunAt) return false;
-  const last = new Date(lastRunAt);
-  const now = new Date();
-  if (Number.isNaN(last.getTime())) return false;
-  switch (period) {
-    case "daily":
-      return (
-        last.getFullYear() === now.getFullYear() &&
-        last.getMonth() === now.getMonth() &&
-        last.getDate() === now.getDate()
-      );
-    case "weekly": {
-      // ISO week comparison via Monday-anchored start date
-      const startOfWeek = (d: Date) => {
-        const x = new Date(d);
-        const day = (x.getDay() + 6) % 7; // 0 = Monday
-        x.setHours(0, 0, 0, 0);
-        x.setDate(x.getDate() - day);
-        return x.getTime();
-      };
-      return startOfWeek(last) === startOfWeek(now);
-    }
-    case "monthly":
-      return (
-        last.getFullYear() === now.getFullYear() &&
-        last.getMonth() === now.getMonth()
-      );
-    case "yearly":
-      return last.getFullYear() === now.getFullYear();
-    default:
-      return false;
-  }
 }
 
 function EditRecurringModal({

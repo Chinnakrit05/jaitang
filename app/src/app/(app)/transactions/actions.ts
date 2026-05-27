@@ -127,6 +127,7 @@ function refreshAll() {
   revalidatePath("/transactions");
   revalidatePath("/balances");
   revalidatePath("/accounts");
+  revalidatePath("/reports");
 }
 
 /**

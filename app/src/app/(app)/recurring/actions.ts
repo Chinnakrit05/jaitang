@@ -45,6 +45,11 @@ function refresh() {
   revalidatePath("/recurring");
   revalidatePath("/dashboard");
   revalidatePath("/transactions");
+  // /reports reads the same rules + tx data so any rule edit needs
+  // to bust its cache too. Without this, updating an amount or
+  // deleting a rule from /recurring left /reports rendering stale
+  // numbers until the next manual refresh.
+  revalidatePath("/reports");
 }
 
 /**

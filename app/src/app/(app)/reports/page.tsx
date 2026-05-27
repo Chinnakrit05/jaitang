@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { requireSession } from "@/lib/session";
 import { listTransactions } from "@/lib/transactions";
-import { listRecurring } from "@/lib/recurring";
+import { listRecurring, isAppliedThisPeriod } from "@/lib/recurring";
 import { nowInBusinessTz } from "@/lib/business-tz";
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrencyCompact } from "@/lib/utils";
@@ -71,14 +71,10 @@ export default async function ReportsPage({
   // Drop transactions that were materialised from a recurring rule
   // from the list rendering — `fillPendingRecurring` /
   // `applyDueRecurring` tag those with a "[ค่าประจำ]" note prefix.
-  // They already surface above as their parent rule row (with the
-  // cached last_fill_amount), so showing them again as a "regular"
-  // tx below would double-count visually and the "[ค่าประจำ]" prefix
-  // was confusing.
-  //
-  // Totals still use the full set so the summary card stays
-  // accurate — recurring expenses count toward the month's spend,
-  // we just don't render them twice.
+  // They surface above as their parent rule row (with the cached
+  // last_fill_amount), so showing them again as a "regular" tx below
+  // would double-count visually and the "[ค่าประจำ]" prefix in the
+  // note was confusing.
   const isRecurringTx = (tx: (typeof allTxs)[number]) =>
     (tx.note ?? "").trimStart().startsWith("[ค่าประจำ]");
   const listTxs = allTxs.filter((tx) => !isRecurringTx(tx));
@@ -88,12 +84,24 @@ export default async function ReportsPage({
   const incomeRules = activeRecurring.filter((r) => r.kind === "income");
   const expenseRules = activeRecurring.filter((r) => r.kind === "expense");
 
-  const totalIncome = allTxs
-    .filter((tx) => tx.kind === "income")
-    .reduce((s, tx) => s + tx.amount, 0);
-  const totalExpense = allTxs
-    .filter((tx) => tx.kind === "expense")
-    .reduce((s, tx) => s + tx.amount, 0);
+  // Section totals match what's visible: sum of rule-row amounts
+  // (last_fill_amount when applied this period, else rule.amount for
+  // fixed rules, else 0 for variable bills awaiting fill) PLUS the
+  // non-recurring transactions in the period. This avoids the
+  // confusing case where a fixed rule shows ฿X in its row but the
+  // total reads ฿0 because the cron hasn't materialised the tx yet.
+  function ruleRowAmount(r: (typeof activeRecurring)[number]) {
+    if (r.amount !== null) return r.amount;
+    return isAppliedThisPeriod(r.last_run_at, r.period) &&
+      r.last_fill_amount !== null
+      ? r.last_fill_amount
+      : 0;
+  }
+  const sumRules = (rs: typeof activeRecurring) =>
+    rs.reduce((s, r) => s + ruleRowAmount(r), 0);
+  const sumTxs = (ts: typeof listTxs) => ts.reduce((s, t) => s + t.amount, 0);
+  const totalIncome = sumRules(incomeRules) + sumTxs(incomeTxs);
+  const totalExpense = sumRules(expenseRules) + sumTxs(expenseTxs);
   const balance = totalIncome - totalExpense;
 
   const monthLabel = new Intl.DateTimeFormat(fmtLocale, {
