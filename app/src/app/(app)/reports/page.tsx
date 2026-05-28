@@ -145,17 +145,10 @@ export default async function ReportsPage({
 
   return (
     <div className="max-w-md mx-auto pb-28 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/more"
-          aria-label={t("common.back")}
-          className="h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm hover:bg-(--background) transition"
-        >
-          <JtIcon name="chevron-left" size={18} />
-        </Link>
-        <h1 className="text-base font-semibold">{t("reports.title")}</h1>
-        <span className="w-10" aria-hidden />
+      {/* Header — matches /transactions: left-aligned bold title, no
+          back button (the bottom nav already covers navigation). */}
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold truncate">{t("reports.title")}</h1>
       </div>
 
       {/* Month switcher */}
