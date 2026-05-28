@@ -316,7 +316,7 @@ export function TransactionForm({
             "py-2.5 rounded-lg text-sm font-medium transition",
             kind === "expense"
               ? "bg-(--expense) text-white"
-              : "text-(--muted) hover:text-(--foreground)"
+              : "text-(--expense) hover:bg-(--expense)/10"
           )}
         >
           {t("transactions.kindToggleExpense")}
@@ -328,7 +328,7 @@ export function TransactionForm({
             "py-2.5 rounded-lg text-sm font-medium transition",
             kind === "income"
               ? "bg-(--income) text-white"
-              : "text-(--muted) hover:text-(--foreground)"
+              : "text-(--income) hover:bg-(--income)/10"
           )}
         >
           {t("transactions.kindToggleIncome")}
