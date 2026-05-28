@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Thai } from "next/font/google";
+import { Geist, Geist_Mono, Niramit } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { ThemeProvider, themeBootScript } from "@/components/theme-provider";
@@ -16,10 +16,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const notoThai = Noto_Sans_Thai({
-  variable: "--font-noto-thai",
+const niramit = Niramit({
+  variable: "--font-niramit",
   subsets: ["thai", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["200", "300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -60,7 +60,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} ${notoThai.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${niramit.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
