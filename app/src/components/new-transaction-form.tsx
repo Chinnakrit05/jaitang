@@ -302,9 +302,10 @@ export function NewTransactionForm({
           onClick={() => setKind("expense")}
           className={cn(
             "py-2.5 rounded-full text-sm font-semibold transition",
-            kind === "expense" ? "text-white shadow-sm" : "text-(--muted)"
+            kind === "expense"
+              ? "bg-(--expense) text-white shadow-sm"
+              : "text-(--expense)"
           )}
-          style={kind === "expense" ? { background: PEACH_STRONG } : undefined}
         >
           {t("transactions.kindToggleExpense").replace(/^[^\s]+\s/, "")}
         </button>
@@ -313,9 +314,10 @@ export function NewTransactionForm({
           onClick={() => setKind("income")}
           className={cn(
             "py-2.5 rounded-full text-sm font-semibold transition",
-            kind === "income" ? "text-white shadow-sm" : "text-(--muted)"
+            kind === "income"
+              ? "bg-(--income) text-white shadow-sm"
+              : "text-(--income)"
           )}
-          style={kind === "income" ? { background: PEACH_STRONG } : undefined}
         >
           {t("transactions.kindToggleIncome").replace(/^[^\s]+\s/, "")}
         </button>
