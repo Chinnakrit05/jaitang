@@ -114,7 +114,9 @@ export function TransactionList({
                 className={`text-base font-bold tabular-nums ${
                   dayNet > 0
                     ? "text-(--income)"
-                    : "text-(--foreground)"
+                    : dayNet < 0
+                      ? "text-(--expense)"
+                      : "text-(--foreground)"
                 }`}
               >
                 {formatCurrencyCompact(Math.abs(dayNet), currency, fmtLocale)}
@@ -222,7 +224,7 @@ export function TransactionList({
                           className={`tabular-nums font-bold text-[15px] ${
                             tx.kind === "income"
                               ? "text-(--income)"
-                              : "text-(--foreground)"
+                              : "text-(--expense)"
                           }`}
                         >
                           {tx.kind === "income" ? "+" : "−"}

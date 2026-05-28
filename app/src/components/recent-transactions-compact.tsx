@@ -65,7 +65,7 @@ export async function RecentTransactionsCompact({
           {items.map((tx, idx) => {
             const sign = tx.kind === "income" ? "+" : "−";
             const signClass =
-              tx.kind === "income" ? "text-(--income)" : "text-(--foreground)";
+              tx.kind === "income" ? "text-(--income)" : "text-(--expense)";
             const time = formatTime(tx.occurred_at);
             const catName = tx.category?.name ?? t("common.uncategorized");
             // First line: prefer the user-typed note, fall back to the
