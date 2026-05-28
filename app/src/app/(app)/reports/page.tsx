@@ -326,18 +326,30 @@ function ReportSection({
             viewedMonth={viewedMonth}
           />
         ))}
+        {/* Tap-to-add. Expense section sits the row immediately after the
+            recurring rules (the user wants it adjacent to "รายการประจำ"
+            so they can add one-off expenses right where the recurring
+            list ends); income keeps it at the very bottom. The new tx
+            still lands on day 1 of the viewed month with no category. */}
+        {kind === "expense" && (
+          <AddRow
+            kind={kind}
+            year={viewedYear}
+            month={viewedMonth}
+            currency={currency}
+          />
+        )}
         {txs.map((tx) => (
           <TxRow key={tx.id} tx={tx} currency={currency} />
         ))}
-        {/* Last row: tap-to-add. Tx lands on day 1 of the viewed month
-            with no category — the user can refine later from the row's
-            edit screen. */}
-        <AddRow
-          kind={kind}
-          year={viewedYear}
-          month={viewedMonth}
-          currency={currency}
-        />
+        {kind === "income" && (
+          <AddRow
+            kind={kind}
+            year={viewedYear}
+            month={viewedMonth}
+            currency={currency}
+          />
+        )}
       </ul>
 
       {hasRows && (
