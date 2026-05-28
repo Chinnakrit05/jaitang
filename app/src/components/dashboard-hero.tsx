@@ -113,14 +113,42 @@ export async function DashboardHero({
         <Link
           href="/ledgers"
           aria-label={t("more.accountsBook")}
-          className="shrink-0 h-11 max-w-[55%] rounded-full bg-(--card) border border-(--border) shadow-sm hover:bg-(--background) transition flex items-center gap-2 pl-2 pr-3"
+          className="group shrink-0 h-11 max-w-[55%] rounded-full border flex items-center gap-2 pl-1 pr-3.5 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition"
+          style={{
+            background:
+              "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 55%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 28%, var(--card)) 100%)",
+            borderColor:
+              "color-mix(in srgb, var(--peach-strong) 35%, transparent)",
+          }}
         >
-          {ledgerIcon ? (
-            <span className="text-lg leading-none">{ledgerIcon}</span>
-          ) : (
-            <JtIcon name="ledgers" className="h-5 w-5 text-(--peach-deep) shrink-0" />
-          )}
-          <span className="text-sm font-semibold truncate">{ledgerName}</span>
+          <span
+            className="h-9 w-9 rounded-full flex items-center justify-center text-lg shrink-0 shadow-sm"
+            style={{
+              background:
+                "linear-gradient(135deg, var(--peach-strong) 0%, var(--peach-deep) 100%)",
+            }}
+            aria-hidden
+          >
+            {ledgerIcon ? (
+              <span className="leading-none">{ledgerIcon}</span>
+            ) : (
+              <JtIcon name="ledgers" className="h-4 w-4 text-white" />
+            )}
+          </span>
+          <span className="flex flex-col min-w-0 leading-tight">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: "var(--peach-chip-fg)" }}
+            >
+              {t("more.accountsBook")}
+            </span>
+            <span
+              className="text-sm font-bold truncate"
+              style={{ color: "var(--peach-fg)" }}
+            >
+              {ledgerName}
+            </span>
+          </span>
         </Link>
       </div>
 
