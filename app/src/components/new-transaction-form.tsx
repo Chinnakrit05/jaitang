@@ -106,6 +106,14 @@ export function NewTransactionForm({
   const [pending, startTransition] = useTransition();
 
   const [kind, setKind] = useState<TxKind>(initial?.kind ?? "expense");
+  // `datetime-local` wants "YYYY-MM-DDTHH:MM" in the user's local zone, so
+  // we format the seed (initial occurred_at on edit, or "now" on create)
+  // accordingly. On submit it's converted back to ISO.
+  const [occurredAtInput, setOccurredAtInput] = useState<string>(() => {
+    const d = initial?.occurredAt ? new Date(initial.occurredAt) : new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  });
   const [amountInput, setAmountInput] = useState<string>(
     initial?.amount ? String(initial.amount) : ""
   );
@@ -230,16 +238,11 @@ export function NewTransactionForm({
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
-        // No datetime-local picker — set occurredAt to "now" in ISO so
-        // the server's zod offset validator is happy.
-        // Edit mode keeps the original occurred_at — the new layout
-        // doesn't expose a date picker, but we shouldn't clobber the
-        // historical timestamp just because the user tweaked the
-        // amount. Create flow falls through to "now".
-        fd.set(
-          "occurredAt",
-          initial?.occurredAt ?? new Date().toISOString()
-        );
+        // The date/time picker stores a local-zone string; convert to
+        // ISO so the server's zod offset validator accepts it. Falls
+        // back to "now" if the input is somehow empty.
+        const parsed = occurredAtInput ? new Date(occurredAtInput) : new Date();
+        fd.set("occurredAt", parsed.toISOString());
         startTransition(async () => {
           const result = await action(fd);
           if (result && "ok" in result && result.ok === false) {
@@ -483,6 +486,26 @@ export function NewTransactionForm({
         categoryLabel={t("common.category")}
         addLabel={t("categories.title")}
       />
+
+      {/* Date/time picker — sits just above the save button so the
+          common flow (use "now") needs zero taps and the override is
+          one tap away when the user is logging something they paid
+          for yesterday. */}
+      <div className="rounded-2xl border border-(--border) bg-(--card) px-4 py-3 flex items-center justify-between gap-3">
+        <label
+          htmlFor="occurredAt-picker"
+          className="text-sm font-medium text-(--foreground)/80 shrink-0"
+        >
+          {t("common.dateTime")}
+        </label>
+        <input
+          id="occurredAt-picker"
+          type="datetime-local"
+          value={occurredAtInput}
+          onChange={(e) => setOccurredAtInput(e.target.value)}
+          className="bg-transparent text-sm font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)/30 rounded-md px-1 py-1"
+        />
+      </div>
 
       {error && (
         <div className="rounded-lg bg-(--expense)/10 text-(--expense) px-3 py-2 text-sm">
