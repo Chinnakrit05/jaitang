@@ -8,11 +8,12 @@ import { createReportTransactionAction } from "./actions";
 
 /**
  * "+" row at the bottom of each income / expense section on the monthly
- * report. Tapping the row reveals an inline amount input; on commit the
- * row inserts a new transaction at Bangkok noon on day 1 of the viewed
- * month with no category ("ไม่ระบุ"). After a successful save the input
- * collapses back to the "+" affordance — the just-added row appears in
- * the list above via revalidatePath.
+ * report. Tapping the row reveals a name input followed by an amount
+ * input; commit fires when the amount field blurs (or Enter) and creates
+ * a transaction at Bangkok noon on day 1 of the viewed month with no
+ * category (renders as "ไม่ระบุ"). The name flows into the tx's note so
+ * the row reads cleanly once it reappears in the list above via
+ * revalidatePath.
  */
 export function AddRow({
   kind,
@@ -27,27 +28,35 @@ export function AddRow({
 }) {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  const amountRef = useRef<HTMLInputElement | null>(null);
+  const rootRef = useRef<HTMLLIElement | null>(null);
 
-  // Auto-focus the input the first frame after the row expands so the
-  // user can type without a second tap.
+  // Auto-focus the name input the first frame after the row expands so
+  // the user can start typing the line item title right away — amount
+  // is filled on the next field.
   useEffect(() => {
     if (!open) return;
-    inputRef.current?.focus();
+    nameRef.current?.focus();
   }, [open]);
 
   function reset() {
     setOpen(false);
-    setValue("");
+    setName("");
+    setAmount("");
     setError(null);
   }
 
   function commit() {
-    const num = Number(value.replace(/,/g, ""));
+    const num = Number(amount.replace(/,/g, ""));
     if (!Number.isFinite(num) || num <= 0) {
+      // No amount typed — collapse without saving so the row is "+"
+      // again. Name alone isn't enough to materialise a tx (DB requires
+      // a positive amount).
       reset();
       return;
     }
@@ -57,12 +66,12 @@ export function AddRow({
         year,
         month,
         amount: num,
+        note: name.trim() || undefined,
       });
       if (result.ok) {
         reset();
       } else {
         setError(result.error);
-        setValue("");
       }
     });
   }
@@ -81,7 +90,7 @@ export function AddRow({
             <JtIcon name="plus-fab" size={14} />
           </span>
           <span className="flex-1 min-w-0 text-left text-[13px] font-medium">
-            {t("transactions.addTransaction")}
+            {t("dashboard.addTransaction")}
           </span>
         </button>
       </li>
@@ -90,8 +99,11 @@ export function AddRow({
 
   return (
     <li
+      ref={rootRef}
       className="flex items-center gap-2 px-3 py-1.5"
       onBlur={(e) => {
+        // Commit only when focus leaves the entire row — tabbing from
+        // name → amount must keep the row open.
         if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
         commit();
       }}
@@ -99,8 +111,29 @@ export function AddRow({
       <span className="h-6 w-6 rounded-full flex items-center justify-center shrink-0 bg-(--accent)/10 text-(--accent)">
         <JtIcon name="plus-fab" size={14} />
       </span>
-      <div className="flex-1 min-w-0 text-[13px] text-(--muted)">
-        {t("categories.uncategorized")}
+      <div className="flex-1 min-w-0">
+        <input
+          ref={nameRef}
+          type="text"
+          autoComplete="off"
+          placeholder={t("categories.uncategorized")}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              amountRef.current?.focus();
+            }
+            if (e.key === "Escape") {
+              reset();
+            }
+          }}
+          disabled={pending}
+          className={cn(
+            "w-full bg-transparent text-[13px] font-medium focus:outline-none placeholder:text-(--muted) text-(--foreground)",
+            pending && "opacity-60"
+          )}
+        />
       </div>
       <span
         className={cn(
@@ -111,14 +144,14 @@ export function AddRow({
       >
         <span className="text-(--muted) text-xs">{symbol}</span>
         <input
-          ref={inputRef}
+          ref={amountRef}
           type="text"
           inputMode="decimal"
           pattern="[0-9]*\.?[0-9]*"
           autoComplete="off"
           placeholder="0"
-          value={value}
-          onChange={(e) => setValue(e.target.value.replace(/[^\d.]/g, ""))}
+          value={amount}
+          onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -128,7 +161,7 @@ export function AddRow({
               reset();
             }
           }}
-          size={Math.max(3, value.length)}
+          size={Math.max(3, amount.length)}
           disabled={pending}
           className={cn(
             "bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none text-(--foreground) placeholder:text-(--accent)/70",

@@ -92,6 +92,7 @@ const CreateReportTxSchema = z.object({
   year: z.coerce.number().int().min(1970).max(2999),
   month: z.coerce.number().int().min(1).max(12),
   amount: z.coerce.number().positive().max(1e12),
+  note: z.string().max(500).optional(),
 });
 
 export async function createReportTransactionAction(input: {
@@ -99,6 +100,7 @@ export async function createReportTransactionAction(input: {
   year: number;
   month: number;
   amount: number;
+  note?: string;
 }) {
   const { userId, ledgerId, role } = await requireSession();
   assertWritable(role);
@@ -106,11 +108,12 @@ export async function createReportTransactionAction(input: {
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  const { kind, year, month, amount } = parsed.data;
+  const { kind, year, month, amount, note } = parsed.data;
   const mm = String(month).padStart(2, "0");
   // Bangkok noon on day 1 — falls inside the report's UTC range filter and
   // displays as the 1st regardless of viewer timezone.
   const occurredAt = `${year}-${mm}-01T12:00:00+07:00`;
+  const trimmed = note?.trim();
   await createTransaction({
     ledgerId,
     userId,
@@ -119,6 +122,7 @@ export async function createReportTransactionAction(input: {
     accountId: null,
     kind,
     amount,
+    note: trimmed && trimmed.length > 0 ? trimmed : undefined,
     occurredAt: new Date(occurredAt).toISOString(),
   });
   revalidatePath("/reports");
