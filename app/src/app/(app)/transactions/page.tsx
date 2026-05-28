@@ -1,11 +1,14 @@
+import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import { listTransactions } from "@/lib/transactions";
 import { listCategories } from "@/lib/categories";
+import { JtIcon } from "@/components/icons";
 import { TransactionList } from "@/components/transaction-list";
 import { TransactionsHeader } from "@/components/transactions-header";
 import { TransactionsHero } from "@/components/transactions-hero";
 import { CategoryFilterPills } from "@/components/category-filter-pills";
 import { resolveRange } from "@/lib/date-range";
+import { nowInBusinessTz } from "@/lib/business-tz";
 import { intlLocale } from "@/lib/locale-format";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -23,9 +26,34 @@ export default async function TransactionsPage({
     getLocale(),
   ]);
   const fmtLocale = intlLocale(locale);
-  const range = resolveRange(sp.range);
   const isShared = !ledger.is_personal;
   const currency = ledger.currency;
+
+  // Month switcher state. When `ym` is present (or `range` is absent),
+  // we render the prev / next chevrons and filter to that month — same
+  // UX as the report page. `range` is still honoured when set explicitly
+  // (legacy entry points like the heatmap pass `range=all&from=…`).
+  const ymNow = nowInBusinessTz();
+  const ymFallback = `${ymNow.getUTCFullYear()}-${String(
+    ymNow.getUTCMonth() + 1
+  ).padStart(2, "0")}`;
+  const ymRaw =
+    sp.ym && /^\d{4}-\d{2}$/.test(sp.ym) ? sp.ym : sp.range ? null : ymFallback;
+  const ymActive = ymRaw !== null;
+  const [ymYear, ymMonth] = ymActive
+    ? ymRaw!.split("-").map(Number)
+    : [ymNow.getUTCFullYear(), ymNow.getUTCMonth() + 1];
+
+  // Bounds: if a month is active, use the same UTC bounds the report
+  // page uses for the matching `ym`. Otherwise fall back to the legacy
+  // `range` resolver so existing entry points keep working.
+  const range = ymActive
+    ? {
+        from: new Date(Date.UTC(ymYear, ymMonth - 1, 1)).toISOString(),
+        to: new Date(Date.UTC(ymYear, ymMonth, 1)).toISOString(),
+        key: "month" as const,
+      }
+    : resolveRange(sp.range);
 
   const kindParam =
     sp.kind === "income" || sp.kind === "expense" ? (sp.kind as TxKind) : undefined;
@@ -74,9 +102,60 @@ export default async function TransactionsPage({
     .filter((tx) => tx.kind === "expense")
     .reduce((s, tx) => s + tx.amount, 0);
 
+  // Build prev / next month links while preserving every other active
+  // filter (q, category, kind, trip…). The switcher always speaks `ym`
+  // — clicking prev/next drops `range` from the URL so the navigation
+  // stays month-by-month from then on.
+  const prevYm =
+    ymMonth === 1
+      ? `${ymYear - 1}-12`
+      : `${ymYear}-${String(ymMonth - 1).padStart(2, "0")}`;
+  const nextYm =
+    ymMonth === 12
+      ? `${ymYear + 1}-01`
+      : `${ymYear}-${String(ymMonth + 1).padStart(2, "0")}`;
+  function buildLink(ym: string) {
+    const params = new URLSearchParams();
+    params.set("ym", ym);
+    if (sp.q) params.set("q", sp.q);
+    if (sp.category) params.set("category", sp.category);
+    if (sp.kind) params.set("kind", sp.kind);
+    if (sp.trip) params.set("trip", sp.trip);
+    return `/transactions?${params.toString()}`;
+  }
+  const monthLabel = new Intl.DateTimeFormat(fmtLocale, {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(ymYear, ymMonth - 1, 1));
+
   return (
     <div className="space-y-4">
       <TransactionsHeader title={t("transactions.title")} />
+
+      {/* Month switcher — mirrors /reports so the user can scrub through
+          months from this list without bouncing between pages. Hidden
+          when a non-month `range` is explicitly active (legacy heatmap
+          link etc.) so the switcher's label doesn't lie about what's
+          being shown. */}
+      {ymActive && (
+        <div className="rounded-2xl border border-(--border) bg-(--card) flex items-center justify-between px-3 py-2">
+          <Link
+            href={buildLink(prevYm)}
+            aria-label={t("calendar.prev")}
+            className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-(--background) transition"
+          >
+            <JtIcon name="chevron-left" size={20} />
+          </Link>
+          <span className="font-semibold tabular-nums">{monthLabel}</span>
+          <Link
+            href={buildLink(nextYm)}
+            aria-label={t("calendar.next")}
+            className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-(--background) transition"
+          >
+            <JtIcon name="chevron-right" size={20} />
+          </Link>
+        </div>
+      )}
 
       <TransactionsHero
         count={items.length}
