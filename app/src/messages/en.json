@@ -32,7 +32,16 @@
       "christmas": "Christmas"
     },
     "iconStyleTitle": "Icon style",
-    "iconStyleHint": "Pick the visual look for all icons across the app."
+    "iconStyleHint": "Pick the visual look for all icons across the app.",
+    "petTitle": "Pet theme",
+    "petHint": "Repaint the warm surfaces by pet — Phase 2 swaps the mascot too.",
+    "pet": {
+      "shiba": "Shiba",
+      "blackcat": "Black cat",
+      "husky": "Husky",
+      "pug": "Pug",
+      "whitecat": "White cat"
+    }
   },
   "common": {
     "save": "Save",

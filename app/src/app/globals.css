@@ -137,6 +137,80 @@
   --accent-foreground: #ffffff;
 }
 
+/* ============================================================
+   Pet themes — repaint the warm-peach surfaces (hero card,
+   amount card, save CTA, dashboard ledger pill, etc.) by
+   overriding the same five --peach-* slots. The class name
+   stays "peach" so nothing downstream needs to change.
+   ============================================================ */
+[data-pet="blackcat"] {
+  --peach-soft: #E6D8FF;
+  --peach-mid: #C5B3E8;
+  --peach-strong: #6B4FBB;
+  --peach-deep: #4A3590;
+  --peach-fg: #2D1B5E;
+  --peach-chip-fg: #3D2680;
+}
+.dark[data-pet="blackcat"] {
+  --peach-soft: #2A1F4D;
+  --peach-mid: #3B2C66;
+  --peach-strong: #8B70D8;
+  --peach-deep: #6B4FBB;
+  --peach-fg: #EBE0FF;
+  --peach-chip-fg: #EBE0FF;
+}
+
+[data-pet="husky"] {
+  --peach-soft: #DBE7F2;
+  --peach-mid: #A8C2D8;
+  --peach-strong: #7BA4C9;
+  --peach-deep: #5283AD;
+  --peach-fg: #1A3A5C;
+  --peach-chip-fg: #2B5278;
+}
+.dark[data-pet="husky"] {
+  --peach-soft: #1E3050;
+  --peach-mid: #2E466A;
+  --peach-strong: #95B8D8;
+  --peach-deep: #7BA4C9;
+  --peach-fg: #DBE7F2;
+  --peach-chip-fg: #DBE7F2;
+}
+
+[data-pet="pug"] {
+  --peach-soft: #E8D8C5;
+  --peach-mid: #C5A788;
+  --peach-strong: #8B5A3C;
+  --peach-deep: #5C3820;
+  --peach-fg: #3A2412;
+  --peach-chip-fg: #4F2F1A;
+}
+.dark[data-pet="pug"] {
+  --peach-soft: #3A2412;
+  --peach-mid: #5C3820;
+  --peach-strong: #C5A788;
+  --peach-deep: #8B5A3C;
+  --peach-fg: #F0E0CC;
+  --peach-chip-fg: #F0E0CC;
+}
+
+[data-pet="whitecat"] {
+  --peach-soft: #FCD9E2;
+  --peach-mid: #F0B5C8;
+  --peach-strong: #E89AAE;
+  --peach-deep: #D67890;
+  --peach-fg: #6E1F37;
+  --peach-chip-fg: #871F45;
+}
+.dark[data-pet="whitecat"] {
+  --peach-soft: #4A1A2A;
+  --peach-mid: #6B2640;
+  --peach-strong: #F0B5C8;
+  --peach-deep: #E89AAE;
+  --peach-fg: #FCE0E8;
+  --peach-chip-fg: #FCE0E8;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

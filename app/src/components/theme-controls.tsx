@@ -15,13 +15,18 @@ import {
   ACCENTS,
   ACCENT_LABELS,
   DEFAULT_ACCENT,
+  DEFAULT_PET,
+  PETS,
+  PET_LABELS,
   SEASONS,
   SEASON_LABELS,
   STORAGE_KEYS,
   autoSeason,
   isAccent,
+  isPet,
   isSeason,
   type Accent,
+  type Pet,
   type Season,
 } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -58,6 +63,7 @@ export function ThemeControls() {
   const [accent, setAccent] = useState<Accent>(DEFAULT_ACCENT);
   const [season, setSeason] = useState<Season>("default");
   const [seasonAuto, setSeasonAuto] = useState(false);
+  const [pet, setPet] = useState<Pet>(DEFAULT_PET);
 
   // Hydrate from localStorage once after mount. SSR can't read it, and the
   // boot script in <head> already applied the right CSS — we're just syncing
@@ -70,6 +76,8 @@ export function ThemeControls() {
     const s = localStorage.getItem(STORAGE_KEYS.season);
     if (isSeason(s)) setSeason(s);
     setSeasonAuto(localStorage.getItem(STORAGE_KEYS.seasonAuto) === "true");
+    const p = localStorage.getItem(STORAGE_KEYS.pet);
+    if (isPet(p)) setPet(p);
   }, []);
 
   // Apply each change to <html> + persist. We intentionally DON'T debounce —
@@ -92,6 +100,15 @@ export function ThemeControls() {
       document.documentElement.removeAttribute("data-season");
     } else {
       document.documentElement.setAttribute("data-season", next);
+    }
+  }
+  function applyPet(next: Pet) {
+    setPet(next);
+    localStorage.setItem(STORAGE_KEYS.pet, next);
+    if (next === "shiba") {
+      document.documentElement.removeAttribute("data-pet");
+    } else {
+      document.documentElement.setAttribute("data-pet", next);
     }
   }
   function applySeasonAuto(next: boolean) {
@@ -248,6 +265,40 @@ export function ThemeControls() {
                   />
                 )}
                 {isActive && <JtIcon name="check" size={18} />}
+              </button>
+            );
+          })}
+        </div>
+      </Section>
+
+      {/* Pet theme — repaints the warm peach surfaces with one of four
+          pet-named palettes. Default "shiba" keeps the original peach. */}
+      <Section title={t("theme.petTitle")} hint={t("theme.petHint")}>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {PETS.map((p) => {
+            const meta = PET_LABELS[p];
+            const isActive = pet === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => applyPet(p)}
+                className={cn(
+                  "rounded-xl border px-3 py-3 transition flex flex-col items-center gap-1.5",
+                  isActive
+                    ? "border-(--foreground) bg-(--background)"
+                    : "border-(--border) bg-(--card) hover:bg-(--background)"
+                )}
+                aria-pressed={isActive}
+              >
+                <span
+                  className="h-7 w-7 rounded-full flex items-center justify-center text-lg shadow-sm"
+                  style={{ backgroundColor: meta.swatch, color: "white" }}
+                  aria-hidden
+                >
+                  {meta.emoji}
+                </span>
+                <span className="text-xs font-medium">{t(meta.nameKey)}</span>
               </button>
             );
           })}

@@ -63,6 +63,12 @@ export const themeBootScript = `
     } else if (season && validSeasons.indexOf(season) !== -1 && season !== 'default') {
       html.setAttribute('data-season', season);
     }
+
+    var pet = localStorage.getItem('jt-theme-pet');
+    var validPets = ['shiba','blackcat','husky','pug','whitecat'];
+    if (pet && validPets.indexOf(pet) !== -1 && pet !== 'shiba') {
+      html.setAttribute('data-pet', pet);
+    }
   } catch (e) {}
 })();
 `.trim();

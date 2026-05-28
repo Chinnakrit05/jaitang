@@ -32,11 +32,22 @@ export const SEASONS = [
 ] as const;
 export type Season = (typeof SEASONS)[number];
 
+export const PETS = [
+  "shiba",
+  "blackcat",
+  "husky",
+  "pug",
+  "whitecat",
+] as const;
+export type Pet = (typeof PETS)[number];
+export const DEFAULT_PET: Pet = "shiba";
+
 export const STORAGE_KEYS = {
   oled: "jt-theme-oled",
   accent: "jt-theme-accent",
   season: "jt-theme-season",
   seasonAuto: "jt-theme-season-auto",
+  pet: "jt-theme-pet",
 } as const;
 
 export function isAccent(v: unknown): v is Accent {
@@ -44,6 +55,9 @@ export function isAccent(v: unknown): v is Accent {
 }
 export function isSeason(v: unknown): v is Season {
   return typeof v === "string" && (SEASONS as readonly string[]).includes(v);
+}
+export function isPet(v: unknown): v is Pet {
+  return typeof v === "string" && (PETS as readonly string[]).includes(v);
 }
 
 /**
@@ -81,4 +95,12 @@ export const SEASON_LABELS: Record<Season, { emoji: string; nameKey: string }> =
   "loy-krathong": { emoji: "🪔", nameKey: "theme.season.loyKrathong" },
   "chinese-new-year": { emoji: "🧧", nameKey: "theme.season.chineseNewYear" },
   christmas: { emoji: "🎄", nameKey: "theme.season.christmas" },
+};
+
+export const PET_LABELS: Record<Pet, { emoji: string; nameKey: string; swatch: string }> = {
+  shiba: { emoji: "🐕", nameKey: "theme.pet.shiba", swatch: "#E89A6A" },
+  blackcat: { emoji: "🐈‍⬛", nameKey: "theme.pet.blackcat", swatch: "#6B4FBB" },
+  husky: { emoji: "🐺", nameKey: "theme.pet.husky", swatch: "#7BA4C9" },
+  pug: { emoji: "🐶", nameKey: "theme.pet.pug", swatch: "#8B5A3C" },
+  whitecat: { emoji: "🐱", nameKey: "theme.pet.whitecat", swatch: "#E89AAE" },
 };
