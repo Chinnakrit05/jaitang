@@ -84,22 +84,28 @@ export async function DashboardHero({
     <section className="space-y-4 fade-rise">
       {/* Greeting row */}
       <div className="flex items-center gap-3 min-w-0">
-        {avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={avatarUrl}
-            alt={name}
-            className="h-11 w-11 rounded-full border border-(--border)"
-          />
-        ) : (
-          <div className="h-11 w-11 rounded-full bg-(--card) border border-(--border) flex items-center justify-center text-xl">
-            🦊
+        <Link
+          href="/settings"
+          aria-label={t("settings.title")}
+          className="flex items-center gap-3 min-w-0 flex-1 rounded-full -m-1 p-1 hover:bg-(--card)/60 transition"
+        >
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt={name}
+              className="h-11 w-11 rounded-full border border-(--border)"
+            />
+          ) : (
+            <div className="h-11 w-11 rounded-full bg-(--card) border border-(--border) flex items-center justify-center text-xl">
+              🦊
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="text-xs text-(--muted)">{t("dashboard.helloShort")}</div>
+            <div className="text-base font-semibold truncate">{name}</div>
           </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <div className="text-xs text-(--muted)">{t("dashboard.helloShort")}</div>
-          <div className="text-base font-semibold truncate">{name}</div>
-        </div>
+        </Link>
         <Link
           href="/ledgers"
           aria-label={t("more.accountsBook")}
