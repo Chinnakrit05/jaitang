@@ -44,7 +44,7 @@ export async function TransactionsHero({
             <span className="text-lg sm:text-xl font-bold tabular-nums text-(--income)">
               +{formatCurrencyCompact(income, currency, fmtLocale)}
             </span>
-            <span className="text-lg sm:text-xl font-bold tabular-nums text-(--foreground)">
+            <span className="text-lg sm:text-xl font-bold tabular-nums text-(--expense)">
               −{formatCurrencyCompact(expense, currency, fmtLocale)}
             </span>
           </div>
