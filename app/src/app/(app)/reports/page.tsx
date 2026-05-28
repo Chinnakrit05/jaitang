@@ -20,6 +20,7 @@ import {
 import { InlineAmount } from "./inline-amount";
 import { InlineNote } from "./inline-note";
 import { DeleteRowButton } from "./row-actions";
+import { AddRow } from "./add-row";
 
 /**
  * Monthly review page. Mirrors the Figma "รายงานรายเดือน" mockup:
@@ -209,7 +210,6 @@ export default async function ReportsPage({
         txs={incomeTxs}
         total={totalIncome}
         currency={currency}
-        emptyLabel={t("reports.empty")}
         totalLabel={t("reports.totalIncome")}
         viewedIsCurrent={viewedIsCurrent}
         viewedIsFuture={viewedIsFuture}
@@ -226,7 +226,6 @@ export default async function ReportsPage({
         txs={expenseTxs}
         total={totalExpense}
         currency={currency}
-        emptyLabel={t("reports.empty")}
         totalLabel={t("reports.totalExpense")}
         viewedIsCurrent={viewedIsCurrent}
         viewedIsFuture={viewedIsFuture}
@@ -279,7 +278,6 @@ function ReportSection({
   txs,
   total,
   currency,
-  emptyLabel,
   totalLabel,
   viewedIsCurrent,
   viewedIsFuture,
@@ -293,7 +291,6 @@ function ReportSection({
   txs: Tx[];
   total: number;
   currency: string;
-  emptyLabel: string;
   totalLabel: string;
   viewedIsCurrent: boolean;
   viewedIsFuture: boolean;
@@ -302,7 +299,7 @@ function ReportSection({
   findRuleTx: (r: Rule) => Tx | undefined;
 }) {
   const headerColor = kind === "income" ? "#16A34A" : "#DC2626";
-  const isEmpty = rules.length === 0 && txs.length === 0;
+  const hasRows = rules.length > 0 || txs.length > 0;
 
   return (
     <section className="rounded-2xl border border-(--border) overflow-hidden bg-(--card)">
@@ -313,32 +310,37 @@ function ReportSection({
         {title}
       </header>
 
-      {isEmpty ? (
-        <p className="px-3 py-2 text-xs text-(--muted)">{emptyLabel}</p>
-      ) : (
-        <ul className="divide-y divide-(--border)/60">
-          {/* Recurring rules first — surfaces the "expected" line items
-              at the top of each section so the user can scrub through
-              them without diving into /recurring. */}
-          {rules.map((r) => (
-            <RuleRow
-              key={`r-${r.id}`}
-              rule={r}
-              currency={currency}
-              matched={findRuleTx(r)}
-              viewedIsCurrent={viewedIsCurrent}
-              viewedIsFuture={viewedIsFuture}
-              viewedYear={viewedYear}
-              viewedMonth={viewedMonth}
-            />
-          ))}
-          {txs.map((tx) => (
-            <TxRow key={tx.id} tx={tx} currency={currency} />
-          ))}
-        </ul>
-      )}
+      <ul className="divide-y divide-(--border)/60">
+        {/* Recurring rules first — surfaces the "expected" line items
+            at the top of each section so the user can scrub through
+            them without diving into /recurring. */}
+        {rules.map((r) => (
+          <RuleRow
+            key={`r-${r.id}`}
+            rule={r}
+            currency={currency}
+            matched={findRuleTx(r)}
+            viewedIsCurrent={viewedIsCurrent}
+            viewedIsFuture={viewedIsFuture}
+            viewedYear={viewedYear}
+            viewedMonth={viewedMonth}
+          />
+        ))}
+        {txs.map((tx) => (
+          <TxRow key={tx.id} tx={tx} currency={currency} />
+        ))}
+        {/* Last row: tap-to-add. Tx lands on day 1 of the viewed month
+            with no category — the user can refine later from the row's
+            edit screen. */}
+        <AddRow
+          kind={kind}
+          year={viewedYear}
+          month={viewedMonth}
+          currency={currency}
+        />
+      </ul>
 
-      {!isEmpty && (
+      {hasRows && (
         <div
           className="px-3 py-1.5 flex items-center justify-between border-t border-(--border)/60"
           style={{
