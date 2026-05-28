@@ -227,6 +227,8 @@ export default function HeroPreviewPage() {
               currency="THB"
               fmtLocale="th-TH"
               monthLabel={monthLabel}
+              ledgerName="ใจถัง"
+              ledgerIcon="📒"
             />
           </div>
         ))}

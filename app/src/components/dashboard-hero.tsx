@@ -30,6 +30,8 @@ export async function DashboardHero({
   currency,
   fmtLocale,
   monthLabel,
+  ledgerName,
+  ledgerIcon,
 }: {
   name: string;
   avatarUrl?: string | null;
@@ -40,6 +42,8 @@ export async function DashboardHero({
   currency: string;
   fmtLocale: string;
   monthLabel: string;
+  ledgerName: string;
+  ledgerIcon?: string | null;
 }) {
   const t = await getTranslations();
 
@@ -109,9 +113,14 @@ export async function DashboardHero({
         <Link
           href="/ledgers"
           aria-label={t("more.accountsBook")}
-          className="h-11 w-11 shrink-0 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm hover:bg-(--background) transition"
+          className="shrink-0 h-11 max-w-[55%] rounded-full bg-(--card) border border-(--border) shadow-sm hover:bg-(--background) transition flex items-center gap-2 pl-2 pr-3"
         >
-          <JtIcon name="ledgers" className="h-5 w-5 text-(--peach-deep)" />
+          {ledgerIcon ? (
+            <span className="text-lg leading-none">{ledgerIcon}</span>
+          ) : (
+            <JtIcon name="ledgers" className="h-5 w-5 text-(--peach-deep) shrink-0" />
+          )}
+          <span className="text-sm font-semibold truncate">{ledgerName}</span>
         </Link>
       </div>
 

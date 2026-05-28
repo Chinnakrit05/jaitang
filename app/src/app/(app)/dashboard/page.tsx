@@ -150,6 +150,8 @@ export default async function DashboardPage({
           currency={displayCurrency}
           fmtLocale={fmtLocale}
           monthLabel={monthLabel}
+          ledgerName={ledger.name}
+          ledgerIcon={ledger.icon}
         />
 
         {availableForeignCurrencies.length > 0 && (
