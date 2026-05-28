@@ -28,10 +28,10 @@ export function DeleteForm({
           router.refresh();
         });
       }}
-      className="inline-flex items-center gap-2 text-sm text-(--expense) hover:underline disabled:opacity-50"
+      className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-semibold bg-(--expense)/10 text-(--expense) border border-(--expense)/25 shadow-sm hover:bg-(--expense)/15 hover:border-(--expense)/40 hover:shadow active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition"
     >
-      <JtIcon name="trash2" size={20} />
-      {t("transactions.deleteThisItem")}
+      <JtIcon name="trash2" size={18} />
+      {pending ? t("common.saving") : t("transactions.deleteThisItem")}
     </button>
   );
 }
