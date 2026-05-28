@@ -116,7 +116,7 @@ export function AddRow({
           ref={nameRef}
           type="text"
           autoComplete="off"
-          placeholder={t("categories.uncategorized")}
+          placeholder={t("common.uncategorized")}
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
