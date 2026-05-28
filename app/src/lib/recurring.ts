@@ -293,6 +293,7 @@ export async function applyDueRecurring(ledgerId: string): Promise<number> {
         kind: r.kind,
         amount: homeAmount,
         note: r.note ? `[ค่าประจำ] ${r.note}` : "[ค่าประจำ]",
+        recurring_id: r.id,
         ...fxFields,
         occurred_at: runAt.toISOString(),
       });
@@ -416,6 +417,7 @@ export async function fillPendingRecurring(input: {
     kind: rule.kind,
     amount: homeAmount,
     note: rule.note ? `[ค่าประจำ] ${rule.note}` : "[ค่าประจำ]",
+    recurring_id: input.ruleId,
     ...fxFields,
     occurred_at: occurredAt,
   });
@@ -622,4 +624,205 @@ export async function updateRecurringFillAmount(input: {
     .update({ last_fill_amount: input.amount })
     .eq("id", input.ruleId);
   if (rErr) throw rErr;
+}
+
+/**
+ * /reports inline editor — per-month override for a rule. The whole
+ * point of this function is that the rule's template (`amount`) is
+ * NEVER touched; we always write/update a materialized [ค่าประจำ]
+ * transaction inside the (year, month) window. This is what makes a
+ * change in one month stay in that month instead of bleeding into
+ * every other render of the rule.
+ *
+ *   amount > 0, skipped = false → ordinary override (renders as "฿N")
+ *   amount = 0, skipped = true  → "no value this month" (renders as "-")
+ *   amount = 0, skipped = false → real 0-baht month (renders as "฿0")
+ *
+ * Match heuristic: prefer `recurring_id` linkage; fall back to
+ * (category_id + "[ค่าประจำ]" note prefix) for legacy rows that
+ * pre-date the column. When more than one matches, the most recent
+ * occurrence wins.
+ */
+export async function setRecurringMonthAmount(input: {
+  ruleId: string;
+  ledgerId: string;
+  /** Calendar year of the month being edited. */
+  year: number;
+  /** 1..12 — the month being edited. */
+  month: number;
+  /** Home-currency amount. Pass 0 with `skipped: true` to mark the
+   *  month as "no value"; pass 0 with `skipped: false` for a real 0. */
+  amount: number;
+  skipped: boolean;
+}): Promise<void> {
+  const sb = getServerSupabase();
+  const { data: rule, error: re } = await sb
+    .from("recurring_transactions")
+    .select(
+      "id, user_id, category_id, account_id, trip_id, fx_currency, kind, note, period, day_of_month, day_of_week, next_run_at, last_run_at, amount"
+    )
+    .eq("id", input.ruleId)
+    .eq("ledger_id", input.ledgerId)
+    .maybeSingle();
+  if (re) throw re;
+  if (!rule) throw new Error("Rule not found");
+
+  // UTC window for the calendar month. Matches the bounds /reports
+  // uses when it reads transactions, so a row we write here is
+  // guaranteed to surface in the right bucket on the next render.
+  const monthStart = new Date(Date.UTC(input.year, input.month - 1, 1));
+  const monthEnd = new Date(Date.UTC(input.year, input.month, 1));
+
+  // Find an existing override for this (rule, month). recurring_id
+  // is the strong link; the category-prefix fallback covers rules
+  // whose materialized txs were written before recurring_id existed.
+  type ExistingTx = {
+    id: string;
+    fx_currency: string | null;
+    fx_rate: number | string | null;
+  };
+  let existing: ExistingTx | null = null;
+  const byRuleId = await sb
+    .from("transactions")
+    .select("id, fx_currency, fx_rate")
+    .eq("ledger_id", input.ledgerId)
+    .eq("recurring_id", input.ruleId)
+    .gte("occurred_at", monthStart.toISOString())
+    .lt("occurred_at", monthEnd.toISOString())
+    .is("deleted_at", null)
+    .order("occurred_at", { ascending: false })
+    .limit(1);
+  if (byRuleId.error) throw byRuleId.error;
+  existing = (byRuleId.data?.[0] as ExistingTx | undefined) ?? null;
+  if (!existing && rule.category_id) {
+    const byHeuristic = await sb
+      .from("transactions")
+      .select("id, fx_currency, fx_rate")
+      .eq("ledger_id", input.ledgerId)
+      .eq("category_id", rule.category_id)
+      .like("note", "[ค่าประจำ]%")
+      .gte("occurred_at", monthStart.toISOString())
+      .lt("occurred_at", monthEnd.toISOString())
+      .is("deleted_at", null)
+      .order("occurred_at", { ascending: false })
+      .limit(1);
+    if (byHeuristic.error) throw byHeuristic.error;
+    existing = (byHeuristic.data?.[0] as ExistingTx | undefined) ?? null;
+  }
+
+  // Resolve home currency for the FX path. Skipped rows skip FX —
+  // they're just a "no value" marker and don't need a foreign value.
+  const { data: ledgerRow } = await sb
+    .from("ledgers")
+    .select("currency")
+    .eq("id", input.ledgerId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  const homeCurrency = (ledgerRow?.currency as string) ?? "THB";
+
+  if (existing) {
+    const updates: Record<string, unknown> = {
+      amount: input.amount,
+      skipped: input.skipped,
+      // Backfill the link so future lookups can skip the heuristic.
+      recurring_id: input.ruleId,
+    };
+    // FX rows keep their stored fx_rate so the historic snapshot
+    // doesn't shift under the user's feet — re-resolve home value
+    // from the typed foreign-currency amount + stored rate.
+    if (existing.fx_currency && existing.fx_rate && !input.skipped && input.amount > 0) {
+      const rate = Number(existing.fx_rate);
+      updates.fx_amount = input.amount;
+      updates.amount = Math.round(input.amount * rate * 100) / 100;
+    }
+    const { error: upErr } = await sb
+      .from("transactions")
+      .update(updates)
+      .eq("id", existing.id);
+    if (upErr) throw upErr;
+  } else {
+    // No row yet for this month — insert one. Day-of-month rules
+    // anchor on their configured day so a future cron firing in the
+    // same month won't write a second row on day 1.
+    let occurredDay = 1;
+    if (rule.period === "monthly" && rule.day_of_month) {
+      const lastDay = new Date(Date.UTC(input.year, input.month, 0)).getUTCDate();
+      occurredDay = Math.min(rule.day_of_month, lastDay);
+    }
+    const occurredAt = new Date(Date.UTC(input.year, input.month - 1, occurredDay));
+
+    let homeAmount = input.amount;
+    let fxFields: { fx_currency: string | null; fx_amount: number | null; fx_rate: number | null } = {
+      fx_currency: null,
+      fx_amount: null,
+      fx_rate: null,
+    };
+    if (
+      rule.fx_currency &&
+      rule.fx_currency !== homeCurrency &&
+      !input.skipped &&
+      input.amount > 0
+    ) {
+      try {
+        const rate = await fetchFxRate(rule.fx_currency, homeCurrency);
+        homeAmount = Math.round(input.amount * rate * 100) / 100;
+        fxFields = {
+          fx_currency: rule.fx_currency,
+          fx_amount: input.amount,
+          fx_rate: rate,
+        };
+      } catch {
+        // FX unreachable → store face value rather than reject.
+      }
+    }
+
+    const { error: insErr } = await sb.from("transactions").insert({
+      ledger_id: input.ledgerId,
+      user_id: rule.user_id,
+      category_id: rule.category_id,
+      account_id: rule.account_id ?? null,
+      trip_id: rule.trip_id ?? null,
+      kind: rule.kind,
+      amount: homeAmount,
+      skipped: input.skipped,
+      recurring_id: input.ruleId,
+      note: rule.note ? `[ค่าประจำ] ${rule.note}` : "[ค่าประจำ]",
+      ...fxFields,
+      occurred_at: occurredAt.toISOString(),
+    });
+    if (insErr) throw insErr;
+  }
+
+  // If the edit happens to land in the cron's current period, advance
+  // the anchor so applyDueRecurring doesn't fire again and create a
+  // duplicate row this period. For past / future months we leave
+  // the cron state alone — those months don't intersect the schedule
+  // window in a way the cron cares about.
+  const now = new Date();
+  const nowYear = now.getUTCFullYear();
+  const nowMonth = now.getUTCMonth() + 1;
+  const currentPeriodMatch =
+    (rule.period === "monthly" || rule.period === "weekly" || rule.period === "daily")
+      ? input.year === nowYear && input.month === nowMonth
+      : rule.period === "yearly"
+      ? input.year === nowYear
+      : false;
+  if (currentPeriodMatch) {
+    const nextRun = computeNextRun({
+      period: rule.period as RecurPeriod,
+      day_of_month: rule.day_of_month,
+      day_of_week: rule.day_of_week,
+      next_run_at: rule.next_run_at,
+    });
+    await sb
+      .from("recurring_transactions")
+      .update({
+        last_run_at: now.toISOString(),
+        next_run_at: nextRun.toISOString(),
+        // last_fill_amount stays for legacy /recurring UI; reflect the
+        // typed value (skipped → 0 sentinel matches the old contract).
+        last_fill_amount: input.skipped ? 0 : input.amount,
+      })
+      .eq("id", input.ruleId);
+  }
 }

@@ -31,6 +31,8 @@ function tx(opts: {
     fx_currency: null,
     fx_amount: null,
     fx_rate: null,
+    recurring_id: null,
+    skipped: false,
     occurred_at: opts.occurredAt ?? "2026-05-02T03:30:00.000Z",
     created_at: "2026-05-02T03:30:00.000Z",
     updated_at: "2026-05-02T03:30:00.000Z",

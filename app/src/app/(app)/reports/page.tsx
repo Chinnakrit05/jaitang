@@ -3,12 +3,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { requireSession } from "@/lib/session";
 import { listTransactions } from "@/lib/transactions";
-import { listRecurring, isAppliedThisPeriod } from "@/lib/recurring";
+import { listRecurring } from "@/lib/recurring";
 import { nowInBusinessTz } from "@/lib/business-tz";
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrencyCompact } from "@/lib/utils";
 import {
-  updateRecurringAmountAction,
   updateRecurringNoteAction,
   updateTransactionAmountAction,
   updateTransactionNoteAction,
@@ -16,9 +15,7 @@ import {
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import {
   deleteRecurringAction,
-  fillPendingRecurringAmountAction,
-  skipRecurringPeriodAction,
-  updateRecurringFillAmountAction,
+  setRecurringMonthAmountAction,
 } from "@/app/(app)/recurring/actions";
 import { InlineAmount } from "./inline-amount";
 import { InlineNote } from "./inline-note";
@@ -75,12 +72,13 @@ export default async function ReportsPage({
 
   // Drop transactions that were materialised from a recurring rule
   // from the list rendering — `fillPendingRecurring` /
-  // `applyDueRecurring` tag those with a "[ค่าประจำ]" note prefix.
-  // They surface above as their parent rule row (with the cached
-  // last_fill_amount), so showing them again as a "regular" tx below
-  // would double-count visually and the "[ค่าประจำ]" prefix in the
-  // note was confusing.
+  // `applyDueRecurring` tag those rows with `recurring_id`, and
+  // legacy materialised rows carry a "[ค่าประจำ]" note prefix. Both
+  // surface above as their parent rule row (the per-month override
+  // tx is what drives the displayed amount), so showing them again
+  // as a "regular" tx below would double-count visually.
   const isRecurringTx = (tx: (typeof allTxs)[number]) =>
+    tx.recurring_id !== null ||
     (tx.note ?? "").trimStart().startsWith("[ค่าประจำ]");
   const listTxs = allTxs.filter((tx) => !isRecurringTx(tx));
 
@@ -98,35 +96,35 @@ export default async function ReportsPage({
     year > currentYear || (year === currentYear && month > currentMonth);
   const viewedIsCurrent = year === currentYear && month === currentMonth;
 
-  // Section totals match what's visible. For each rule, prefer the
-  // amount of a matching '[ค่าประจำ]' tx inside the viewed window
-  // (that's the real materialised value). Fall back to rule.amount
-  // for fixed rules only when the viewed bucket is the current
-  // month — past months without a tx mean the rule wasn't run yet,
-  // and future months haven't happened. Otherwise show 0.
+  // Per-rule override tx for the viewed month. Strong link via
+  // `recurring_id` (set on new rows by setRecurringMonthAmount and
+  // by the cron fill paths); falls back to category+prefix for any
+  // legacy materialised rows that pre-date `recurring_id`.
   function findRuleTx(r: (typeof activeRecurring)[number]) {
+    const byId = allTxs.find(
+      (tx) => tx.recurring_id === r.id && tx.kind === r.kind,
+    );
+    if (byId) return byId;
     return allTxs.find(
       (tx) =>
+        tx.recurring_id === null &&
         isRecurringTx(tx) &&
         tx.kind === r.kind &&
-        tx.category_id === r.category_id
+        tx.category_id === r.category_id,
     );
   }
+  // Amount the row + the section total should attribute to this rule
+  // for the viewed month. The override tx (if any) wins — including
+  // 0-amount rows (skipped → "-", or a real "฿0") — so editing one
+  // month never leaks into another, and a skipped month correctly
+  // contributes 0 to the section total.
   function ruleRowAmount(r: (typeof activeRecurring)[number]) {
-    if (viewedIsFuture) return 0;
     const matched = findRuleTx(r);
-    if (matched) return matched.amount;
+    if (matched) return matched.skipped ? 0 : matched.amount;
+    if (viewedIsFuture) return 0;
     if (viewedIsCurrent && r.amount !== null) return r.amount;
-    if (viewedIsCurrent) {
-      // Variable bill, not yet filled this period — fall through to 0
-      // for total math (the row component will show a dashed input
-      // via the matching null check in RuleRow).
-      return isAppliedThisPeriod(r.last_run_at, r.period) &&
-        r.last_fill_amount !== null
-        ? r.last_fill_amount
-        : 0;
-    }
-    // Past month with no materialised tx — rule didn't run.
+    // Past month or current-month variable bill with no override —
+    // the rule hasn't been materialised here yet, so it contributes 0.
     return 0;
   }
   const sumRules = (rs: typeof activeRecurring) =>
@@ -215,7 +213,9 @@ export default async function ReportsPage({
         totalLabel={t("reports.totalIncome")}
         viewedIsCurrent={viewedIsCurrent}
         viewedIsFuture={viewedIsFuture}
-        ruleAmountFor={ruleRowAmount}
+        viewedYear={year}
+        viewedMonth={month}
+        findRuleTx={findRuleTx}
       />
 
       {/* Expense section */}
@@ -230,7 +230,9 @@ export default async function ReportsPage({
         totalLabel={t("reports.totalExpense")}
         viewedIsCurrent={viewedIsCurrent}
         viewedIsFuture={viewedIsFuture}
-        ruleAmountFor={ruleRowAmount}
+        viewedYear={year}
+        viewedMonth={month}
+        findRuleTx={findRuleTx}
       />
     </div>
   );
@@ -281,7 +283,9 @@ function ReportSection({
   totalLabel,
   viewedIsCurrent,
   viewedIsFuture,
-  ruleAmountFor,
+  viewedYear,
+  viewedMonth,
+  findRuleTx,
 }: {
   kind: "income" | "expense";
   title: string;
@@ -293,7 +297,9 @@ function ReportSection({
   totalLabel: string;
   viewedIsCurrent: boolean;
   viewedIsFuture: boolean;
-  ruleAmountFor: (r: Rule) => number;
+  viewedYear: number;
+  viewedMonth: number;
+  findRuleTx: (r: Rule) => Tx | undefined;
 }) {
   const headerColor = kind === "income" ? "#16A34A" : "#DC2626";
   const isEmpty = rules.length === 0 && txs.length === 0;
@@ -319,9 +325,11 @@ function ReportSection({
               key={`r-${r.id}`}
               rule={r}
               currency={currency}
-              displayAmount={ruleAmountFor(r)}
+              matched={findRuleTx(r)}
               viewedIsCurrent={viewedIsCurrent}
               viewedIsFuture={viewedIsFuture}
+              viewedYear={viewedYear}
+              viewedMonth={viewedMonth}
             />
           ))}
           {txs.map((tx) => (
@@ -387,73 +395,69 @@ function TxRow({ tx, currency }: { tx: Tx; currency: string }) {
 function RuleRow({
   rule,
   currency,
-  displayAmount,
+  matched,
   viewedIsCurrent,
   viewedIsFuture,
+  viewedYear,
+  viewedMonth,
 }: {
   rule: Rule;
   currency: string;
-  /** Pre-computed amount for the viewed month — already accounts for
-   *  past/future buckets resetting to 0 and for matching tx lookup. */
-  displayAmount: number;
+  /** Per-month override tx (if any) — drives both the displayed value
+   *  and the skipped state. Absent = no override yet for this month. */
+  matched: Tx | undefined;
   viewedIsCurrent: boolean;
   viewedIsFuture: boolean;
+  viewedYear: number;
+  viewedMonth: number;
 }) {
   const note = rule.note ?? "";
   const catName = rule.category?.name ?? "";
 
-  // Amount routing — three flavours, all editable inline:
-  //   1. Fixed rule (rule.amount != null)
-  //        → updateRecurringAmountAction (changes rule template)
-  //   2. Variable rule, applied this period (we already have a fill)
-  //        → updateRecurringFillAmountAction (corrects the existing
-  //          tx + updates last_fill_amount; does NOT create a dup)
-  //   3. Variable rule, not yet applied
-  //        → fillPendingRecurringAmountAction (creates the tx)
+  // Per-month override model: every edit on /reports writes (or
+  // updates) one tx in the viewed month. The rule template is never
+  // touched here, so changing this month's number can't bleed into
+  // any other month's render.
   const isVariable = rule.amount === null;
-  const appliedAndFilled =
-    isVariable &&
-    isAppliedThisPeriod(rule.last_run_at, rule.period) &&
-    rule.last_fill_amount !== null;
-  // Initial value the input shows:
-  //   - Future month → 0 across the board (the user can't fill ahead)
-  //   - Current month + fixed → rule.amount
-  //   - Current month + variable + applied → last_fill_amount
-  //   - Current month + variable + pending → null (dashed input)
-  //   - Past month → displayAmount (matches what really happened),
-  //     0 falls through to a read-only-looking zero
-  // Skipped = the rule's been marked "no value this period" via the
-  // "-" input. Sentinel = last_fill_amount === 0 + applied this
-  // period (so we don't confuse with a brand-new ledger that has
-  // never filled this rule).
-  const isSkipped =
-    isAppliedThisPeriod(rule.last_run_at, rule.period) &&
-    rule.last_fill_amount === 0;
-  const initialAmount: number | null = viewedIsFuture
+  // Skipped is read directly off the override tx — `last_fill_amount`
+  // is no longer the source of truth here because it can only describe
+  // one period at a time (and so couldn't distinguish a skipped past
+  // month from a skipped current month).
+  const isSkipped = matched?.skipped === true;
+  // Initial value the input shows. If an override exists, use it.
+  // Otherwise: current-month fixed rules show the template as a
+  // pre-fill (so the user can edit it down without retyping); variable
+  // pending rules show the dashed empty state; everything else falls
+  // back to 0.
+  const initialAmount: number | null = matched
+    ? matched.skipped
+      ? 0
+      : matched.amount
+    : viewedIsFuture
     ? 0
     : viewedIsCurrent
-    ? isSkipped
-      ? 0
-      : isVariable
-      ? appliedAndFilled
-        ? rule.last_fill_amount
-        : null
+    ? isVariable
+      ? null
       : rule.amount
-    : displayAmount;
+    : 0;
 
   async function amountAction(amount: number) {
     "use server";
-    if (!isVariable) {
-      return updateRecurringAmountAction(rule.id, amount);
-    }
-    if (appliedAndFilled) {
-      return updateRecurringFillAmountAction(rule.id, amount);
-    }
-    return fillPendingRecurringAmountAction(rule.id, amount);
+    return setRecurringMonthAmountAction(rule.id, {
+      year: viewedYear,
+      month: viewedMonth,
+      amount,
+      skipped: false,
+    });
   }
   async function skipAction() {
     "use server";
-    return skipRecurringPeriodAction(rule.id);
+    return setRecurringMonthAmountAction(rule.id, {
+      year: viewedYear,
+      month: viewedMonth,
+      amount: 0,
+      skipped: true,
+    });
   }
   async function noteAction(next: string) {
     "use server";
@@ -482,16 +486,13 @@ function RuleRow({
           {catName || rule.period}
         </p>
       </div>
-      {/* Key on the resolved initial so navigating between months
-          actually remounts the inline editor — without it, React
-          keeps the prior month's local useState (the input would
-          keep showing 2,438 when the next month's value is 0).
-          "Skipped" = last_fill_amount is the 0 sentinel from a "-"
-          fill, only meaningful when the rule is applied this period
-          (otherwise the row is just a fresh zero in a different
-          bucket). */}
+      {/* Key on the resolved initial + skipped flag so navigating
+          between months actually remounts the inline editor —
+          without it, React keeps the prior month's local useState
+          (the input would keep showing 2,438 when the next month's
+          value is 0). */}
       <InlineAmount
-        key={`amt-${initialAmount ?? "null"}-${isSkipped ? "skip" : "ok"}`}
+        key={`amt-${viewedYear}-${viewedMonth}-${initialAmount ?? "null"}-${isSkipped ? "skip" : "ok"}`}
         initial={initialAmount}
         currency={currency}
         action={amountAction}

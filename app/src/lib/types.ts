@@ -133,6 +133,14 @@ export type Transaction = {
   fx_currency: string | null;
   fx_amount: number | null;
   fx_rate: number | null;
+  /** Materialized-from-rule link. Non-null on rows produced by the
+   *  recurring cron or the /reports inline editor; null on ordinary
+   *  one-off transactions. */
+  recurring_id: string | null;
+  /** "No value this period" override — when true the row stores amount
+   *  = 0 but /reports renders it as "-" instead of a 0. Only meaningful
+   *  on materialized [ค่าประจำ] rows. */
+  skipped: boolean;
   occurred_at: string;
   created_at: string;
   updated_at: string;

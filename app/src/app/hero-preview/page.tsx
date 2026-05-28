@@ -104,6 +104,8 @@ export default function HeroPreviewPage() {
     created_at: "2026-05-25T00:00:00Z",
     updated_at: "2026-05-25T00:00:00Z",
     deleted_at: null,
+    recurring_id: null,
+    skipped: false,
   } as const;
 
   const recentFixtures: TransactionWithCategory[] = [

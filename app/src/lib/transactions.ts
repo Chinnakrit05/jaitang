@@ -40,7 +40,7 @@ export async function listTransactions(
   let q = sb
     .from("transactions")
     .select(
-      "id, ledger_id, user_id, category_id, trip_id, account_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), trip:trips(id, name, icon, color, currency), account:accounts(id, name, icon, color, currency), user:users(id, name, email, image)"
+      "id, ledger_id, user_id, category_id, trip_id, account_id, kind, amount, note, payment_method, fx_currency, fx_amount, fx_rate, recurring_id, skipped, occurred_at, created_at, updated_at, category:categories(id, name, icon, color), trip:trips(id, name, icon, color, currency), account:accounts(id, name, icon, color, currency), user:users(id, name, email, image)"
     )
     .eq("ledger_id", opts.ledgerId)
     .is("deleted_at", null) // hide soft-deleted rows from every UI read
@@ -93,6 +93,8 @@ export async function listTransactions(
       fx_currency: (row.fx_currency as string | null) ?? null,
       fx_amount: row.fx_amount === null || row.fx_amount === undefined ? null : Number(row.fx_amount),
       fx_rate: row.fx_rate === null || row.fx_rate === undefined ? null : Number(row.fx_rate),
+      recurring_id: (row.recurring_id as string | null) ?? null,
+      skipped: Boolean(row.skipped),
       occurred_at: row.occurred_at,
       created_at: row.created_at,
       updated_at: row.updated_at,

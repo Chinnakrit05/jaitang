@@ -215,6 +215,32 @@ create index if not exists idx_tx_active
   on public.transactions(ledger_id, occurred_at desc)
   where deleted_at is null;
 
+-- Per-month overrides for recurring rules — the /reports inline editor
+-- materializes one tx per (rule, month) so changing this month's amount
+-- never touches the rule template or other months. `recurring_id` links
+-- the materialized row back to its rule (null = ordinary tx). `skipped`
+-- + amount = 0 means "no value this month" (renders as "-" on /reports
+-- and counts as 0 in totals). Both nullable for backfill safety.
+alter table public.transactions
+  add column if not exists recurring_id uuid
+  references public.recurring_transactions(id) on delete set null;
+alter table public.transactions
+  add column if not exists skipped boolean not null default false;
+create index if not exists idx_tx_recurring
+  on public.transactions(recurring_id, occurred_at)
+  where recurring_id is not null;
+
+-- Allow zero-amount rows so a /reports skip can be stored as a 0-amount
+-- override tx. The original > 0 constraint pre-dates the skip flow.
+do $$
+begin
+  alter table public.transactions
+    drop constraint if exists transactions_amount_check;
+  alter table public.transactions
+    add constraint transactions_amount_check check (amount >= 0);
+exception when others then null;
+end $$;
+
 -- updated_at trigger
 create or replace function set_updated_at()
 returns trigger as $$

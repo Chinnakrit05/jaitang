@@ -13,6 +13,7 @@ import {
   fillPendingRecurring,
   updateRecurringFillAmount,
   skipRecurringPeriod,
+  setRecurringMonthAmount,
 } from "@/lib/recurring";
 import { SUPPORTED_CODES } from "@/lib/currencies";
 
@@ -312,6 +313,42 @@ export async function reorderRecurringAction(ids: string[]) {
       updateRecurring(id, { sortOrder: index + 1 })
     )
   );
+  refresh();
+  return { ok: true as const };
+}
+
+/**
+ * /reports inline editor — per-month override. Edits a single calendar
+ * month for the rule by writing a materialized [ค่าประจำ] tx in that
+ * window; the rule template is intentionally left alone. `skipped`
+ * means "no value this month" (renders as "-"); `skipped: false` with
+ * `amount = 0` means "real 0" (renders as "฿0").
+ */
+const MonthAmountSchema = z.object({
+  year: z.coerce.number().int().min(1970).max(9999),
+  month: z.coerce.number().int().min(1).max(12),
+  // 0 allowed: a skipped month or a real 0-baht month both store 0.
+  amount: z.coerce.number().min(0).max(1e10),
+  skipped: z.boolean(),
+});
+export async function setRecurringMonthAmountAction(
+  ruleId: string,
+  input: { year: number; month: number; amount: number; skipped: boolean },
+) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+  const parsed = MonthAmountSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  await setRecurringMonthAmount({
+    ruleId,
+    ledgerId,
+    year: parsed.data.year,
+    month: parsed.data.month,
+    amount: parsed.data.amount,
+    skipped: parsed.data.skipped,
+  });
   refresh();
   return { ok: true as const };
 }

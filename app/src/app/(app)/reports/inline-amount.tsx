@@ -132,31 +132,13 @@ export function InlineAmount({
       setValue(fmt(num));
       return;
     }
-    // 0 baht has the same semantics as "-": no money moved this
-    // period. We share the skip path so the underlying state stays
-    // single-sourced (last_fill_amount = 0 + last_run_at advanced).
-    // The display flips to "-" because that's what the row reads
-    // as on the next render anyway. For tx rows (no onSkip), 0
-    // stays rejected — the DB constraint requires positive amounts.
-    if (onSkip && num === 0) {
-      startTransition(async () => {
-        const result = await onSkip();
-        if (result.ok) {
-          setSkipped(true);
-          setSavedValue(0);
-          setValue("-");
-          setExtras([]);
-          setJustSaved(true);
-        } else {
-          setError(result.error);
-          setExtras([]);
-          setValue(savedValue === null ? "" : fmt(savedValue));
-        }
-      });
-      return;
-    }
-    if (num === 0) {
-      // No onSkip wired — 0 isn't a valid commit for a tx row.
+    // 0 is a real commit on rule rows (onSkip wired) — it stores a
+    // 0-amount override for the viewed month and renders as "฿0".
+    // "-" is what marks the month as "no value" (the skipped path
+    // above). For ordinary tx rows (no onSkip), 0 isn't valid: the
+    // DB constraint forbids non-positive tx amounts, and the
+    // transaction edit form is the right place to delete instead.
+    if (!onSkip && num === 0) {
       setExtras([]);
       setValue(savedValue === null ? "" : fmt(savedValue));
       return;

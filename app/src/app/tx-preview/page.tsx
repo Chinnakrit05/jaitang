@@ -77,6 +77,8 @@ export default function TransactionsPreviewPage() {
     trip_id: null,
     account_id: null,
     trip: null,
+    recurring_id: null,
+    skipped: false,
   } as const;
 
   const items: TransactionWithCategory[] = [
