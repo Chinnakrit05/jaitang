@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Mascot } from "@/components/mascots";
 import { AnimatedAmount } from "@/components/animated-amount";
-import { JtIcon } from "@/components/icons";
+import { EmojiOrIcon } from "@/components/icons";
 
 /**
  * Hero balance card — replaces the 3-up SummaryCard grid with a single
@@ -122,18 +122,14 @@ export async function DashboardHero({
           }}
         >
           <span
-            className="h-9 w-9 rounded-full flex items-center justify-center text-lg shrink-0 shadow-sm"
+            className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white"
             style={{
               background:
                 "linear-gradient(135deg, var(--peach-strong) 0%, var(--peach-deep) 100%)",
             }}
             aria-hidden
           >
-            {ledgerIcon ? (
-              <span className="leading-none">{ledgerIcon}</span>
-            ) : (
-              <JtIcon name="ledgers" className="h-4 w-4 text-white" />
-            )}
+            <EmojiOrIcon value={ledgerIcon ?? null} fallback="ledgers" size={18} />
           </span>
           <span className="flex flex-col min-w-0 leading-tight">
             <span
