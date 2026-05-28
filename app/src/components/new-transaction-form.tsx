@@ -388,6 +388,10 @@ export function NewTransactionForm({
               }
               placeholder="0"
               required
+              // Only autofocus on the create flow — refocusing during edit
+              // would steal focus from the field the user actually tapped
+              // and pop the keyboard over an existing-row screen.
+              autoFocus={!initial}
               className="w-40 bg-transparent text-5xl font-extrabold tabular-nums text-center text-white placeholder:text-white/85 outline-none focus:outline-none focus-visible:outline-none focus:ring-0"
               style={{
                 color: "white",
