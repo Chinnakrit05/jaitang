@@ -167,6 +167,20 @@
     "friendFallback": "あなた",
     "monthBalance": "今月の収支",
     "mascotName": "柴ちゃん",
+    "petName": {
+      "shiba": "柴ちゃん",
+      "blackcat": "黒猫ちゃん",
+      "husky": "ハスキーちゃん",
+      "pug": "パグちゃん",
+      "whitecat": "白猫ちゃん"
+    },
+    "petCelebration": {
+      "shiba": "保存 · 柴ちゃん嬉しい",
+      "blackcat": "保存 · 黒猫ちゃん嬉しい",
+      "husky": "保存 · ハスキーちゃん嬉しい",
+      "pug": "保存 · パグちゃん嬉しい",
+      "whitecat": "保存 · 白猫ちゃん嬉しい"
+    },
     "moodHappy": "ごきげん",
     "moodWorried": "ちょっと心配",
     "moodOver": "予算オーバー",

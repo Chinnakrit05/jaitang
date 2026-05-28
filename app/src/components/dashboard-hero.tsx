@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Mascot } from "@/components/mascots";
 import { AnimatedAmount } from "@/components/animated-amount";
 import { EmojiOrIcon } from "@/components/icons";
+import { PetName } from "@/components/pet-name";
 
 /**
  * Hero balance card — replaces the 3-up SummaryCard grid with a single
@@ -226,7 +227,7 @@ export async function DashboardHero({
           }}
         >
           <div className="text-[13px]">
-            <span className="font-medium">{t("dashboard.mascotName")}</span>
+            <PetName className="font-medium" />
             <span className="text-(--muted) text-xs">
               {"  "}
               {moodKey === "over" && overPct > 0

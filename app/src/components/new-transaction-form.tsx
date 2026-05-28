@@ -29,6 +29,7 @@ import { reorderCategoriesAction } from "@/app/(app)/categories/actions";
 import { sortByHierarchy } from "@/lib/categories";
 import { cn, formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
+import { isPet, type Pet } from "@/lib/theme";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
 import type {
   AccountChoice,
@@ -104,6 +105,25 @@ export function NewTransactionForm({
   const locale = useLocale();
   const fmtLocale = intlLocale(locale);
   const [pending, startTransition] = useTransition();
+
+  // Active pet for save-button celebratory copy. SSR default is shiba;
+  // a MutationObserver picks up live theme changes from /settings.
+  const [pet, setPet] = useState<Pet>("shiba");
+  useEffect(() => {
+    const sync = () => {
+      const v = document.documentElement.getAttribute("data-pet");
+      setPet(isPet(v) ? v : "shiba");
+    };
+    sync();
+    const obs = new MutationObserver(sync);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-pet"],
+    });
+    return () => obs.disconnect();
+  }, []);
+  const petEmoji =
+    pet === "blackcat" || pet === "whitecat" ? "🐟" : pet === "pug" ? "🍫" : "🦴";
 
   const [kind, setKind] = useState<TxKind>(initial?.kind ?? "expense");
   // `datetime-local` wants "YYYY-MM-DDTHH:MM" in the user's local zone, so
@@ -530,8 +550,8 @@ export function NewTransactionForm({
                 "0 10px 24px -8px color-mix(in srgb, var(--peach-strong) 65%, transparent)",
             }}
           >
-            <span aria-hidden className="text-lg">🦴</span>
-            {pending ? t("common.saving") : t("common.save")}
+            <span aria-hidden className="text-lg">{petEmoji}</span>
+            {pending ? t("common.saving") : t(`dashboard.petCelebration.${pet}`)}
           </button>
         </div>
       )}

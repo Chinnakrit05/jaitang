@@ -177,6 +177,20 @@
     "friendFallback": "friend",
     "monthBalance": "Balance this month",
     "mascotName": "Shiba",
+    "petName": {
+      "shiba": "Shiba",
+      "blackcat": "Black cat",
+      "husky": "Husky",
+      "pug": "Pug",
+      "whitecat": "White cat"
+    },
+    "petCelebration": {
+      "shiba": "Save · Shiba is happy",
+      "blackcat": "Save · Black cat is happy",
+      "husky": "Save · Husky is happy",
+      "pug": "Save · Pug is happy",
+      "whitecat": "Save · White cat is happy"
+    },
     "moodHappy": "feeling happy",
     "moodWorried": "getting worried",
     "moodOver": "over budget",

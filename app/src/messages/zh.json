@@ -167,6 +167,20 @@
     "friendFallback": "朋友",
     "monthBalance": "本月余额",
     "mascotName": "柴柴",
+    "petName": {
+      "shiba": "柴柴",
+      "blackcat": "黑猫",
+      "husky": "哈士奇",
+      "pug": "巴哥",
+      "whitecat": "白猫"
+    },
+    "petCelebration": {
+      "shiba": "保存 · 柴柴开心",
+      "blackcat": "保存 · 黑猫开心",
+      "husky": "保存 · 哈士奇开心",
+      "pug": "保存 · 巴哥开心",
+      "whitecat": "保存 · 白猫开心"
+    },
     "moodHappy": "心情很好",
     "moodWorried": "有点担心",
     "moodOver": "超出预算",
