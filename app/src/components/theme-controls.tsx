@@ -180,10 +180,12 @@ export function ThemeControls() {
       <Section
         title={t("theme.accentTitle")}
         hint={
-          (seasonAuto && effectiveSeason !== "default") ||
-          (!seasonAuto && season !== "default")
-            ? t("theme.accentDisabledBySeason")
-            : undefined
+          pet !== "shiba"
+            ? t("theme.accentDisabledByPet")
+            : (seasonAuto && effectiveSeason !== "default") ||
+                (!seasonAuto && season !== "default")
+              ? t("theme.accentDisabledBySeason")
+              : undefined
         }
       >
         <div className="flex flex-wrap gap-2">

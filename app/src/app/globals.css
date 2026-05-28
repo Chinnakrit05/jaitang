@@ -150,6 +150,8 @@
   --peach-deep: #4A3590;
   --peach-fg: #2D1B5E;
   --peach-chip-fg: #3D2680;
+  --accent: #6B4FBB;
+  --accent-foreground: #ffffff;
 }
 .dark[data-pet="blackcat"] {
   --peach-soft: #2A1F4D;
@@ -158,6 +160,8 @@
   --peach-deep: #6B4FBB;
   --peach-fg: #EBE0FF;
   --peach-chip-fg: #EBE0FF;
+  --accent: #A89BE8;
+  --accent-foreground: #1A0F35;
 }
 
 [data-pet="husky"] {
@@ -167,6 +171,8 @@
   --peach-deep: #5283AD;
   --peach-fg: #1A3A5C;
   --peach-chip-fg: #2B5278;
+  --accent: #5283AD;
+  --accent-foreground: #ffffff;
 }
 .dark[data-pet="husky"] {
   --peach-soft: #1E3050;
@@ -175,6 +181,8 @@
   --peach-deep: #7BA4C9;
   --peach-fg: #DBE7F2;
   --peach-chip-fg: #DBE7F2;
+  --accent: #95B8D8;
+  --accent-foreground: #0F2540;
 }
 
 [data-pet="pug"] {
@@ -184,6 +192,8 @@
   --peach-deep: #5C3820;
   --peach-fg: #3A2412;
   --peach-chip-fg: #4F2F1A;
+  --accent: #8B5A3C;
+  --accent-foreground: #ffffff;
 }
 .dark[data-pet="pug"] {
   --peach-soft: #3A2412;
@@ -192,6 +202,8 @@
   --peach-deep: #8B5A3C;
   --peach-fg: #F0E0CC;
   --peach-chip-fg: #F0E0CC;
+  --accent: #D8B898;
+  --accent-foreground: #2A1808;
 }
 
 [data-pet="whitecat"] {
@@ -201,6 +213,8 @@
   --peach-deep: #D67890;
   --peach-fg: #6E1F37;
   --peach-chip-fg: #871F45;
+  --accent: #D67890;
+  --accent-foreground: #ffffff;
 }
 .dark[data-pet="whitecat"] {
   --peach-soft: #4A1A2A;
@@ -209,6 +223,8 @@
   --peach-deep: #E89AAE;
   --peach-fg: #FCE0E8;
   --peach-chip-fg: #FCE0E8;
+  --accent: #F0B5C8;
+  --accent-foreground: #3A0E1F;
 }
 
 @theme inline {

@@ -19,6 +19,7 @@
       "coral": "Coral",
       "rose": "Rose"
     },
+    "accentDisabledByPet": "Accent is taken over by the pet theme — pick \"Shiba\" to restore manual accent choice.",
     "accentDisabledBySeason": "Accent is overridden by the active seasonal theme — turn it off to pick a color.",
     "seasonTitle": "Seasonal theme",
     "seasonHint": "Festive palettes — replace Accent while active.",
