@@ -109,14 +109,40 @@ export function MobileNav({
           {leftItems.map(renderTab)}
 
           {/* Center FAB — quick-add path. Raised above the bar with the
-              accent fill so the eye finds it without a label. The
-              negative top margin lets it "punch through" the border. */}
+              accent fill so the eye finds it without a label. Layered
+              gradient + highlight + ring give the button a tactile 3D
+              feel instead of looking like a flat sticker. */}
           <Link
             href="/transactions/new"
             aria-label={fabLabel}
-            className="flex items-center justify-center h-14 w-14 rounded-full bg-(--accent) text-(--accent-foreground) -mt-6 shrink-0 shadow-[0_8px_20px_-6px_color-mix(in_srgb,var(--accent)_60%,transparent)] hover:scale-105 active:scale-95 transition"
+            className="relative flex items-center justify-center h-16 w-16 rounded-full -mt-7 shrink-0 text-(--accent-foreground) ring-4 ring-(--card) hover:scale-105 active:scale-95 transition"
+            style={{
+              background:
+                "radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--accent) 55%, white) 0%, var(--accent) 45%, color-mix(in srgb, var(--accent) 70%, black) 100%)",
+              boxShadow: [
+                "0 10px 22px -6px color-mix(in srgb, var(--accent) 65%, transparent)",
+                "0 3px 8px -2px color-mix(in srgb, var(--accent) 50%, transparent)",
+                "inset 0 1px 0 0 rgba(255,255,255,0.55)",
+                "inset 0 -2px 4px 0 color-mix(in srgb, var(--accent) 60%, black)",
+              ].join(", "),
+            }}
           >
-            <JtIcon name="plus-fab" size={28} />
+            {/* Specular highlight — a soft top arc that catches the
+                "light" so the sphere reads as a sphere, not a disc. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute top-1 left-1/2 -translate-x-1/2 h-3 w-8 rounded-full"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(255,255,255,0))",
+                filter: "blur(1.5px)",
+              }}
+            />
+            <JtIcon
+              name="plus-fab"
+              size={30}
+              className="relative drop-shadow-[0_1px_1px_rgba(0,0,0,0.18)]"
+            />
           </Link>
 
           {rightItems.map(renderTab)}
