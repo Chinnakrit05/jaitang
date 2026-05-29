@@ -879,6 +879,14 @@
     "styleB": "Style 2 (table)",
     "empty": "No entries yet",
     "totalIncome": "Total income",
-    "totalExpense": "Total expense"
+    "totalExpense": "Total expense",
+    "import": {
+      "button": "Import from image",
+      "title": "Import items from image",
+      "reviewHint": "Review the detected rows — edit the name/amount, flip income/expense, or untick any before saving.",
+      "toggleKind": "Toggle income/expense",
+      "addCount": "Add {count} items",
+      "noneSelected": "No rows selected"
+    }
   }
 }

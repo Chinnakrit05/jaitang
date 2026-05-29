@@ -869,6 +869,14 @@
     "styleB": "样式 2 (表格)",
     "empty": "暂无记录",
     "totalIncome": "总收入",
-    "totalExpense": "总支出"
+    "totalExpense": "总支出",
+    "import": {
+      "button": "从图片导入",
+      "title": "从图片导入条目",
+      "reviewHint": "查看识别到的条目 — 可编辑名称/金额、切换收入/支出，或在保存前取消勾选。",
+      "toggleKind": "切换收入/支出",
+      "addCount": "添加 {count} 条",
+      "noneSelected": "未选择任何条目"
+    }
   }
 }

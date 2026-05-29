@@ -869,6 +869,14 @@
     "styleB": "スタイル2 (テーブル)",
     "empty": "まだ取引がありません",
     "totalIncome": "合計収入",
-    "totalExpense": "合計支出"
+    "totalExpense": "合計支出",
+    "import": {
+      "button": "画像から取込",
+      "title": "画像から項目を取込",
+      "reviewHint": "読み取った項目を確認 — 名前・金額の編集、収入/支出の切替、不要な行のチェック解除ができます。",
+      "toggleKind": "収入/支出を切替",
+      "addCount": "{count} 件を追加",
+      "noneSelected": "項目が選択されていません"
+    }
   }
 }

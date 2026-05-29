@@ -21,6 +21,7 @@ import { InlineAmount } from "./inline-amount";
 import { InlineNote } from "./inline-note";
 import { DeleteRowButton } from "./row-actions";
 import { AddRow } from "./add-row";
+import { ImportImageButton } from "./import-image-button";
 
 /**
  * Monthly review page. Mirrors the Figma "รายงานรายเดือน" mockup:
@@ -149,6 +150,7 @@ export default async function ReportsPage({
           back button (the bottom nav already covers navigation). */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold truncate">{t("reports.title")}</h1>
+        <ImportImageButton year={year} month={month} currency={currency} />
       </div>
 
       {/* Month switcher */}
