@@ -60,7 +60,10 @@ export function InlineNote({
       placeholder={placeholder}
       title={error ?? undefined}
       className={cn(
-        "w-full bg-transparent font-semibold text-[13px] leading-tight truncate focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition",
+        // Placeholder (the category-name fallback when a row has no note)
+        // renders in the same dark foreground as a real note — the title
+        // line is always the strong primary colour, never a faded hint.
+        "w-full bg-transparent font-semibold text-[13px] leading-tight truncate focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition placeholder:text-(--foreground) placeholder:opacity-100",
         pending && "opacity-60",
         error ? "text-(--expense)" : "text-(--foreground)"
       )}
