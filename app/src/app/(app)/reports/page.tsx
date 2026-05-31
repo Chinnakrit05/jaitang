@@ -483,13 +483,13 @@ function RuleRow({
       // Recurring rows get a soft peach wash so the "รายการประจำ" lines
       // read as a distinct band above the one-off transactions below.
       style={{
-        background: "color-mix(in srgb, var(--peach-soft) 16%, var(--card))",
+        background: "color-mix(in srgb, var(--peach-soft) 32%, var(--card))",
       }}
     >
       <span
         className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
         style={{
-          background: "color-mix(in srgb, var(--peach-soft) 55%, var(--card))",
+          background: "color-mix(in srgb, var(--peach-soft) 65%, var(--card))",
         }}
         title="recurring"
         aria-label="recurring"
