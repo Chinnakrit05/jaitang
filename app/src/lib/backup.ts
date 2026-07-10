@@ -80,9 +80,10 @@ export type BackupRecurring = {
   id: string;
   category_id: string | null;
   kind: "income" | "expense";
-  amount: number;
+  // null = variable-cost rule (amount filled in when the bill arrives)
+  amount: number | null;
   note: string | null;
-  period: "daily" | "weekly" | "monthly";
+  period: "daily" | "weekly" | "monthly" | "yearly";
   day_of_month: number | null;
   day_of_week: number | null;
   next_run_at: string;
@@ -169,7 +170,11 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
           .select(
             "id, category_id, kind, amount, note, period, day_of_month, day_of_week, next_run_at, active"
           )
-          .eq("ledger_id", l.id),
+          .eq("ledger_id", l.id)
+          // Same policy as transactions/categories above: the backup
+          // snapshot mirrors what the UI shows, so soft-deleted rules
+          // stay out (and can't resurrect via restore).
+          .is("deleted_at", null),
         sb
           .from("trips")
           .select("id, name, icon, color, starts_at, ends_at, archived, currency")
@@ -246,7 +251,8 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
       })),
       recurring: (recurRes.data ?? []).map((r) => ({
         ...r,
-        amount: Number(r.amount),
+        // Number(null) would collapse a variable-cost rule to 0
+        amount: r.amount === null ? null : Number(r.amount),
       })) as BackupRecurring[],
       splits,
       trips: (tripsRes.data ?? []) as BackupTrip[],
@@ -370,9 +376,11 @@ const BackupSchema = z.object({
           id: z.string(),
           category_id: z.string().nullable(),
           kind: z.enum(["income", "expense"]),
-          amount: z.number().positive(),
+          // 0 appears in legacy backups whose export collapsed null
+          // (variable-cost) to 0; restore maps both back to SQL null.
+          amount: z.number().nonnegative().nullable(),
           note: z.string().nullable(),
-          period: z.enum(["daily", "weekly", "monthly"]),
+          period: z.enum(["daily", "weekly", "monthly", "yearly"]),
           day_of_month: z.number().nullable(),
           day_of_week: z.number().nullable(),
           next_run_at: z.string(),
@@ -658,7 +666,9 @@ export async function restoreBackup(
         user_id: userId,
         category_id: r.category_id ? catMap.get(r.category_id) ?? null : null,
         kind: r.kind,
-        amount: r.amount,
+        // DB check is (amount is null or amount > 0); legacy backups encode
+        // variable-cost rules as 0, so both 0 and null land as SQL null.
+        amount: r.amount || null,
         note: r.note,
         period: r.period,
         day_of_month: r.day_of_month,
