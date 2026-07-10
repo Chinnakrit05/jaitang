@@ -35,6 +35,7 @@
     "iconStyleHint": "アプリ全体のアイコンの見た目を選ぶ"
   },
   "common": {
+    "undo": "元に戻す",
     "save": "保存",
     "cancel": "キャンセル",
     "delete": "削除",
@@ -292,6 +293,11 @@
     "remaining": "残り {amount}"
   },
   "recurring": {
+    "resume": "再開",
+    "pausedBadge": "一時停止中",
+    "pauseConfirm": "この定期取引を一時停止しますか?実行が止まりレポートから消えます。定期ページからいつでも再開できます。",
+    "pauseLabel": "一時停止",
+    "deletedToast": "「{name}」を削除しました",
     "title": "定期取引",
     "subtitle": "毎日/毎週/毎月くり返す取引を設定 — 期日に自動作成されます。",
     "addButton": "定期取引を追加",

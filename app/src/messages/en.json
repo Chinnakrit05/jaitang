@@ -45,6 +45,7 @@
     }
   },
   "common": {
+    "undo": "Undo",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -302,6 +303,11 @@
     "remaining": "{amount} left"
   },
   "recurring": {
+    "resume": "Resume",
+    "pausedBadge": "Paused",
+    "pauseConfirm": "Pause this recurring rule? It stops running and disappears from Reports — re-enable it any time on the Recurring page.",
+    "pauseLabel": "Pause rule",
+    "deletedToast": "Deleted \"{name}\"",
     "title": "Recurring",
     "subtitle": "Set transactions that repeat daily/weekly/monthly — created automatically when due.",
     "addButton": "Add recurring",

@@ -14,12 +14,12 @@ import {
 } from "./actions";
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import {
-  deleteRecurringAction,
   setRecurringMonthAmountAction,
+  toggleRecurringAction,
 } from "@/app/(app)/recurring/actions";
 import { InlineAmount } from "./inline-amount";
 import { InlineNote } from "./inline-note";
-import { DeleteRowButton } from "./row-actions";
+import { DeleteRowButton, PauseRuleButton } from "./row-actions";
 import { AddRow } from "./add-row";
 import { ImportImageButton } from "./import-image-button";
 
@@ -472,9 +472,13 @@ function RuleRow({
     "use server";
     return updateRecurringNoteAction(rule.id, next);
   }
-  async function deleteAction() {
+  async function pauseAction() {
     "use server";
-    return deleteRecurringAction(rule.id);
+    // Pause instead of delete — the row disappears from /reports
+    // (which only renders active rules) but the rule survives and can
+    // be re-enabled on /recurring. Rule deletion now lives only on
+    // /recurring, where it soft-deletes with an undo toast.
+    return toggleRecurringAction(rule.id, false);
   }
 
   return (
@@ -515,7 +519,7 @@ function RuleRow({
         onSkip={skipAction}
         skipped={isSkipped}
       />
-      <DeleteRowButton action={deleteAction} confirmKey="recurring.deleteConfirm" />
+      <PauseRuleButton action={pauseAction} />
     </li>
   );
 }

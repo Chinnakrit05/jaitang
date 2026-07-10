@@ -92,6 +92,7 @@ export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> 
       "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, sort_order, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)"
     )
     .eq("ledger_id", ledgerId)
+    .is("deleted_at", null)
     // sort_order first so the wiggle-reorder UI controls the list;
     // next_run_at is the tiebreaker so rules that haven't been moved
     // (sort_order = 0 by default) stay in their original order.
@@ -207,9 +208,31 @@ export async function updateRecurring(
   return data as RecurringRule;
 }
 
-export async function deleteRecurring(id: string) {
+/**
+ * Soft delete — sets `deleted_at` instead of destroying the row, same
+ * tombstone pattern as transactions/categories/accounts. Recoverable
+ * via restoreRecurring() (the undo toast) or by clearing the column
+ * in SQL. Scoped by ledger so a stale/forged id can't touch another
+ * book's rule.
+ */
+export async function deleteRecurring(id: string, ledgerId: string) {
   const sb = getServerSupabase();
-  const { error } = await sb.from("recurring_transactions").delete().eq("id", id);
+  const { error } = await sb
+    .from("recurring_transactions")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("ledger_id", ledgerId);
+  if (error) throw error;
+}
+
+/** Undo a soft delete — clears the tombstone so the rule is live again. */
+export async function restoreRecurring(id: string, ledgerId: string) {
+  const sb = getServerSupabase();
+  const { error } = await sb
+    .from("recurring_transactions")
+    .update({ deleted_at: null })
+    .eq("id", id)
+    .eq("ledger_id", ledgerId);
   if (error) throw error;
 }
 
@@ -235,6 +258,7 @@ export async function applyDueRecurring(ledgerId: string): Promise<number> {
     )
     .eq("ledger_id", ledgerId)
     .eq("active", true)
+    .is("deleted_at", null)
     .lte("next_run_at", now.toISOString());
   if (error) throw error;
 
@@ -335,6 +359,7 @@ export async function listPendingRecurring(
     )
     .eq("ledger_id", ledgerId)
     .eq("active", true)
+    .is("deleted_at", null)
     .is("amount", null)
     .lte("next_run_at", now)
     .order("next_run_at", { ascending: true });
@@ -375,6 +400,7 @@ export async function fillPendingRecurring(input: {
     )
     .eq("id", input.ruleId)
     .eq("ledger_id", input.ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (re) throw re;
   if (!rule) throw new Error("Rule not found");
@@ -506,6 +532,7 @@ export async function skipRecurringPeriod(input: {
     .select("id, period, day_of_month, day_of_week, next_run_at")
     .eq("id", input.ruleId)
     .eq("ledger_id", input.ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (error) throw error;
   if (!rule) throw new Error("Rule not found");
@@ -550,6 +577,7 @@ export async function updateRecurringFillAmount(input: {
     .select("id, category_id, period, last_run_at, fx_currency")
     .eq("id", input.ruleId)
     .eq("ledger_id", input.ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (!rule) throw new Error("Rule not found");
 
@@ -663,6 +691,7 @@ export async function setRecurringMonthAmount(input: {
     )
     .eq("id", input.ruleId)
     .eq("ledger_id", input.ledgerId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (re) throw re;
   if (!rule) throw new Error("Rule not found");

@@ -419,6 +419,18 @@ alter table public.recurring_transactions
 create index if not exists idx_recur_ledger_order
   on public.recurring_transactions(ledger_id, sort_order);
 
+-- v6: soft delete — same `deleted_at` tombstone pattern as transactions.
+-- The trash action used to hard-DELETE the row, so one mistapped confirm
+-- destroyed the rule with no recovery path (schedule, category link and
+-- variable-bill mode all gone). deleteRecurring() now writes
+-- `deleted_at = now()` and every read filters `deleted_at is null`;
+-- restoreRecurring() clears the stamp to power the post-delete undo.
+alter table public.recurring_transactions
+  add column if not exists deleted_at timestamptz;
+create index if not exists idx_recur_active
+  on public.recurring_transactions(ledger_id)
+  where deleted_at is null;
+
 -- ============================================================
 -- Transaction splits (หารบิล — ใครติดเงินคนจ่ายเท่าไหร่)
 --

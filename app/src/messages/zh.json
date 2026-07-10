@@ -35,6 +35,7 @@
     "iconStyleHint": "选择全局图标外观"
   },
   "common": {
+    "undo": "撤销",
     "save": "保存",
     "cancel": "取消",
     "delete": "删除",
@@ -292,6 +293,11 @@
     "remaining": "剩余 {amount}"
   },
   "recurring": {
+    "resume": "恢复",
+    "pausedBadge": "已暂停",
+    "pauseConfirm": "暂停此定期记录?它将停止运行并从报表中消失——可随时在定期页面重新启用。",
+    "pauseLabel": "暂停规则",
+    "deletedToast": "已删除「{name}」",
     "title": "定期记录",
     "subtitle": "设置每天/每周/每月重复的交易 — 到期时自动创建。",
     "addButton": "添加定期记录",

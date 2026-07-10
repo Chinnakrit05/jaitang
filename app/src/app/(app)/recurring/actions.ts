@@ -7,6 +7,7 @@ import { requireSession, assertWritable } from "@/lib/session";
 import {
   createRecurring,
   deleteRecurring,
+  restoreRecurring,
   setRecurringActive,
   updateRecurring,
   applyDueRecurring,
@@ -197,10 +198,26 @@ export async function updateRecurringAction(id: string, formData: FormData) {
 }
 
 export async function deleteRecurringAction(id: string) {
-  const { role } = await requireSession();
+  const { ledgerId, role } = await requireSession();
   assertWritable(role);
-  await deleteRecurring(id);
+  // Soft delete (tombstone) — recoverable via undoDeleteRecurringAction
+  // below, which the post-delete toast calls.
+  await deleteRecurring(id, ledgerId);
   refresh();
+  return { ok: true as const };
+}
+
+/**
+ * Undo a just-deleted rule — clears the soft-delete tombstone. Wired
+ * to the "เลิกทำ" toast that appears after a delete so a mistapped
+ * confirm no longer destroys the rule's schedule/category setup.
+ */
+export async function undoDeleteRecurringAction(id: string) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+  await restoreRecurring(id, ledgerId);
+  refresh();
+  return { ok: true as const };
 }
 
 export async function toggleRecurringAction(id: string, active: boolean) {

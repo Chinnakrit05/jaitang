@@ -34,6 +34,7 @@ import {
   runDueAction,
   skipRecurringPeriodAction,
   toggleRecurringAction,
+  undoDeleteRecurringAction,
   updateRecurringAction,
 } from "@/app/(app)/recurring/actions";
 import { InlineAmount } from "@/app/(app)/reports/inline-amount";
@@ -83,6 +84,24 @@ export function RecurringPanel({
   const [reordering, setReordering] = useState(false);
   const [orderOverride, setOrderOverride] = useState<string[] | null>(null);
   const [savingOrder, startSavingOrder] = useTransition();
+
+  // Post-delete undo affordance. Deletes are soft (tombstone) on the
+  // server, so "เลิกทำ" just clears the stamp via
+  // undoDeleteRecurringAction. Cleared on undo, timeout, or the next
+  // delete overwriting it.
+  const [deletedRule, setDeletedRule] = useState<{ id: string; label: string } | null>(null);
+  const [undoing, startUndo] = useTransition();
+  useEffect(() => {
+    if (!deletedRule) return;
+    const timer = window.setTimeout(() => setDeletedRule(null), 8000);
+    return () => window.clearTimeout(timer);
+  }, [deletedRule]);
+  function handleDeleted(rule: RecurringRule) {
+    setDeletedRule({
+      id: rule.id,
+      label: rule.note ?? rule.category?.name ?? t("recurring.untitled"),
+    });
+  }
 
   function applyDue() {
     startTransition(async () => {
@@ -178,6 +197,7 @@ export function RecurringPanel({
             orderOverride={orderOverride}
             onOrderChange={setOrderOverride}
             onEdit={(id) => setEditingId(id)}
+            onDeleted={handleDeleted}
           />
           {/* Reorder entry / helper. Tap to enter wiggle mode; once in,
               the helper text guides the gesture and the header "+"
@@ -229,7 +249,33 @@ export function RecurringPanel({
           trips={trips}
           homeCurrency={homeCurrency}
           onClose={() => setEditingId(null)}
+          onDeleted={handleDeleted}
         />
+      )}
+
+      {/* Undo toast — sits above the bottom nav; one delete at a time. */}
+      {deletedRule && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full border border-(--border) bg-(--card) shadow-lg">
+          <span className="text-sm truncate max-w-48">
+            {t("recurring.deletedToast", { name: deletedRule.label })}
+          </span>
+          <button
+            type="button"
+            disabled={undoing}
+            onClick={() => {
+              const target = deletedRule;
+              setDeletedRule(null);
+              startUndo(async () => {
+                await undoDeleteRecurringAction(target.id);
+                router.refresh();
+              });
+            }}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-(--accent) hover:underline disabled:opacity-50 shrink-0"
+          >
+            <JtIcon name="rotate-ccw" size={14} />
+            {t("common.undo")}
+          </button>
+        </div>
       )}
     </div>
   );
@@ -458,12 +504,16 @@ function RuleRow({
   homeCurrency,
   pending,
   onEdit,
+  onDeleted,
   reordering = false,
 }: {
   rule: RecurringRule;
   homeCurrency: string;
   pending: boolean;
   onEdit: () => void;
+  /** Fired after a successful (soft) delete so the panel can show the
+   *  undo toast. */
+  onDeleted: (rule: RecurringRule) => void;
   /** When true, tap-to-edit and long-press-to-delete are suspended
    *  so the gesture goes to the drag/reorder wrapper instead. */
   reordering?: boolean;
@@ -491,6 +541,7 @@ function RuleRow({
     if (!confirm(t("recurring.deleteConfirm"))) return;
     startTransition(async () => {
       await deleteRecurringAction(rule.id);
+      onDeleted(rule);
       router.refresh();
     });
   }
@@ -588,7 +639,11 @@ function RuleRow({
               <span>·</span>
             </>
           )}
-          {appliedThisPeriod ? (
+          {!rule.active ? (
+            // Paused — next_run_at is stale while inactive, so a
+            // "paused" badge beats a misleading date.
+            <span>{t("recurring.pausedBadge")}</span>
+          ) : appliedThisPeriod ? (
             <span className="text-(--income)">
               {t("recurring.appliedThisPeriod")}
             </span>
@@ -614,7 +669,28 @@ function RuleRow({
           has a `last_fill_amount` and we're inside the applied window,
           fall through to the static display so the user sees what
           they typed last time. */}
-      {isVariable && !(appliedThisPeriod && rule.last_fill_amount !== null) ? (
+      {!rule.active ? (
+        // Paused rule — swap the amount/fill cell for a resume pill.
+        // Filling a paused rule would materialize transactions the
+        // user explicitly stopped, so the input is withheld until the
+        // rule is live again. (This is also the only un-pause control
+        // — /reports' pause button points people here.)
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (reordering) return;
+            startTransition(async () => {
+              await toggleRecurringAction(rule.id, true);
+              router.refresh();
+            });
+          }}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-(--accent)/10 text-(--accent) hover:bg-(--accent)/20 transition shrink-0"
+        >
+          <JtIcon name="play" size={12} />
+          {t("recurring.resume")}
+        </button>
+      ) : isVariable && !(appliedThisPeriod && rule.last_fill_amount !== null) ? (
         <InlineAmount
           key={ruleIsSkipped ? "skip" : "fill"}
           initial={ruleIsSkipped ? 0 : null}
@@ -663,6 +739,7 @@ function EditRecurringModal({
   trips,
   homeCurrency,
   onClose,
+  onDeleted,
 }: {
   rule: RecurringRule;
   categories: Category[];
@@ -670,6 +747,9 @@ function EditRecurringModal({
   trips: RecurringTripChoice[];
   homeCurrency: string;
   onClose: () => void;
+  /** Fired after a successful (soft) delete so the panel can show the
+   *  undo toast. */
+  onDeleted: (rule: RecurringRule) => void;
 }) {
   const router = useRouter();
   const t = useTranslations();
@@ -876,6 +956,7 @@ function EditRecurringModal({
               if (!confirm(t("recurring.deleteConfirm"))) return;
               startTransition(async () => {
                 await deleteRecurringAction(rule.id);
+                onDeleted(rule);
                 router.refresh();
                 onClose();
               });
@@ -909,6 +990,7 @@ function ReorderableRuleList({
   orderOverride,
   onOrderChange,
   onEdit,
+  onDeleted,
 }: {
   rules: RecurringRule[];
   homeCurrency: string;
@@ -917,6 +999,7 @@ function ReorderableRuleList({
   orderOverride: string[] | null;
   onOrderChange: (next: string[] | null) => void;
   onEdit: (id: string) => void;
+  onDeleted: (rule: RecurringRule) => void;
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -968,6 +1051,7 @@ function ReorderableRuleList({
             homeCurrency={homeCurrency}
             pending={pending}
             onEdit={() => onEdit(r.id)}
+            onDeleted={onDeleted}
           />
         ))}
       </ul>
@@ -989,6 +1073,7 @@ function ReorderableRuleList({
               homeCurrency={homeCurrency}
               pending={pending}
               onEdit={() => onEdit(r.id)}
+              onDeleted={onDeleted}
               wiggleVariant={i % 2 === 0 ? "a" : "b"}
             />
           ))}
@@ -1003,12 +1088,14 @@ function SortableRuleRow({
   homeCurrency,
   pending,
   onEdit,
+  onDeleted,
   wiggleVariant,
 }: {
   rule: RecurringRule;
   homeCurrency: string;
   pending: boolean;
   onEdit: () => void;
+  onDeleted: (rule: RecurringRule) => void;
   wiggleVariant: "a" | "b";
 }) {
   const {
@@ -1044,6 +1131,7 @@ function SortableRuleRow({
         homeCurrency={homeCurrency}
         pending={pending}
         onEdit={onEdit}
+        onDeleted={onDeleted}
         reordering
       />
     </div>
