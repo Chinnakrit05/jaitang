@@ -203,7 +203,7 @@ export default function HeroPreviewPage() {
   ];
 
   return (
-    <div className="min-h-screen p-6 sm:p-10 space-y-10 max-w-2xl mx-auto pb-32">
+    <div className="min-h-screen p-6 sm:p-10 space-y-10 max-w-2xl mx-auto pb-32 soft-page">
       <header>
         <h1 className="text-2xl font-semibold">Dashboard preview</h1>
         <p className="text-sm text-(--muted) mt-1">

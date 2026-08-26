@@ -132,7 +132,7 @@ export function DashboardWidgetShell({ widgets }: { widgets: WidgetMap }) {
                 key={item.id}
                 type="button"
                 onClick={() => toggle(item.id, true)}
-                className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) transition"
+                className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full soft-raised-sm soft-pressable"
               >
                 <JtIcon name="plus-fab" size={18} />
                 {widgetLabel[item.id]}

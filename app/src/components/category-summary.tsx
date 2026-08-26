@@ -91,7 +91,7 @@ export async function CategorySummary({
   }));
 
   return (
-    <section className="rounded-2xl border border-(--border) bg-(--card) p-5 fade-rise fade-rise-delay-2">
+    <section className="rounded-[22px] soft-raised p-5 fade-rise fade-rise-delay-2">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold">{t("dashboard.categorySummary")}</h2>
         <Link

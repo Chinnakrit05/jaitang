@@ -92,17 +92,17 @@ export async function DashboardHero({
         <Link
           href="/settings"
           aria-label={t("settings.title")}
-          className="flex items-center gap-3 min-w-0 flex-1 rounded-full -m-1 p-1 hover:bg-(--card)/60 transition"
+          className="flex items-center gap-3 min-w-0 flex-1 rounded-full -m-1 p-1"
         >
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarUrl}
               alt={name}
-              className="h-11 w-11 rounded-full border border-(--border)"
+              className="h-11 w-11 rounded-full soft-raised-sm"
             />
           ) : (
-            <div className="h-11 w-11 rounded-full bg-(--card) border border-(--border) flex items-center justify-center text-xl">
+            <div className="h-11 w-11 rounded-full soft-raised-sm flex items-center justify-center text-xl">
               🦊
             </div>
           )}
@@ -114,13 +114,7 @@ export async function DashboardHero({
         <Link
           href="/ledgers"
           aria-label={t("more.accountsBook")}
-          className="group shrink-0 h-11 max-w-[55%] rounded-full border flex items-center gap-2 pl-1 pr-3.5 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition"
-          style={{
-            background:
-              "linear-gradient(135deg, color-mix(in srgb, var(--peach-soft) 55%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 28%, var(--card)) 100%)",
-            borderColor:
-              "color-mix(in srgb, var(--peach-strong) 35%, transparent)",
-          }}
+          className="group shrink-0 h-11 max-w-[55%] rounded-full soft-raised-sm soft-pressable flex items-center gap-2 pl-1 pr-3.5"
         >
           <span
             className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white"
@@ -134,14 +128,12 @@ export async function DashboardHero({
           </span>
           <span className="flex flex-col min-w-0 leading-tight">
             <span
-              className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: "var(--peach-chip-fg)" }}
+              className="text-[10px] font-semibold uppercase tracking-wider text-(--muted)"
             >
               {t("more.accountsBook")}
             </span>
             <span
               className="text-sm font-bold truncate"
-              style={{ color: "var(--peach-fg)" }}
             >
               {ledgerName}
             </span>
@@ -152,11 +144,7 @@ export async function DashboardHero({
       {/* Hero card — peach gradient, mascot floats in the top-right
           corner with a slow bob (CSS keyframes). */}
       <div
-        className="relative overflow-hidden rounded-3xl p-5 sm:p-6 border border-(--border)"
-        style={{
-          background:
-            "linear-gradient(140deg, color-mix(in srgb, var(--peach-soft) 60%, var(--card)) 0%, color-mix(in srgb, var(--peach-mid) 30%, var(--card)) 100%)",
-        }}
+        className="relative overflow-hidden rounded-[30px] p-5 sm:p-6 soft-raised-lg"
       >
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 pointer-events-none mascot-float">
           <Mascot size={92} idPrefix="hero" />
@@ -178,54 +166,48 @@ export async function DashboardHero({
             />
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            <span
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-              style={{
-                background: "color-mix(in srgb, var(--card) 80%, transparent)",
-              }}
+        </div>
+
+        <div className="mt-4 rounded-[20px] soft-well px-4 py-3 flex">
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] text-(--muted)">{t("common.income")}</div>
+            <div
+              className="text-base font-bold tabular-nums truncate"
+              style={{ color: "var(--income)" }}
             >
-              <span style={{ color: "var(--income)" }} aria-hidden>
-                ▲
-              </span>
-              {t("common.income")}{" "}
-              <span className="tabular-nums">
-                <AnimatedAmount
-                  value={income}
-                  currency={currency}
-                  fmtLocale={fmtLocale}
-                />
-              </span>
-            </span>
-            <span
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-              style={{
-                background: "color-mix(in srgb, var(--card) 80%, transparent)",
-              }}
+              <AnimatedAmount
+                value={income}
+                currency={currency}
+                fmtLocale={fmtLocale}
+              />
+            </div>
+          </div>
+          <div
+            className="w-px mx-3 shrink-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, var(--soft-well-shade), transparent)",
+            }}
+            aria-hidden
+          />
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] text-(--muted)">{t("common.expense")}</div>
+            <div
+              className="text-base font-bold tabular-nums truncate"
+              style={{ color: "var(--expense)" }}
             >
-              <span style={{ color: "var(--expense)" }} aria-hidden>
-                ▼
-              </span>
-              {t("common.expense")}{" "}
-              <span className="tabular-nums">
-                <AnimatedAmount
-                  value={expense}
-                  currency={currency}
-                  fmtLocale={fmtLocale}
-                />
-              </span>
-            </span>
+              <AnimatedAmount
+                value={expense}
+                currency={currency}
+                fmtLocale={fmtLocale}
+              />
+            </div>
           </div>
         </div>
 
         {/* Mood + progress strip — sits below the chips and spans the
             full width so the bar has room to breathe. */}
-        <div
-          className="mt-4 px-3 py-2.5 rounded-2xl relative"
-          style={{
-            background: "color-mix(in srgb, var(--card) 70%, transparent)",
-          }}
-        >
+        <div className="mt-4 relative">
           <div className="text-[13px]">
             <PetName className="font-medium" />
             <span className="text-(--muted) text-xs">
@@ -237,12 +219,7 @@ export async function DashboardHero({
                 : `${moodLabel} · ${t("dashboard.budgetPercent", { pct: String(usagePct) })}`}
             </span>
           </div>
-          <div
-            className="mt-2 h-1.5 rounded-full overflow-hidden"
-            style={{
-              background: "color-mix(in srgb, var(--foreground) 8%, transparent)",
-            }}
-          >
+          <div className="mt-2.5 h-3.5 rounded-full soft-well-sm p-[3px] overflow-hidden">
             <div
               className="h-full rounded-full bar-fill"
               style={

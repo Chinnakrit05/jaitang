@@ -29,7 +29,7 @@ export async function DashboardAccountBalances({
 
   if (accounts.length === 0) {
     return (
-      <section className="rounded-2xl border border-dashed border-(--border) bg-(--card)/40 p-5">
+      <section className="rounded-[22px] soft-well p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <JtIcon name="accounts" size={22} className="text-(--muted)" />
@@ -71,7 +71,7 @@ export async function DashboardAccountBalances({
   ).length;
 
   return (
-    <section className="rounded-2xl border border-(--border) bg-(--card) p-5 card-hover">
+    <section className="rounded-[22px] soft-raised p-5">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <JtIcon name="accounts" size={22} className="text-(--accent)" />
@@ -111,7 +111,7 @@ export async function DashboardAccountBalances({
             <li key={a.id}>
               <Link
                 href={`/accounts/${a.id}`}
-                className="flex items-center gap-2.5 p-2.5 rounded-lg border border-(--border) bg-(--background) hover:bg-(--card) transition"
+                className="flex items-center gap-2.5 p-2.5 rounded-[14px] soft-well-sm"
               >
                 <span
                   className="text-base shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-md"

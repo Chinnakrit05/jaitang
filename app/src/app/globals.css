@@ -34,6 +34,24 @@
   --peach-deep: #D87A45;
   --peach-fg: #6E3A12;
   --peach-chip-fg: #8A4A1C;
+
+  /* ========================================================
+     Soft-UI surface — the "นูนนุ่ม" dashboard treatment.
+     Nothing on these surfaces has a border: an edge IS a pair
+     of shadows, one shade and one highlight. That only reads
+     as depth while the light source stays put, so every use
+     keeps the highlight top-left and the shade bottom-right.
+     `raised` = something you can press. `well` = a recess that
+     holds a value. The page behind them must be --soft-surface
+     too, or the shadows sit on the wrong ground and the whole
+     illusion collapses (see .soft-page).
+     ======================================================== */
+  --soft-surface: #EFE7DE;
+  --soft-shade: #CDC5BD;
+  --soft-light: #FFFDF8;
+  --soft-well: #EAE1D8;
+  --soft-well-shade: #CFC7BF;
+  --soft-well-light: #FFFBF4;
 }
 
 .dark {
@@ -58,6 +76,17 @@
   --peach-deep: #D87A45;
   --peach-fg: #FCE4CE;
   --peach-chip-fg: #FCE4CE;
+
+  /* Soft-UI on a dark ground needs its own pair, not the light
+     values dimmed: a warm highlight over dark brown reads as
+     grime. The highlight is lifted toward the surface hue and
+     the shade goes nearly black so the edge still separates. */
+  --soft-surface: #24211E;
+  --soft-shade: #17150F;
+  --soft-light: #322D27;
+  --soft-well: #1F1C19;
+  --soft-well-shade: #141210;
+  --soft-well-light: #2C2822;
 }
 
 /* ============================================================
@@ -724,5 +753,58 @@ select:focus-visible {
   .card-hover,
   .cta-primary {
     box-shadow: none !important;
+  }
+}
+
+/* ============================================================
+   Soft-UI utilities — see the token block for why the light
+   direction is fixed. Radius is left to the caller so a pill
+   and a card can share the same surface treatment.
+   ============================================================ */
+.soft-page {
+  position: relative;
+}
+.soft-page::before {
+  /* Full-bleed ground for the shadows, painted behind the page
+     content only on routes that opt in. */
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--soft-surface);
+  z-index: -1;
+}
+.soft-raised {
+  background: var(--soft-surface);
+  box-shadow: 6px 6px 13px var(--soft-shade), -6px -6px 13px var(--soft-light);
+}
+.soft-raised-lg {
+  background: var(--soft-surface);
+  box-shadow: 9px 9px 20px var(--soft-shade), -9px -9px 20px var(--soft-light);
+}
+.soft-raised-sm {
+  background: var(--soft-surface);
+  box-shadow: 4px 4px 9px var(--soft-shade), -4px -4px 9px var(--soft-light);
+}
+.soft-well {
+  background: var(--soft-well);
+  box-shadow: inset 4px 4px 9px var(--soft-well-shade),
+    inset -4px -4px 9px var(--soft-well-light);
+}
+.soft-well-sm {
+  background: var(--soft-well);
+  box-shadow: inset 3px 3px 6px var(--soft-well-shade),
+    inset -3px -3px 6px var(--soft-well-light);
+}
+/* Pressing a raised element should sink it, not just dim it. */
+.soft-pressable {
+  transition: box-shadow 140ms ease, transform 140ms ease;
+}
+.soft-pressable:active {
+  box-shadow: inset 4px 4px 9px var(--soft-well-shade),
+    inset -4px -4px 9px var(--soft-well-light);
+}
+@media (prefers-reduced-motion: reduce) {
+  .soft-pressable {
+    transition: none;
   }
 }

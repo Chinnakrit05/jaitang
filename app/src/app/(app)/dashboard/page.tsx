@@ -98,7 +98,7 @@ export default async function DashboardPage({
       />
     ),
     dailyTrend: (
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
+      <section className="rounded-[22px] soft-raised p-6">
         <h2 className="section-heading font-semibold mb-4">
           {t("dashboard.dailyTrend")}
         </h2>
@@ -135,7 +135,7 @@ export default async function DashboardPage({
 
   return (
     <DashboardLayoutProvider>
-      <div className="space-y-6 fade-rise">
+      <div className="space-y-6 fade-rise soft-page">
         {/* Layout toolbar is hidden for now — re-add `<LayoutToolbar />`
             here when reorder/hide is ready to ship. Provider stays so
             the widget shell keeps reading editing=false from context. */}

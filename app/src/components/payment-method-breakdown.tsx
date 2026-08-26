@@ -28,7 +28,7 @@ export async function PaymentMethodBreakdown({
     !hasUnspecified;
 
   return (
-    <section className="rounded-2xl border border-(--border) bg-(--card) p-6">
+    <section className="rounded-[22px] soft-raised p-6">
       <h2 className="font-semibold mb-4">
         {t("dashboard.paymentMethodTitle")}
       </h2>
@@ -98,7 +98,7 @@ function Row({
   const hasExpense = totals.expense > 0;
 
   return (
-    <div className="flex items-start justify-between gap-3 rounded-xl border border-(--border) bg-(--background) px-3 py-2.5">
+    <div className="flex items-start justify-between gap-3 rounded-[14px] soft-well-sm px-3 py-2.5">
       <div className="flex items-center gap-2 min-w-0">
         <span className="text-(--muted) shrink-0">{icon}</span>
         <div className="min-w-0">

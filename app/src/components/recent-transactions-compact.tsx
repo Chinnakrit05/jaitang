@@ -57,11 +57,11 @@ export async function RecentTransactionsCompact({
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-(--border) bg-(--card) p-8 text-center text-sm text-(--muted)">
+        <div className="rounded-[22px] soft-raised p-8 text-center text-sm text-(--muted)">
           {t("transactions.emptyTitle")}
         </div>
       ) : (
-        <ul className="rounded-2xl border border-(--border) bg-(--card) overflow-hidden">
+        <ul className="rounded-[22px] soft-raised overflow-hidden">
           {items.map((tx, idx) => {
             const sign = tx.kind === "income" ? "+" : "−";
             const signClass =
@@ -78,11 +78,11 @@ export async function RecentTransactionsCompact({
               <li
                 key={tx.id}
                 className={`flex items-center gap-3 px-4 py-3 ${
-                  idx === 0 ? "" : "border-t border-(--border)"
+                  idx === 0 ? "" : "border-t border-(--soft-shade)/45"
                 }`}
               >
                 <span
-                  className="h-10 w-10 rounded-full bg-(--background) inline-flex items-center justify-center shrink-0"
+                  className="h-10 w-10 rounded-full soft-well-sm inline-flex items-center justify-center shrink-0"
                   aria-hidden
                 >
                   <EmojiOrIcon
