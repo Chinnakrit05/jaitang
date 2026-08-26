@@ -23,7 +23,6 @@ import { PetName } from "@/components/pet-name";
  */
 export async function DashboardHero({
   name,
-  avatarUrl,
   income,
   expense,
   balance,
@@ -35,7 +34,6 @@ export async function DashboardHero({
   ledgerIcon,
 }: {
   name: string;
-  avatarUrl?: string | null;
   income: number;
   expense: number;
   balance: number;
@@ -57,7 +55,7 @@ export async function DashboardHero({
 
   // Three states drive both the mood label and the bar tint.
   const moodKey = !hasBudget
-    ? "none"
+    ? "none" // strip is not rendered in this case; kept so the type stays honest
     : usagePct >= 100
     ? "over"
     : usagePct >= 70
@@ -94,18 +92,6 @@ export async function DashboardHero({
           aria-label={t("settings.title")}
           className="flex items-center gap-3 min-w-0 flex-1 rounded-full -m-1 p-1"
         >
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={avatarUrl}
-              alt={name}
-              className="h-11 w-11 rounded-full soft-raised-sm"
-            />
-          ) : (
-            <div className="h-11 w-11 rounded-full soft-raised-sm flex items-center justify-center text-xl">
-              🦊
-            </div>
-          )}
           <div className="min-w-0">
             <div className="text-xs text-(--muted)">{t("dashboard.helloShort")}</div>
             <div className="text-base font-semibold truncate">{name}</div>
@@ -205,8 +191,10 @@ export async function DashboardHero({
           </div>
         </div>
 
-        {/* Mood + progress strip — sits below the chips and spans the
-            full width so the bar has room to breathe. */}
+        {/* Mood + progress strip. Only rendered once a budget exists —
+            a bar with no cap has nothing to measure against, and a line
+            saying so is noise on the one screen people check daily. */}
+        {hasBudget && (
         <div className="mt-4 relative">
           <div className="text-[13px]">
             <PetName className="font-medium" />
@@ -214,8 +202,6 @@ export async function DashboardHero({
               {"  "}
               {moodKey === "over" && overPct > 0
                 ? `${moodLabel} · ${t("dashboard.budgetOverBy", { pct: String(overPct) })}`
-                : moodKey === "none"
-                ? t("dashboard.budgetNone")
                 : `${moodLabel} · ${t("dashboard.budgetPercent", { pct: String(usagePct) })}`}
             </span>
           </div>
@@ -231,6 +217,7 @@ export async function DashboardHero({
             />
           </div>
         </div>
+        )}
       </div>
     </section>
   );

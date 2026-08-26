@@ -142,7 +142,6 @@ export default async function DashboardPage({
 
         <DashboardHero
           name={name}
-          avatarUrl={user.image ?? null}
           income={summary.income}
           expense={summary.expense}
           balance={summary.balance}

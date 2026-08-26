@@ -71,20 +71,19 @@ export function MobileNav({
         key={href}
         href={href}
         className={cn(
-          "relative flex flex-1 flex-col items-center gap-0.5 px-1 py-1 text-xs transition",
+          "relative flex flex-1 flex-col items-center gap-0.5 px-1 py-1.5 text-xs transition",
           active
             ? "text-(--accent)"
             : "text-(--muted) hover:text-(--foreground)"
         )}
       >
-        {/* Top accent bar — visible only on the active route. The
-            `-mt-2` lifts it flush against the nav border so it
-            reads as "this tab is selected" rather than "underline
-            floating mid-icon". */}
+        {/* Active marker. The old version was a rule flush against the
+            nav's top border; the capsule has no such edge, so it drops
+            to a dot beneath the label. */}
         {active && (
           <span
             aria-hidden
-            className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 -mt-2 rounded-full bg-(--accent)"
+            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-(--accent)"
           />
         )}
         <JtIcon name={icon} size={24} />
@@ -96,16 +95,18 @@ export function MobileNav({
   return (
     <>
       <nav
-        className="fixed bottom-0 inset-x-0 z-20 bg-(--soft-surface) shadow-[0_-6px_14px_-8px_var(--soft-shade)]"
+        className="fixed bottom-0 inset-x-0 z-20 px-3 pt-2 pointer-events-none"
         style={{
-          // Push the bar's bottom edge above the iPhone home indicator
-          // when running standalone (PWA). `env(safe-area-inset-bottom)`
+          // Keep the capsule clear of the iPhone home indicator when
+          // running standalone (PWA). `env(safe-area-inset-bottom)`
           // resolves to ~34px on iPhones with the gesture bar, 0 on
           // devices without it — so the same markup works both ways.
-          paddingBottom: "env(safe-area-inset-bottom)",
+          // The 12px floor is the gap the floating bar needs on the
+          // devices that report 0.
+          paddingBottom: "max(12px, env(safe-area-inset-bottom))",
         }}
       >
-        <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto flex items-end justify-around py-2 px-2">
+        <div className="pointer-events-auto max-w-md md:max-w-2xl lg:max-w-3xl mx-auto flex items-center justify-around rounded-[26px] soft-well px-2 py-1.5">
           {leftItems.map(renderTab)}
 
           {/* Center FAB — quick-add path. Raised above the bar with the
@@ -115,7 +116,7 @@ export function MobileNav({
           <Link
             href="/transactions/new"
             aria-label={fabLabel}
-            className="relative flex items-center justify-center h-16 w-16 rounded-full -mt-7 shrink-0 text-(--accent-foreground) hover:scale-105 active:scale-95 transition"
+            className="relative flex items-center justify-center h-14 w-14 rounded-full shrink-0 text-(--accent-foreground) hover:scale-105 active:scale-95 transition"
             style={{
               background:
                 "radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--accent) 55%, white) 0%, var(--accent) 45%, color-mix(in srgb, var(--accent) 70%, black) 100%)",
@@ -160,7 +161,7 @@ export function MobileNav({
             {isActive("/more") && (
               <span
                 aria-hidden
-                className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 -mt-2 rounded-full bg-(--accent)"
+                className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-(--accent)"
               />
             )}
             <JtIcon name="more" size={24} />

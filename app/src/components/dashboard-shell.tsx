@@ -191,7 +191,7 @@ export async function DashboardShell({
           448px. Still narrower than the old multi-col layout so the
           page reads as a phone-style stack, just less cramped. */}
       <main
-        className="w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-4 pb-24"
+        className="w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-4 pb-32"
         style={{
           paddingTop: "max(env(safe-area-inset-top), 1.5rem)",
         }}

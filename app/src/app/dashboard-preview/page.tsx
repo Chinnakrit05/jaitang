@@ -172,7 +172,6 @@ export default async function DashboardPreviewPage() {
         <div className="max-w-md mx-auto px-4 py-6 space-y-6 fade-rise">
           <DashboardHero
             name="ชินกฤต"
-            avatarUrl={null}
             income={summary.income}
             expense={summary.expense}
             balance={summary.balance}
