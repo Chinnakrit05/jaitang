@@ -75,7 +75,7 @@ export default function ReportsPreviewPage() {
         </div>
 
         {/* Summary */}
-        <div className="rounded-[22px] soft-raised grid grid-cols-3 divide-x divide-(--border)/60">
+        <div className="rounded-[22px] soft-raised grid grid-cols-3 divide-x divide-(--soft-shade)/45">
           <SumCell
             label={t("transactions.totalIncome")}
             amount={totalIncome}
@@ -172,17 +172,19 @@ function ReportSection({
   const isEmpty = rules.length === 0 && txs.length === 0;
 
   return (
-    <section className="rounded-2xl border border-(--border) overflow-hidden bg-(--card)">
-      <header
-        className="px-3 py-1.5 text-white font-semibold text-xs"
-        style={{ background: headerColor }}
-      >
-        {title}
+    <section className="rounded-[22px] soft-raised overflow-hidden">
+      <header className="flex items-center gap-2.5 px-4 py-2.5 soft-well">
+        <span
+          className="h-4 w-1.5 rounded-full shrink-0"
+          style={{ background: headerColor }}
+          aria-hidden
+        />
+        <span className="font-semibold text-xs">{title}</span>
       </header>
       {isEmpty ? (
         <p className="px-3 py-2 text-xs text-(--muted)">{emptyLabel}</p>
       ) : (
-        <ul className="divide-y divide-(--border)/60">
+        <ul className="divide-y divide-(--soft-shade)/45">
           {rules.map((r) => (
             <PreviewRow key={`r-${r.id}`} row={r} recurring />
           ))}
@@ -193,7 +195,7 @@ function ReportSection({
       )}
       {!isEmpty && (
         <div
-          className="px-3 py-1.5 flex items-center justify-between border-t border-(--border)/60"
+          className="px-3 py-1.5 flex items-center justify-between border-t border-(--soft-shade)/45"
           style={{
             background: `color-mix(in srgb, ${headerColor} 8%, var(--card))`,
           }}

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AnimatedAmount } from "@/components/animated-amount";
 import { EmojiOrIcon } from "@/components/icons";
-import { PetName } from "@/components/pet-name";
 
 /**
  * Hero balance card — replaces the 3-up SummaryCard grid with a single
@@ -192,9 +191,7 @@ export async function DashboardHero({
         {hasBudget && (
         <div className="mt-4 relative">
           <div className="text-[13px]">
-            <PetName className="font-medium" />
             <span className="text-(--muted) text-xs">
-              {"  "}
               {moodKey === "over" && overPct > 0
                 ? `${moodLabel} · ${t("dashboard.budgetOverBy", { pct: String(overPct) })}`
                 : `${moodLabel} · ${t("dashboard.budgetPercent", { pct: String(usagePct) })}`}
