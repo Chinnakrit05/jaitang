@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -10,6 +10,7 @@ import {
   copyCategoriesFromLedgerAction,
   createCategoryAction,
   deleteCategoryAction,
+  undoDeleteCategoryAction,
   updateCategoryAction,
 } from "@/app/(app)/categories/actions";
 import { cn } from "@/lib/utils";
@@ -65,8 +66,23 @@ export function CategoryManager({
   otherLedgers?: OtherLedger[];
 }) {
   const t = useTranslations();
+  const router = useRouter();
   const [tab, setTab] = useState<TxKind>("expense");
   const [showCopyPicker, setShowCopyPicker] = useState(false);
+
+  // Post-delete undo affordance, mirroring /recurring. Deletes are
+  // soft (tombstone) on the server, so "เลิกทำ" just clears the stamp.
+  // Cleared on undo, timeout, or the next delete overwriting it.
+  const [deletedCategory, setDeletedCategory] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
+  const [undoing, startUndo] = useTransition();
+  useEffect(() => {
+    if (!deletedCategory) return;
+    const timer = window.setTimeout(() => setDeletedCategory(null), 8000);
+    return () => window.clearTimeout(timer);
+  }, [deletedCategory]);
 
   const inTab = initial.filter((c) => c.kind === tab);
   // Parents go first, then each parent's subs collapsed underneath. Subs
@@ -139,7 +155,13 @@ export function CategoryManager({
           const subs = subsByParent.get(parent.id) ?? [];
           return (
             <li key={parent.id}>
-              <CategoryRow category={parent} parents={parentsInTab} />
+              <CategoryRow
+                category={parent}
+                parents={parentsInTab}
+                onDeleted={(c) =>
+                  setDeletedCategory({ id: c.id, label: c.name })
+                }
+              />
               {subs.length > 0 && (
                 <ul className="bg-(--background)/40 border-t border-(--border)">
                   {subs.map((sub) => (
@@ -147,6 +169,9 @@ export function CategoryManager({
                       key={sub.id}
                       category={sub}
                       parents={parentsInTab}
+                      onDeleted={(c) =>
+                        setDeletedCategory({ id: c.id, label: c.name })
+                      }
                       indent
                     />
                   ))}
@@ -161,6 +186,31 @@ export function CategoryManager({
           </li>
         )}
       </ul>
+
+      {/* Undo toast — sits above the bottom nav; one delete at a time. */}
+      {deletedCategory && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full border border-(--border) bg-(--card) shadow-lg">
+          <span className="text-sm truncate max-w-48">
+            {t("categories.deletedToast", { name: deletedCategory.label })}
+          </span>
+          <button
+            type="button"
+            disabled={undoing}
+            onClick={() => {
+              const target = deletedCategory;
+              setDeletedCategory(null);
+              startUndo(async () => {
+                await undoDeleteCategoryAction(target.id);
+                router.refresh();
+              });
+            }}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-(--accent) hover:underline disabled:opacity-50 shrink-0"
+          >
+            <JtIcon name="rotate-ccw" size={14} />
+            {t("common.undo")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -278,10 +328,13 @@ function CategoryRow({
   category,
   parents,
   indent,
+  onDeleted,
 }: {
   category: Category;
   parents: Category[];
   indent?: boolean;
+  /** Raised after a successful delete so the manager can offer undo. */
+  onDeleted?: (category: Category) => void;
 }) {
   const router = useRouter();
   const t = useTranslations();
@@ -314,6 +367,7 @@ function CategoryRow({
     if (!confirm(t("categories.deleteConfirm"))) return;
     startTransition(async () => {
       await deleteCategoryAction(category.id);
+      onDeleted?.(category);
       router.refresh();
     });
   }

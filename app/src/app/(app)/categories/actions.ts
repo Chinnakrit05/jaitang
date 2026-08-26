@@ -7,6 +7,7 @@ import {
   createCategory,
   deleteCategory,
   listCategories,
+  restoreCategory,
   updateCategory,
 } from "@/lib/categories";
 import { getServerSupabase } from "@/lib/supabase/server";
@@ -113,8 +114,23 @@ export async function updateCategoryAction(id: string, formData: FormData) {
 
 export async function deleteCategoryAction(id: string) {
   await requireSession();
+  // Soft delete (tombstone) — recoverable via undoDeleteCategoryAction
+  // below, which the post-delete toast calls.
   await deleteCategory(id);
   refresh();
+}
+
+/**
+ * Undo a just-deleted category — clears the soft-delete tombstone.
+ * Wired to the "เลิกทำ" toast on /categories so a mistapped confirm
+ * no longer costs the category, its subcategories' parent link, and
+ * the grouping of every transaction filed under it.
+ */
+export async function undoDeleteCategoryAction(id: string) {
+  const { ledgerId } = await requireSession();
+  await restoreCategory(id, ledgerId);
+  refresh();
+  return { ok: true as const };
 }
 
 /**

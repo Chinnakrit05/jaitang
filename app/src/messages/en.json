@@ -282,6 +282,7 @@
     "addButton": "Add",
     "empty": "No categories yet — add one above.",
     "deleteConfirm": "Delete this category? Transactions using it will become 'No category' (they aren't deleted).",
+    "deletedToast": "Deleted \"{name}\"",
     "parentLabel": "Subcategory of",
     "parentNone": "— none (top-level) —",
     "iconTab": "Icons",

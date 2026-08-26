@@ -48,6 +48,14 @@ function clampDayOfMonth(year: number, month: number, day: number) {
   return Math.min(day, lastDay);
 }
 
+/**
+ * One period forward from `rule.next_run_at`. A raw step, blind to
+ * today's date — the backfill loop in applyDueRecurring walks it to
+ * materialize each missed occurrence in turn.
+ *
+ * Anything reacting to a user satisfying a period should call
+ * `nextRunAfterFill` instead, which clamps this to the calendar.
+ */
 export function computeNextRun(rule: {
   period: RecurPeriod;
   day_of_month: number | null;
@@ -65,23 +73,113 @@ export function computeNextRun(rule: {
     return cur;
   }
   if (rule.period === "yearly") {
-    // Same calendar date, one year ahead. Feb 29 → Feb 28 in non-leap years
-    // because setDate(29) on Feb in a non-leap year rolls to Mar 1, so we
-    // clamp explicitly.
+    // Same calendar date, one year ahead, clamped so Feb 29 lands on
+    // Feb 28 in a non-leap year. Park on day 1 before moving the year:
+    // rolling the year while sitting on the 29th overflows into March
+    // first, and the clamp below would then measure March's length
+    // instead of February's.
     const next = new Date(cur);
+    const day = rule.day_of_month ?? cur.getDate();
+    next.setDate(1);
     next.setFullYear(next.getFullYear() + 1);
-    if (rule.day_of_month) {
-      next.setDate(clampDayOfMonth(next.getFullYear(), next.getMonth(), rule.day_of_month));
-    }
+    next.setDate(clampDayOfMonth(next.getFullYear(), next.getMonth(), day));
     return next;
   }
-  // monthly
+  // monthly — park on day 1 before stepping the month. Advancing
+  // straight off the 31st overflows a shorter target month (Jan 31 +
+  // 1mo lands in March, not February), and the clamp that follows
+  // would then be measured against the month we overshot into. That
+  // made day-31 rules skip February and April outright.
   const next = new Date(cur);
+  const day = rule.day_of_month ?? cur.getDate();
+  next.setDate(1);
   next.setMonth(next.getMonth() + 1);
-  if (rule.day_of_month) {
-    next.setDate(clampDayOfMonth(next.getFullYear(), next.getMonth(), rule.day_of_month));
-  }
+  next.setDate(clampDayOfMonth(next.getFullYear(), next.getMonth(), day));
   return next;
+}
+
+/** Shape shared by every scheduling helper below. */
+type Schedulable = {
+  period: RecurPeriod;
+  day_of_month: number | null;
+  day_of_week: number | null;
+  next_run_at: string;
+};
+
+/**
+ * First occurrence in the period *after* the one containing `asOf`,
+ * derived from the calendar rather than from the stored
+ * `next_run_at`. Time-of-day is inherited from the rule's existing
+ * anchor so a rule that has always fired at 15:39 keeps doing so.
+ */
+function firstRunAfterPeriodOf(rule: Schedulable, asOf: Date): Date {
+  const anchor = new Date(rule.next_run_at);
+  const withRuleTime = (d: Date) => {
+    d.setHours(
+      anchor.getHours(),
+      anchor.getMinutes(),
+      anchor.getSeconds(),
+      0
+    );
+    return d;
+  };
+
+  switch (rule.period) {
+    case "daily":
+      return withRuleTime(
+        new Date(asOf.getFullYear(), asOf.getMonth(), asOf.getDate() + 1)
+      );
+    case "weekly": {
+      // ISO week (Monday-anchored) to match defaultStartForPeriod and
+      // the bucket bounds in updateRecurringFillAmount.
+      const target = rule.day_of_week ?? anchor.getDay();
+      const dowFromMonday = (asOf.getDay() + 6) % 7;
+      const d = new Date(
+        asOf.getFullYear(),
+        asOf.getMonth(),
+        asOf.getDate() - dowFromMonday + 7 + ((target + 6) % 7)
+      );
+      return withRuleTime(d);
+    }
+    case "yearly": {
+      const month = anchor.getMonth();
+      const day = rule.day_of_month ?? anchor.getDate();
+      const year = asOf.getFullYear() + 1;
+      return withRuleTime(
+        new Date(year, month, clampDayOfMonth(year, month, day))
+      );
+    }
+    default: {
+      // monthly — day-of-month in the month after asOf's.
+      const d = new Date(asOf.getFullYear(), asOf.getMonth() + 1, 1);
+      const day = rule.day_of_month ?? anchor.getDate();
+      d.setDate(clampDayOfMonth(d.getFullYear(), d.getMonth(), day));
+      return withRuleTime(d);
+    }
+  }
+}
+
+/**
+ * Where `next_run_at` should land once the user has satisfied a
+ * period — filled the amount, skipped it, or edited the month from
+ * /reports.
+ *
+ * Steps one period past the stored anchor (so someone catching up on
+ * overdue bills advances one month at a time), but never lands more
+ * than one period beyond the bucket containing `asOf`.
+ *
+ * That clamp is the whole point. `computeNextRun` alone is blind +1
+ * from whatever is stored, so editing the *same* month twice bumped
+ * the schedule twice — three corrections to one bill walked a
+ * monthly rule from September out to December, and nothing ever
+ * pulled it back. Months in between then silently never came due.
+ * The clamp also self-heals rules that already drifted: the next
+ * fill snaps them back to the calendar.
+ */
+export function nextRunAfterFill(rule: Schedulable, asOf: Date = new Date()): Date {
+  const stepped = computeNextRun(rule);
+  const cap = firstRunAfterPeriodOf(rule, asOf);
+  return stepped < cap ? stepped : cap;
 }
 
 export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> {
@@ -449,7 +547,7 @@ export async function fillPendingRecurring(input: {
   });
   if (insErr) throw insErr;
 
-  const nextRun = computeNextRun({
+  const nextRun = nextRunAfterFill({
     period: rule.period as RecurPeriod,
     day_of_month: rule.day_of_month,
     day_of_week: rule.day_of_week,
@@ -536,7 +634,7 @@ export async function skipRecurringPeriod(input: {
     .maybeSingle();
   if (error) throw error;
   if (!rule) throw new Error("Rule not found");
-  const nextRun = computeNextRun({
+  const nextRun = nextRunAfterFill({
     period: rule.period as RecurPeriod,
     day_of_month: rule.day_of_month,
     day_of_week: rule.day_of_week,
@@ -837,12 +935,15 @@ export async function setRecurringMonthAmount(input: {
       ? input.year === nowYear
       : false;
   if (currentPeriodMatch) {
-    const nextRun = computeNextRun({
-      period: rule.period as RecurPeriod,
-      day_of_month: rule.day_of_month,
-      day_of_week: rule.day_of_week,
-      next_run_at: rule.next_run_at,
-    });
+    const nextRun = nextRunAfterFill(
+      {
+        period: rule.period as RecurPeriod,
+        day_of_month: rule.day_of_month,
+        day_of_week: rule.day_of_week,
+        next_run_at: rule.next_run_at,
+      },
+      now,
+    );
     await sb
       .from("recurring_transactions")
       .update({

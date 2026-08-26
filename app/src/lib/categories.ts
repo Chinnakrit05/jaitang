@@ -207,3 +207,22 @@ export async function deleteCategory(id: string) {
     .eq("id", id);
   if (error) throw error;
 }
+
+/**
+ * Undo a soft delete — clears the tombstone so the category is live
+ * again, along with every transaction that still points at it (their
+ * `category_id` is never cleared on delete, so they reattach as-is).
+ *
+ * Ledger-scoped: the id comes from a client component, and a category
+ * from someone else's ledger must not be resurrectable by guessing a
+ * uuid.
+ */
+export async function restoreCategory(id: string, ledgerId: string) {
+  const sb = getServerSupabase();
+  const { error } = await sb
+    .from("categories")
+    .update({ deleted_at: null })
+    .eq("id", id)
+    .eq("ledger_id", ledgerId);
+  if (error) throw error;
+}
