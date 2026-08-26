@@ -753,6 +753,21 @@
     "confidenceMedium": "一部のみ — 確認してください",
     "confidenceLow": "読み取り困難 — 手動入力をおすすめします"
   },
+  "receiptItems": {
+    "title": "レシートを取引に分割",
+    "subtitle": "{items}件 → {groups}カテゴリ",
+    "subtitleWithMerchant": "{merchant}・{items}件 → {groups}カテゴリ",
+    "uncategorized": "カテゴリなし",
+    "itemCount": "{count}件",
+    "excluded": "保存しない",
+    "exclude": "除外",
+    "nothingSelected": "まだ何も選ばれていません",
+    "totalMismatch": "レシートの合計は฿{printed}で、保存される金額と異なります。ご確認ください。",
+    "grandTotal": "合計 ฿{total}",
+    "save": "{count}件を保存",
+    "saving": "保存中…",
+    "savedPartially": "{count}件を保存したところでエラーが発生しました: {error}"
+  },
   "settings": {
     "title": "設定",
     "subtitle": "アカウント、通知、テーマ",

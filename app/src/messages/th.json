@@ -763,6 +763,21 @@
     "confidenceMedium": "อ่านบางส่วน — ตรวจก่อนบันทึก",
     "confidenceLow": "อ่านไม่ค่อยชัด — ใส่เองดีกว่า"
   },
+  "receiptItems": {
+    "title": "แยกรายการจากใบเสร็จ",
+    "subtitle": "{items} รายการ → {groups} หมวด",
+    "subtitleWithMerchant": "{merchant} · {items} รายการ → {groups} หมวด",
+    "uncategorized": "ยังไม่ระบุหมวด",
+    "itemCount": "{count} รายการ",
+    "excluded": "ไม่บันทึก",
+    "exclude": "เอาออก",
+    "nothingSelected": "ยังไม่ได้เลือกรายการไหนเลย",
+    "totalMismatch": "ยอดรวมบนใบเสร็จคือ ฿{printed} ซึ่งต่างจากที่กำลังจะบันทึก ลองตรวจดูอีกที",
+    "grandTotal": "รวม ฿{total}",
+    "save": "บันทึก {count} รายการ",
+    "saving": "กำลังบันทึก…",
+    "savedPartially": "บันทึกไปได้ {count} รายการแล้วเกิดข้อผิดพลาด: {error}"
+  },
   "settings": {
     "title": "ตั้งค่า",
     "subtitle": "บัญชี การแจ้งเตือน และธีม",

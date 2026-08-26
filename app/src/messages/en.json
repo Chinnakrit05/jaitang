@@ -763,6 +763,21 @@
     "confidenceMedium": "Partial read — please verify",
     "confidenceLow": "Hard to read — manual entry recommended"
   },
+  "receiptItems": {
+    "title": "Split receipt into transactions",
+    "subtitle": "{items} items → {groups} categories",
+    "subtitleWithMerchant": "{merchant} · {items} items → {groups} categories",
+    "uncategorized": "No category",
+    "itemCount": "{count} items",
+    "excluded": "Not saving",
+    "exclude": "Remove",
+    "nothingSelected": "Nothing selected yet",
+    "totalMismatch": "The receipt's printed total is ฿{printed}, which differs from what will be saved — worth a check.",
+    "grandTotal": "Total ฿{total}",
+    "save": "Save {count}",
+    "saving": "Saving…",
+    "savedPartially": "Saved {count} before hitting an error: {error}"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Account, notifications, and theme",

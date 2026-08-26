@@ -112,6 +112,11 @@ export function TransactionForm({
     initial?.amount ? String(initial.amount) : ""
   );
   const [noteInput, setNoteInput] = useState<string>(initial?.note ?? "");
+  // See the quick form for the reasoning: the suggester owns the
+  // category until a radio is ticked by hand, then backs off.
+  const categoryPickedByUser = useRef(initial?.categoryId != null);
+  const lastSuggestKey = useRef<string | null>(null);
+  const suppressPickTracking = useRef(false);
   // Auto-categorize state. `loading` while the AI call is in flight,
   // `error` if it failed, `confidence` so we can show a soft hint when
   // the model wasn't sure (low/medium → user should double-check).
@@ -256,27 +261,62 @@ export function TransactionForm({
    * triggers the browser's native checked-state update, which is
    * what the form serializer actually reads at submit time.
    */
-  async function runCategorizeSuggest() {
+  async function runCategorizeSuggest(opts?: { auto?: boolean }) {
     const note = noteInput.trim();
     if (!note) return;
+    const auto = opts?.auto === true;
+    lastSuggestKey.current = `${kind}\u0000${note}`;
     setAiCategorize({ loading: true, error: null, confidence: null });
     const result = await suggestCategoryAction({ note, kind });
+    // A tick on a radio while the request was open answers the
+    // question we were still asking — leave it alone.
+    if (auto && categoryPickedByUser.current) {
+      setAiCategorize({ loading: false, error: null, confidence: null });
+      return;
+    }
     if (result.ok === false) {
-      setAiCategorize({ loading: false, error: result.error, confidence: null });
+      setAiCategorize({
+        loading: false,
+        error: auto ? null : result.error,
+        confidence: null,
+      });
       return;
     }
     if (result.categoryId) {
       const radio = formRef.current?.querySelector<HTMLInputElement>(
         `input[name="categoryId"][value="${result.categoryId}"]`
       );
+      // The grid's onChange can't tell our synthetic click from a real
+      // tap, so mute it across the dispatch. click() is synchronous,
+      // which is what makes the flag safe to clear on the next line.
+      suppressPickTracking.current = true;
       radio?.click();
+      suppressPickTracking.current = false;
     }
     setAiCategorize({
       loading: false,
-      error: result.categoryId ? null : t("transactions.aiCategorizeNoMatch"),
+      error:
+        result.categoryId || auto
+          ? null
+          : t("transactions.aiCategorizeNoMatch"),
       confidence: result.confidence,
     });
   }
+
+  // Auto-categorize once typing settles — same 700ms / 2-character
+  // rule as the quick form, and the same hands-off-once-picked
+  // ownership.
+  useEffect(() => {
+    const trimmed = noteInput.trim();
+    if (trimmed.length < 2) return;
+    if (categoryPickedByUser.current) return;
+    if (lastSuggestKey.current === `${kind}\u0000${trimmed}`) return;
+    const id = setTimeout(() => {
+      void runCategorizeSuggest({ auto: true });
+    }, 700);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noteInput, kind]);
 
   return (
     <form
@@ -594,7 +634,7 @@ export function TransactionForm({
               feature; tooltip explains why it's off. */}
           <button
             type="button"
-            onClick={runCategorizeSuggest}
+            onClick={() => void runCategorizeSuggest()}
             disabled={
               aiCategorize.loading || noteInput.trim().length === 0
             }
@@ -614,7 +654,14 @@ export function TransactionForm({
               : t("transactions.aiCategorizeButton")}
           </button>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div
+          className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+          onChange={() => {
+            if (!suppressPickTracking.current) {
+              categoryPickedByUser.current = true;
+            }
+          }}
+        >
           {visibleCats.map((c) => (
             <CategoryRadio
               key={c.id}

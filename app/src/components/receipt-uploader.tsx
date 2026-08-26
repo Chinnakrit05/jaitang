@@ -4,13 +4,13 @@ import { useState, useTransition, useRef } from "react";
 import { JtIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
 
-import { parseReceiptAction } from "@/app/(app)/transactions/ocr-action";
-import type { ParsedReceipt } from "@/lib/ocr";
+import { parseReceiptItemsAction } from "@/app/(app)/transactions/receipt-items-action";
+import type { ParsedReceiptItems } from "@/lib/receipt-items";
 
 const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
 
 type Props = {
-  onParsed: (result: ParsedReceipt) => void;
+  onParsed: (result: ParsedReceiptItems) => void;
   /** "card" (default) renders the full uploader card with title + hint.
    *  "compact" renders a single circular icon button — used by the new
    *  add-transaction layout where the scan affordance lives in the
@@ -50,7 +50,9 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [confidence, setConfidence] = useState<ParsedReceipt["confidence"] | null>(null);
+  const [confidence, setConfidence] = useState<
+    ParsedReceiptItems["confidence"] | null
+  >(null);
 
   function handleFile(file: File) {
     setError(null);
@@ -62,7 +64,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
     startTransition(async () => {
       try {
         const dataUrl = await fileToDataUrl(file);
-        const result = await parseReceiptAction(dataUrl);
+        const result = await parseReceiptItemsAction(dataUrl);
         if (!result.ok) {
           setError(result.error);
           return;

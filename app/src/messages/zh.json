@@ -753,6 +753,21 @@
     "confidenceMedium": "部分读取 — 请核对",
     "confidenceLow": "难以识别 — 建议手动输入"
   },
+  "receiptItems": {
+    "title": "将收据拆分为多笔记录",
+    "subtitle": "{items} 项 → {groups} 个分类",
+    "subtitleWithMerchant": "{merchant}·{items} 项 → {groups} 个分类",
+    "uncategorized": "无分类",
+    "itemCount": "{count} 项",
+    "excluded": "不保存",
+    "exclude": "移除",
+    "nothingSelected": "尚未选择任何项目",
+    "totalMismatch": "收据上的合计为 ฿{printed}，与将要保存的金额不符，建议核对。",
+    "grandTotal": "合计 ฿{total}",
+    "save": "保存 {count} 笔",
+    "saving": "保存中…",
+    "savedPartially": "已保存 {count} 笔后出错：{error}"
+  },
   "settings": {
     "title": "设置",
     "subtitle": "账户、通知与主题",

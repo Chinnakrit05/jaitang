@@ -158,6 +158,16 @@ export function NewTransactionForm({
   const [error, setError] = useState<string | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiHint, setAiHint] = useState<string | null>(null);
+  // Who owns the category field. The auto-suggester holds it until the
+  // user taps a tile, and then steps back for the rest of the entry —
+  // having a deliberate pick overwritten a beat later by a request
+  // already in flight is the one failure that would make the feature
+  // feel broken. An edit that arrives with a category keeps that.
+  const categoryPickedByUser = useRef(initial?.categoryId != null);
+  // "<kind>\u0000<note>" of the last suggestion we asked for, so an
+  // unrelated re-render doesn't spend the same call twice. Switching
+  // expense/income changes the candidate set, so it belongs in the key.
+  const lastSuggestKey = useRef<string | null>(null);
   // Reorder mode for the category grid. While true, every tile wiggles
   // and drag-to-rearrange is enabled. Tapping the pencil chip toggles
   // it on; tapping "เสร็จ" toggles off and persists the new order.
@@ -222,6 +232,8 @@ export function NewTransactionForm({
     setAmountInput("");
     setNote("");
     setCategoryId(null);
+    categoryPickedByUser.current = false;
+    lastSuggestKey.current = null;
     setAccountId(null);
     setPaymentMethod(defaultPaymentMethod ?? "cash");
     setKind("expense");
@@ -229,26 +241,57 @@ export function NewTransactionForm({
     setAiHint(null);
   }
 
-  async function runAiCategorize() {
-    if (!note.trim() || aiBusy) return;
+  /**
+   * Ask the model which category the note belongs to.
+   *
+   * `auto` marks the debounced background run. It differs from the
+   * button in two ways: it stays quiet when the model has nothing
+   * useful to say (an unprompted "no match" toast while someone is
+   * still typing is noise), and it drops its own answer if the user
+   * picked a category while the request was in flight.
+   */
+  async function runAiCategorize(opts?: { auto?: boolean }) {
+    const trimmed = note.trim();
+    if (!trimmed || aiBusy) return;
+    const auto = opts?.auto === true;
+    lastSuggestKey.current = `${kind}\u0000${trimmed}`;
     setAiBusy(true);
     setAiHint(null);
     try {
-      const result = await suggestCategoryAction({ note: note.trim(), kind });
+      const result = await suggestCategoryAction({ note: trimmed, kind });
+      if (auto && categoryPickedByUser.current) return;
       if (result.ok === false) {
-        setAiHint(result.error);
+        if (!auto) setAiHint(result.error);
       } else if (result.categoryId) {
         setCategoryId(result.categoryId);
         if (result.confidence === "low") {
           setAiHint(t("transactions.aiCategorizeLowConfidence"));
         }
-      } else {
+      } else if (!auto) {
         setAiHint(t("transactions.aiCategorizeNoMatch"));
       }
     } finally {
       setAiBusy(false);
     }
   }
+
+  // Auto-categorize once typing settles. 700ms is past the gap between
+  // keystrokes mid-word but short enough that the tile is lit up before
+  // a thumb reaches the amount field. Two characters is the floor —
+  // "ก" matches everything and nothing.
+  useEffect(() => {
+    const trimmed = note.trim();
+    if (trimmed.length < 2) return;
+    if (categoryPickedByUser.current) return;
+    if (lastSuggestKey.current === `${kind}\u0000${trimmed}`) return;
+    const id = setTimeout(() => {
+      void runAiCategorize({ auto: true });
+    }, 700);
+    return () => clearTimeout(id);
+    // runAiCategorize is redeclared every render; depending on it would
+    // restart the timer on each keystroke and it could never fire.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note, kind]);
 
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -492,7 +535,10 @@ export function NewTransactionForm({
         categories={visibleCats}
         categoryById={categoryById}
         selectedId={categoryId}
-        onSelect={setCategoryId}
+        onSelect={(id) => {
+          categoryPickedByUser.current = true;
+          setCategoryId(id);
+        }}
         editing={editingCats}
         onToggleEditing={() => setEditingCats((v) => !v)}
         orderOverride={catOrderOverride}
@@ -500,7 +546,7 @@ export function NewTransactionForm({
         aiBusy={aiBusy}
         aiDisabled={note.trim().length === 0}
         aiHint={aiHint}
-        runAi={runAiCategorize}
+        runAi={() => void runAiCategorize()}
         aiNeedsNoteLabel={t("transactions.aiCategorizeNeedsNote")}
         aiHintLabel={t("transactions.aiCategorizeHint")}
         aiLoadingLabel={t("transactions.aiCategorizeLoading")}

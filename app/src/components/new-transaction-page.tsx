@@ -3,12 +3,17 @@
 import { useState } from "react";
 import { NewTransactionForm } from "@/components/new-transaction-form";
 import { ReceiptUploader } from "@/components/receipt-uploader";
+import { ReceiptItemsReview } from "@/components/receipt-items-review";
 import type {
   AccountChoice,
   TripChoice,
 } from "@/components/transaction-form";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
-import type { ParsedReceipt } from "@/lib/ocr";
+import {
+  composeReceiptNote,
+  groupItemsByCategory,
+  type ParsedReceiptItems,
+} from "@/lib/receipt-items";
 
 type Initial = {
   kind: TxKind;
@@ -41,13 +46,33 @@ export function NewTransactionPage({
 }) {
   const [formKey, setFormKey] = useState(0);
   const [initial, setInitial] = useState<Initial | undefined>(undefined);
+  const [review, setReview] = useState<ParsedReceiptItems | null>(null);
 
-  function applyOcr(result: ParsedReceipt) {
+  /**
+   * Route a scan to whichever surface fits what came back.
+   *
+   * A transfer slip, or a receipt whose lines all land in one category,
+   * is still a single transaction — it goes straight into the form the
+   * way scans always have, and a modal asking the user to confirm one
+   * row would be a step for nothing. Anything that genuinely splits
+   * across categories opens the review sheet.
+   */
+  function applyScan(result: ParsedReceiptItems) {
+    const groups = groupItemsByCategory(result.items);
+
+    if (groups.length > 1) {
+      setReview(result);
+      return;
+    }
+
+    const only = groups[0];
     setInitial({
       kind: result.kind,
-      amount: result.amount ?? 0,
-      categoryId: result.categoryId,
-      note: result.note,
+      // Fall back to the printed total when the model found no usable
+      // lines at all — better a filled amount than an empty form.
+      amount: only?.amount ?? result.total ?? 0,
+      categoryId: only?.categoryId ?? null,
+      note: only ? composeReceiptNote(result.merchant, only.items) : result.merchant,
       paymentMethod: result.paymentMethod,
       occurredAt: result.occurredAt
         ? new Date(result.occurredAt).toISOString()
@@ -58,21 +83,31 @@ export function NewTransactionPage({
   }
 
   return (
-    <NewTransactionForm
-      key={formKey}
-      categories={categories}
-      accounts={accounts}
-      activeTrip={activeTrip}
-      noteSuggestions={noteSuggestions}
-      currency={currency}
-      defaultPaymentMethod={defaultPaymentMethod}
-      action={action}
-      initial={initial}
-      headerAction={
-        ocrEnabled ? (
-          <ReceiptUploader variant="compact" onParsed={applyOcr} />
-        ) : undefined
-      }
-    />
+    <>
+      <NewTransactionForm
+        key={formKey}
+        categories={categories}
+        accounts={accounts}
+        activeTrip={activeTrip}
+        noteSuggestions={noteSuggestions}
+        currency={currency}
+        defaultPaymentMethod={defaultPaymentMethod}
+        action={action}
+        initial={initial}
+        headerAction={
+          ocrEnabled ? (
+            <ReceiptUploader variant="compact" onParsed={applyScan} />
+          ) : undefined
+        }
+      />
+      {review && (
+        <ReceiptItemsReview
+          parsed={review}
+          categories={categories}
+          tripId={activeTrip?.id ?? null}
+          onClose={() => setReview(null)}
+        />
+      )}
+    </>
   );
 }
