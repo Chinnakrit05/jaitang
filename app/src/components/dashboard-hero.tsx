@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Mascot } from "@/components/mascots";
 import { AnimatedAmount } from "@/components/animated-amount";
 import { EmojiOrIcon } from "@/components/icons";
 import { PetName } from "@/components/pet-name";
@@ -132,11 +131,7 @@ export async function DashboardHero({
       <div
         className="relative overflow-hidden rounded-[30px] p-5 sm:p-6 soft-raised-lg"
       >
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 pointer-events-none mascot-float">
-          <Mascot size={92} idPrefix="hero" />
-        </div>
-
-        <div className="pr-24 sm:pr-28">
+        <div>
           <div className="text-xs text-(--muted)">{t("dashboard.monthBalance")}</div>
           <div className="text-[11px] text-(--muted) mt-0.5">
             ‹ {monthLabel} ›

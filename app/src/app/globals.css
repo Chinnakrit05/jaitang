@@ -669,16 +669,6 @@ select:focus-visible {
   flex-shrink: 0;
 }
 
-/* Mascot float — subtle vertical bob so the shiba doesn't feel frozen.
-   Sits behind the rest of the hero content, so the animation must stay
-   slow (~3s) and shallow (~4px) or it pulls attention from the number. */
-@keyframes mascot-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-.mascot-float {
-  animation: mascot-float 3s ease-in-out infinite;
-}
 
 /* Bar fill — grows from 0 to the final width on mount. Callers set the
    target percentage as the custom property `--bar-target` on the same
@@ -724,7 +714,6 @@ select:focus-visible {
   .fade-rise,
   .shimmer,
   .pulse-ring,
-  .mascot-float,
   .bar-fill,
   .donut-slice,
   .cta-primary::after {
