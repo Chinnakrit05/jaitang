@@ -32,7 +32,7 @@ export function CurrencyPicker({
         disabled={disabled}
         aria-label={ariaLabel}
         className={cn(
-          "px-2 py-2 rounded-lg border border-(--border) bg-(--card) text-sm focus:outline-none focus:ring-2 focus:ring-(--accent)/40 disabled:opacity-50",
+          "px-2 py-2 rounded-[12px] soft-raised-sm text-sm focus:outline-none focus:ring-2 focus:ring-(--accent)/40 disabled:opacity-50",
           className
         )}
       >

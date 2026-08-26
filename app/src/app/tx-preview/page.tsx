@@ -175,7 +175,7 @@ export default function TransactionsPreviewPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 soft-page">
       <div className="max-w-md mx-auto px-4 pt-6 space-y-4">
         <TransactionsHeader title="รายการทั้งหมด" />
         <TransactionsHero

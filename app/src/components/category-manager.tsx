@@ -134,7 +134,7 @@ export function CategoryManager({
         <button
           type="button"
           onClick={() => setShowCopyPicker(true)}
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-(--card) border border-(--border) hover:bg-(--background) transition"
+          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full soft-raised-sm hover:bg-(--background) transition"
         >
           <JtIcon name="copy" size={14} />
           {t("categories.copyFromButton")}
@@ -150,7 +150,7 @@ export function CategoryManager({
         />
       )}
 
-      <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
+      <ul className="rounded-[22px] soft-raised divide-y divide-(--border) overflow-hidden">
         {parentsInTab.map((parent) => {
           const subs = subsByParent.get(parent.id) ?? [];
           return (
@@ -189,7 +189,7 @@ export function CategoryManager({
 
       {/* Undo toast — sits above the bottom nav; one delete at a time. */}
       {deletedCategory && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full border border-(--border) bg-(--card) shadow-lg">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full soft-raised-sm shadow-lg">
           <span className="text-sm truncate max-w-48">
             {t("categories.deletedToast", { name: deletedCategory.label })}
           </span>
@@ -254,7 +254,7 @@ function CreateCategoryForm({
           router.refresh();
         });
       }}
-      className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-3"
+      className="rounded-[22px] soft-raised p-4 space-y-3"
     >
       <div className="flex items-center gap-2">
         <span
@@ -423,7 +423,7 @@ function CategoryRow({
                 setIcon(category.icon ?? DEFAULT_CATEGORY_ICON);
                 setParentId(category.parent_id ?? "");
               }}
-              className="flex-1 px-3 py-2 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium"
+              className="flex-1 px-3 py-2 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm font-medium"
             >
               {t("common.cancel")}
             </button>
@@ -750,7 +750,7 @@ function CopyFromLedgerSheet({
       <div
         role="dialog"
         aria-modal="true"
-        className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,440px)] max-h-[85vh] overflow-y-auto rounded-2xl bg-(--card) border border-(--border) shadow-2xl p-5 space-y-4"
+        className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,440px)] max-h-[85vh] overflow-y-auto rounded-2xl soft-raised-sm shadow-2xl p-5 space-y-4"
       >
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-lg">{t("categories.copyTitle")}</h2>
@@ -786,7 +786,7 @@ function CopyFromLedgerSheet({
                 type="button"
                 onClick={() => pick(l.id, l.name)}
                 disabled={pending}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition disabled:opacity-50 text-left"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[16px] soft-raised hover:bg-(--background) transition disabled:opacity-50 text-left"
               >
                 <span className="shrink-0">
                   <EmojiOrIcon value={l.icon} fallback="ledgers" size={22} />
@@ -816,7 +816,7 @@ function CopyFromLedgerSheet({
         <button
           type="button"
           onClick={onClose}
-          className="w-full px-3 py-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium"
+          className="w-full px-3 py-2 rounded-[16px] soft-raised hover:bg-(--background) text-sm font-medium"
         >
           {result ? t("common.close") : t("common.cancel")}
         </button>

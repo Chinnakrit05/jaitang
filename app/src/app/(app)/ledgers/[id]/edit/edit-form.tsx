@@ -84,7 +84,7 @@ export function EditLedgerForm({
     <div className="space-y-4">
       {/* Preview card so the user can see exactly how the row will
           read on /ledgers as they edit. */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-4 flex items-center gap-3">
+      <div className="rounded-[22px] soft-raised p-4 flex items-center gap-3">
         <EmojiOrIcon value={icon} fallback="users" size={32} />
         <div className="font-semibold truncate">
           {name.trim() || initialName}
@@ -201,7 +201,7 @@ export function EditLedgerForm({
       <div className="flex gap-2 pt-2">
         <Link
           href="/ledgers"
-          className="flex-1 px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium text-center"
+          className="flex-1 px-3 py-2.5 rounded-[16px] soft-raised hover:bg-(--background) text-sm font-medium text-center"
         >
           {t("common.cancel")}
         </Link>

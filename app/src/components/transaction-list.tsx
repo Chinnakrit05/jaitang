@@ -104,7 +104,7 @@ export function TransactionList({
         return (
           <section
             key={day}
-            className="rounded-3xl bg-(--card) border border-(--border) overflow-hidden"
+            className="rounded-3xl soft-raised-sm overflow-hidden"
           >
             <header className="flex items-center justify-between px-5 pt-4 pb-2">
               <h3 className="text-base font-bold tabular-nums">

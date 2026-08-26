@@ -68,7 +68,7 @@ function Feature({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-(--border) bg-(--card) p-6 text-left">
+    <div className="rounded-[22px] soft-raised p-6 text-left">
       <div className="text-(--accent) mb-3">{icon}</div>
       <h3 className="font-semibold mb-1">{title}</h3>
       <p className="text-sm text-(--muted)">{children}</p>

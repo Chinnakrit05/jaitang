@@ -66,7 +66,7 @@ export function CreateLedgerForm() {
           else router.refresh();
         });
       }}
-      className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-4"
+      className="rounded-[22px] soft-raised p-5 space-y-4"
     >
       <div>
         <h3 className="font-semibold mb-1">{t("ledgers.createFormTitle")}</h3>
@@ -134,7 +134,7 @@ export function CreateLedgerForm() {
             setOpen(false);
             setError(null);
           }}
-          className="flex-1 px-4 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium"
+          className="flex-1 px-4 py-2.5 rounded-[16px] soft-raised hover:bg-(--background) text-sm font-medium"
         >
           {t("common.cancel")}
         </button>

@@ -48,14 +48,14 @@ export default function ReportsPreviewPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 soft-page">
       <div className="max-w-md mx-auto px-4 pt-6 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <Link
             href="/more"
             aria-label="back"
-            className="h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm"
+            className="h-10 w-10 rounded-full soft-raised-sm flex items-center justify-center shadow-sm"
           >
             <JtIcon name="chevron-left" size={18} />
           </Link>
@@ -64,7 +64,7 @@ export default function ReportsPreviewPage() {
         </div>
 
         {/* Month switcher */}
-        <div className="rounded-2xl border border-(--border) bg-(--card) flex items-center justify-between px-3 py-2">
+        <div className="rounded-[22px] soft-raised flex items-center justify-between px-3 py-2">
           <button type="button" aria-label="prev" className="h-9 w-9 rounded-full flex items-center justify-center">
             <JtIcon name="chevron-left" size={20} />
           </button>
@@ -75,7 +75,7 @@ export default function ReportsPreviewPage() {
         </div>
 
         {/* Summary */}
-        <div className="rounded-2xl border border-(--border) bg-(--card) grid grid-cols-3 divide-x divide-(--border)/60">
+        <div className="rounded-[22px] soft-raised grid grid-cols-3 divide-x divide-(--border)/60">
           <SumCell
             label={t("transactions.totalIncome")}
             amount={totalIncome}

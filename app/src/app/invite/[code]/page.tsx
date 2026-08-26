@@ -31,7 +31,7 @@ export default async function AcceptInvitePage({
       </header>
 
       <main className="flex-1 flex items-center justify-center px-6">
-        <div className="w-full max-w-md rounded-2xl border border-(--border) bg-(--card) p-8 shadow-sm">
+        <div className="w-full max-w-md rounded-[22px] soft-raised p-8 shadow-sm">
           {!invite ? (
             <div className="text-center">
               <span className="text-5xl block mb-3">❌</span>
@@ -84,7 +84,7 @@ export default async function AcceptInvitePage({
                 >
                   <button
                     type="submit"
-                    className="w-full inline-flex items-center justify-center gap-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-3 font-medium transition"
+                    className="w-full inline-flex items-center justify-center gap-3 rounded-[16px] soft-raised hover:bg-(--background) px-4 py-3 font-medium transition"
                   >
                     {t("login.loginToJoin")}
                   </button>

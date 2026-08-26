@@ -59,7 +59,7 @@ export default async function LoanDetailPage({
         {t("loans.backToList")}
       </Link>
 
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-5">
+      <div className="rounded-[22px] soft-raised p-5">
         <div className="flex items-start gap-4">
           <span
             className={`shrink-0 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-(--background) ${directionColor}`}
@@ -164,7 +164,7 @@ export default async function LoanDetailPage({
 
       {/* Repayment form */}
       {canManage && !settled && (
-        <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
+        <section className="rounded-[22px] soft-raised p-5 space-y-3">
           <h2 className="font-semibold">{t("loans.repaymentTitle")}</h2>
           <p className="text-sm text-(--muted)">{t("loans.repaymentHint")}</p>
           <RepaymentForm
@@ -183,7 +183,7 @@ export default async function LoanDetailPage({
             {t("loans.historyEmpty")}
           </p>
         ) : (
-          <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
+          <ul className="rounded-[22px] soft-raised divide-y divide-(--border) overflow-hidden">
             {repayments.map((r) => (
               <li
                 key={r.id}

@@ -138,7 +138,7 @@ export default async function TransactionsPage({
           link etc.) so the switcher's label doesn't lie about what's
           being shown. */}
       {ymActive && (
-        <div className="rounded-2xl border border-(--border) bg-(--card) flex items-center justify-between px-3 py-2">
+        <div className="rounded-[22px] soft-raised flex items-center justify-between px-3 py-2">
           <Link
             href={buildLink(prevYm)}
             aria-label={t("calendar.prev")}

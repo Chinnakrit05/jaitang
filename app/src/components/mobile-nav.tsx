@@ -96,7 +96,7 @@ export function MobileNav({
   return (
     <>
       <nav
-        className="border-t border-(--border) bg-(--card)/80 backdrop-blur fixed bottom-0 inset-x-0 z-20"
+        className="fixed bottom-0 inset-x-0 z-20 bg-(--soft-surface) shadow-[0_-6px_14px_-8px_var(--soft-shade)]"
         style={{
           // Push the bar's bottom edge above the iPhone home indicator
           // when running standalone (PWA). `env(safe-area-inset-bottom)`
@@ -115,7 +115,7 @@ export function MobileNav({
           <Link
             href="/transactions/new"
             aria-label={fabLabel}
-            className="relative flex items-center justify-center h-16 w-16 rounded-full -mt-7 shrink-0 text-(--accent-foreground) ring-4 ring-(--card) hover:scale-105 active:scale-95 transition"
+            className="relative flex items-center justify-center h-16 w-16 rounded-full -mt-7 shrink-0 text-(--accent-foreground) hover:scale-105 active:scale-95 transition"
             style={{
               background:
                 "radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--accent) 55%, white) 0%, var(--accent) 45%, color-mix(in srgb, var(--accent) 70%, black) 100%)",

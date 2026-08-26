@@ -113,7 +113,7 @@ export default async function AccountDetailPage({
 
       {/* Header. Edit button absolutely positioned in top-right, same
           pattern as trip detail. */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-5 relative">
+      <div className="rounded-[22px] soft-raised p-5 relative">
         {canManage && (
           <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
             <ReconcileModal
@@ -232,7 +232,7 @@ export default async function AccountDetailPage({
       </div>
 
       {/* Per-account balance chart */}
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5">
+      <section className="rounded-[22px] soft-raised p-5">
         <h2 className="font-semibold mb-3 text-sm">
           {t("accounts.chartHeading")}
         </h2>

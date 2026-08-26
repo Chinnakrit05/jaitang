@@ -77,14 +77,14 @@ export default function RecurringPreviewPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 soft-page">
       <div className="max-w-md mx-auto px-4 pt-6 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <Link
             href="/more"
             aria-label="back"
-            className="h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm"
+            className="h-10 w-10 rounded-full soft-raised-sm flex items-center justify-center shadow-sm"
           >
             <JtIcon name="chevron-left" size={18} />
           </Link>
@@ -99,7 +99,7 @@ export default function RecurringPreviewPage() {
           </button>
         </div>
 
-        <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border)/60 overflow-hidden">
+        <ul className="rounded-[22px] soft-raised divide-y divide-(--border)/60 overflow-hidden">
           {rows.map((r) => (
             <li key={r.id}>
               <div className="w-full flex items-center gap-3 px-4 py-3 text-left">

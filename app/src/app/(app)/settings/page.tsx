@@ -21,7 +21,7 @@ export default async function SettingsPage() {
         <p className="text-sm text-(--muted) mt-1">{t("settings.subtitle")}</p>
       </div>
 
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
+      <section className="rounded-[22px] soft-raised p-5 space-y-3">
         <h2 className="font-semibold">{t("settings.accountSection")}</h2>
         <div className="flex items-center gap-3">
           {user.image ? (
@@ -48,7 +48,7 @@ export default async function SettingsPage() {
           >
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-3 py-2 text-sm"
+              className="inline-flex items-center gap-2 rounded-[16px] soft-raised hover:bg-(--background) px-3 py-2 text-sm"
             >
               <JtIcon name="logout" size={18} />
               {t("common.logoutFull")}
@@ -57,19 +57,19 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
+      <section className="rounded-[22px] soft-raised p-5 space-y-3">
         <h2 className="font-semibold">{t("settings.languageSection")}</h2>
         <p className="text-sm text-(--muted)">{t("settings.languageHint")}</p>
         <LanguageSwitcher />
       </section>
 
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
+      <section className="rounded-[22px] soft-raised p-5 space-y-3">
         <h2 className="font-semibold">{t("settings.notificationsSection")}</h2>
         <p className="text-sm text-(--muted)">{t("settings.notificationsHint")}</p>
         <PushToggle vapidPublicKey={vapidPublicKey} />
       </section>
 
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-4">
+      <section className="rounded-[22px] soft-raised p-5 space-y-4">
         <div>
           <h2 className="font-semibold">{t("settings.themeSection")}</h2>
           <p className="text-sm text-(--muted) mt-1">{t("settings.themeHint")}</p>
@@ -77,7 +77,7 @@ export default async function SettingsPage() {
         <ThemeControls />
       </section>
 
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
+      <section className="rounded-[22px] soft-raised p-5 space-y-3">
         <h2 className="font-semibold">{t("backup.section")}</h2>
         <p className="text-sm text-(--muted)">{t("backup.sectionHint")}</p>
         <BackupSection />

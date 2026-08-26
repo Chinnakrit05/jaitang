@@ -90,7 +90,7 @@ export function LedgerCard({
           <>
             <Link
               href={`/ledgers/${ledger.id}/edit`}
-              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm font-medium transition"
               aria-label={t("common.edit")}
             >
               <JtIcon name="pencil" size={16} />
@@ -98,7 +98,7 @@ export function LedgerCard({
             </Link>
             <Link
               href={`/ledgers/${ledger.id}/members`}
-              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm font-medium transition"
               aria-label={t("members.subtitle")}
             >
               <JtIcon name="users" size={16} />

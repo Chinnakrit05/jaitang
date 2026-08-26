@@ -280,7 +280,7 @@ export function CreateTransferForm({
               setToTouched(true);
             }}
             placeholder="0.00"
-            className="w-full px-3 py-2 rounded-lg border border-(--border) bg-(--card) text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)"
+            className="w-full px-3 py-2 rounded-[12px] soft-raised-sm text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)"
           />
           {fxError ? (
             <p className="text-xs text-(--expense)">
@@ -367,7 +367,7 @@ export function CreateTransferForm({
           type="button"
           onClick={() => router.push("/accounts")}
           disabled={pending}
-          className="flex-1 px-4 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium disabled:opacity-50"
+          className="flex-1 px-4 py-2.5 rounded-[16px] soft-raised hover:bg-(--background) text-sm font-medium disabled:opacity-50"
         >
           {t("common.cancel")}
         </button>

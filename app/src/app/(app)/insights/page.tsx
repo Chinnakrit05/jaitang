@@ -177,7 +177,7 @@ function PaymentCard({
   ofExpenseLabel: string;
 }) {
   return (
-    <div className="rounded-2xl border border-(--border) bg-(--card) px-4 py-3">
+    <div className="rounded-[22px] soft-raised px-4 py-3">
       <div className="flex items-center gap-2 text-(--muted)">
         {icon}
         <span className="text-sm font-medium">{label}</span>

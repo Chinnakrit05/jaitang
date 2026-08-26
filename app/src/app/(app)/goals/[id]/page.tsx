@@ -76,7 +76,7 @@ export default async function GoalDetailPage({
       </Link>
 
       {/* Header */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-5 relative">
+      <div className="rounded-[22px] soft-raised p-5 relative">
         {canManage && (
           <div className="absolute top-3 right-3 z-10">
             <EditGoalModal goal={goal} ledgerCurrency={ledger.currency} />
@@ -207,7 +207,7 @@ export default async function GoalDetailPage({
         {contributions.length === 0 ? (
           <p className="text-sm text-(--muted)">{t("goals.historyEmpty")}</p>
         ) : (
-          <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
+          <ul className="rounded-[22px] soft-raised divide-y divide-(--border) overflow-hidden">
             {contributions.map((c) => (
               <li
                 key={c.id}

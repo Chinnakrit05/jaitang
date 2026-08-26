@@ -57,7 +57,7 @@ export function InvitesPanel({
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition"
+          className="inline-flex items-center gap-2 rounded-[16px] soft-raised hover:bg-(--background) px-4 py-2.5 text-sm font-medium transition"
         >
           <JtIcon name="plus-fab" size={20} />
           {t("invites.createNew")}
@@ -82,7 +82,7 @@ export function InvitesPanel({
               router.refresh();
             });
           }}
-          className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-3"
+          className="rounded-[22px] soft-raised p-4 space-y-3"
         >
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
@@ -130,7 +130,7 @@ export function InvitesPanel({
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="flex-1 px-3 py-2 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm"
+              className="flex-1 px-3 py-2 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm"
             >
               {t("common.cancel")}
             </button>
@@ -148,7 +148,7 @@ export function InvitesPanel({
       {invites.length === 0 ? (
         <p className="text-sm text-(--muted) px-1">{t("invites.empty")}</p>
       ) : (
-        <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
+        <ul className="rounded-[22px] soft-raised divide-y divide-(--border) overflow-hidden">
           {invites.map((inv) => {
             const url = `${baseUrl}/invite/${inv.code}`;
             const expired =

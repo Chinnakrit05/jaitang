@@ -57,7 +57,7 @@ export default function NewTransactionPreviewPage() {
   }
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 soft-page">
       <div className="max-w-md mx-auto px-4 pt-6">
         <NewTransactionForm
           categories={categories}

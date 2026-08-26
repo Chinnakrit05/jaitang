@@ -68,7 +68,7 @@ export default async function YearReportPage({
         <PrintButton label={t("yearReport.exportPdf")} />
       </div>
 
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-6 print:border-0 print:p-0 print:bg-transparent">
+      <div className="rounded-[22px] soft-raised p-6 print:border-0 print:p-0 print:bg-transparent">
         <div className="flex items-center gap-3 mb-3">
           <JtIcon name="calendar" size={24} className="text-(--accent) print:hidden" />
           <h1 className="text-3xl font-bold tracking-tight">
@@ -128,7 +128,7 @@ export default async function YearReportPage({
       {!report.empty && (
         <>
           {/* Monthly bar chart */}
-          <section className="rounded-2xl border border-(--border) bg-(--card) p-6 print:border print:bg-transparent">
+          <section className="rounded-[22px] soft-raised p-6 print:border print:bg-transparent">
             <h2 className="font-semibold mb-4">
               {t("yearReport.monthlyHeading")}
             </h2>
@@ -143,7 +143,7 @@ export default async function YearReportPage({
           </section>
 
           {/* Top categories */}
-          <section className="rounded-2xl border border-(--border) bg-(--card) p-6 print:border print:bg-transparent">
+          <section className="rounded-[22px] soft-raised p-6 print:border print:bg-transparent">
             <h2 className="font-semibold mb-3">
               {t("yearReport.topCategoriesHeading")}
             </h2>
@@ -421,7 +421,7 @@ function BiggestCard({
 }) {
   const cls = tone === "income" ? "text-(--income)" : "text-(--expense)";
   return (
-    <div className="rounded-2xl border border-(--border) bg-(--card) p-4 print:border">
+    <div className="rounded-[22px] soft-raised p-4 print:border">
       <div className="text-[11px] uppercase tracking-wide text-(--muted) font-medium">
         {label}
       </div>

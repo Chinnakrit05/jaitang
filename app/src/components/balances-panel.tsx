@@ -141,7 +141,7 @@ function Section({
   return (
     <section>
       <h2 className={`text-sm font-semibold mb-2 ${accentClass}`}>{title}</h2>
-      <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
+      <ul className="rounded-[22px] soft-raised divide-y divide-(--border) overflow-hidden">
         {balances.map((b) => (
           <li
             key={`${b.debtorId}-${b.payerId}`}

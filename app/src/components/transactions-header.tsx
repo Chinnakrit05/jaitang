@@ -66,7 +66,7 @@ export function TransactionsHeader({ title }: { title: string }) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={t("transactions.filters.searchPlaceholder")}
-            className="w-full pl-9 pr-3 py-2.5 rounded-full border border-(--border) bg-(--card) text-sm focus:outline-none focus:ring-2 focus:ring-(--accent)/40"
+            className="w-full pl-9 pr-3 py-2.5 rounded-full soft-raised-sm text-sm focus:outline-none focus:ring-2 focus:ring-(--accent)/40"
           />
         </div>
         <button
@@ -88,7 +88,7 @@ export function TransactionsHeader({ title }: { title: string }) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t("transactions.searchAria")}
-        className="shrink-0 h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center text-(--foreground) hover:bg-(--background) transition"
+        className="shrink-0 h-10 w-10 rounded-full soft-raised-sm flex items-center justify-center text-(--foreground) hover:bg-(--background) transition"
       >
         <JtIcon name="search" size={20} />
       </button>

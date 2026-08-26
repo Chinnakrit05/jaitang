@@ -3,11 +3,11 @@
 @variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fafaf9;
+  --background: #EFE7DE;
   --foreground: #18181b;
-  --card: #ffffff;
+  --card: #EFE7DE;
   --card-foreground: #18181b;
-  --border: #e4e4e7;
+  --border: #DED5CB;
   --muted: #71717a;
   --accent: #4cc9f0;
   --accent-foreground: #001a22;
@@ -55,11 +55,11 @@
 }
 
 .dark {
-  --background: #09090b;
+  --background: #24211E;
   --foreground: #fafafa;
-  --card: #18181b;
+  --card: #24211E;
   --card-foreground: #fafafa;
-  --border: #27272a;
+  --border: #322D28;
   --muted: #a1a1aa;
   --accent: #4cc9f0;
   --accent-foreground: #001a22;
@@ -98,6 +98,19 @@
   --background: #000000;
   --card: #0a0a0a;
   --border: #1f1f1f;
+
+  /* Soft-UI on true black is a compromise by definition: the shade half
+     of every edge has nowhere darker to go, so depth comes almost
+     entirely from the highlight. Kept deliberately subtle — pushing the
+     highlight harder to fake the missing shadow just makes the surface
+     look grey, which is the one thing OLED users turned this on to
+     avoid. */
+  --soft-surface: #000000;
+  --soft-shade: #000000;
+  --soft-light: #1A1A1A;
+  --soft-well: #060606;
+  --soft-well-shade: #000000;
+  --soft-well-light: #171717;
 }
 
 /* ============================================================

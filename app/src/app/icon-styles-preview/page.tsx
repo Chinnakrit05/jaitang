@@ -50,7 +50,7 @@ export default function IconStylesPreview() {
         {ICON_STYLES.map((s) => (
           <section
             key={s}
-            className="rounded-xl border border-(--border) bg-(--card) p-3 space-y-2"
+            className="rounded-[16px] soft-raised p-3 space-y-2"
           >
             <h2 className="text-sm font-semibold text-center">
               {ICON_STYLE_LABELS[s]}

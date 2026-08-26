@@ -35,7 +35,7 @@ export default async function GoalsPage() {
       </div>
 
       {active.length > 0 && (
-        <div className="rounded-2xl border border-(--border) bg-(--card) p-4 flex items-center justify-between text-sm">
+        <div className="rounded-[22px] soft-raised p-4 flex items-center justify-between text-sm">
           <span className="text-(--muted)">{t("goals.totalProgressLabel")}</span>
           <span className="font-semibold tabular-nums">
             {formatCurrency(totalSaved, ledger.currency, fmtLocale)}
@@ -68,7 +68,7 @@ export default async function GoalsPage() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
+      <section className="rounded-[22px] soft-raised p-5 space-y-3">
         <h2 className="font-semibold flex items-center gap-2">
           <JtIcon name="plus-fab" size={20} />
           {t("goals.createTitle")}

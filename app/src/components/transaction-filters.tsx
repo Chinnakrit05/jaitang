@@ -78,7 +78,7 @@ export function TransactionFilters({
         <select
           value={kind}
           onChange={(e) => update({ kind: e.target.value || null })}
-          className="px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) text-sm"
+          className="px-3 py-1.5 rounded-[12px] soft-raised-sm text-sm"
         >
           <option value="">{t("transactions.filters.allKinds")}</option>
           <option value="income">📥 {t("common.income")}</option>
@@ -88,7 +88,7 @@ export function TransactionFilters({
         <select
           value={categoryId}
           onChange={(e) => update({ category: e.target.value || null })}
-          className="px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) text-sm"
+          className="px-3 py-1.5 rounded-[12px] soft-raised-sm text-sm"
         >
           <option value="">{t("transactions.filters.allCategories")}</option>
           {sortByHierarchy(categories).map((c) => (
@@ -104,7 +104,7 @@ export function TransactionFilters({
           <select
             value={tripFilter}
             onChange={(e) => update({ trip: e.target.value || null })}
-            className="px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) text-sm"
+            className="px-3 py-1.5 rounded-[12px] soft-raised-sm text-sm"
           >
             <option value="">{t("transactions.filters.allTrips")}</option>
             <option value="none">{t("transactions.filters.noTrip")}</option>

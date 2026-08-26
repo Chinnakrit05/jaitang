@@ -95,7 +95,7 @@ export function MonthHeatmap({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-4">
+      <div className="rounded-[22px] soft-raised p-4">
         {/* Header row: days of week */}
         <div className="grid grid-cols-7 gap-1 text-center text-[10px] uppercase tracking-wide text-(--muted) font-medium mb-2">
           {dowKeys.map((d) => (
@@ -223,7 +223,7 @@ export function MonthHeatmap({
 
       {/* Day detail panel */}
       {openDay && (
-        <div className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-3">
+        <div className="rounded-[22px] soft-raised p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">
               {new Intl.DateTimeFormat(fmtLocale, {

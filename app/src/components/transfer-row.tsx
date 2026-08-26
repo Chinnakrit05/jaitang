@@ -59,7 +59,7 @@ export function TransferRow({
   }
 
   return (
-    <div className="flex items-center gap-3 py-3 px-3 rounded-xl border border-(--border) bg-(--card)">
+    <div className="flex items-center gap-3 py-3 px-3 rounded-[16px] soft-raised">
       <span
         className="text-xl shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-(--background) border border-(--border)"
         aria-hidden

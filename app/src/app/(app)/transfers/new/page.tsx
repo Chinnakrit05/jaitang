@@ -59,7 +59,7 @@ export default async function NewTransferPage({
         </p>
       </div>
 
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-5">
+      <div className="rounded-[22px] soft-raised p-5">
         <CreateTransferForm
           accounts={choices}
           defaultFromId={sp.from}

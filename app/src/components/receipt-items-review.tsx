@@ -144,7 +144,7 @@ export function ReceiptItemsReview({
       <div
         role="dialog"
         aria-modal="true"
-        className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(94vw,520px)] max-h-[88vh] flex flex-col rounded-2xl bg-(--card) border border-(--border) shadow-2xl"
+        className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(94vw,520px)] max-h-[88vh] flex flex-col rounded-2xl soft-raised-sm shadow-2xl"
       >
         <div className="flex items-start justify-between gap-3 p-5 pb-3">
           <div className="min-w-0">
@@ -247,7 +247,7 @@ export function ReceiptItemsReview({
                             onChange={(e) =>
                               setItemAmount(item.key, e.target.value)
                             }
-                            className="w-20 shrink-0 text-right text-sm tabular-nums px-2 py-1 rounded-lg border border-(--border) bg-(--card)"
+                            className="w-20 shrink-0 text-right text-sm tabular-nums px-2 py-1 rounded-[12px] soft-raised-sm"
                           />
                           <select
                             value={item.categoryId ?? ""}
@@ -255,7 +255,7 @@ export function ReceiptItemsReview({
                               setItemCategory(item.key, e.target.value || null)
                             }
                             aria-label={t("common.category")}
-                            className="flex-1 min-w-0 sm:flex-none sm:max-w-28 text-xs px-2 py-1 rounded-lg border border-(--border) bg-(--card)"
+                            className="flex-1 min-w-0 sm:flex-none sm:max-w-28 text-xs px-2 py-1 rounded-[12px] soft-raised-sm"
                           >
                             <option value="">
                               {t("receiptItems.uncategorized")}

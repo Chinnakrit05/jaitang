@@ -154,7 +154,7 @@ export default async function ReportsPage({
       </div>
 
       {/* Month switcher */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) flex items-center justify-between px-3 py-2">
+      <div className="rounded-[22px] soft-raised flex items-center justify-between px-3 py-2">
         <Link
           href={`/reports?ym=${prev}`}
           aria-label={t("calendar.prev")}
@@ -173,7 +173,7 @@ export default async function ReportsPage({
       </div>
 
       {/* Summary card */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) grid grid-cols-3 divide-x divide-(--border)/60">
+      <div className="rounded-[22px] soft-raised grid grid-cols-3 divide-x divide-(--border)/60">
         <SumCell
           label={t("transactions.totalIncome")}
           amount={totalIncome}

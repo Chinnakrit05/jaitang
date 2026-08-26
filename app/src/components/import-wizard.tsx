@@ -87,7 +87,7 @@ export function ImportWizard({ ledgerCurrency }: { ledgerCurrency: string }) {
               setRows([]);
               setCreatedCount(0);
             }}
-            className="px-4 py-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm"
+            className="px-4 py-2 rounded-[16px] soft-raised hover:bg-(--background) text-sm"
           >
             {t("import.uploadAnother")}
           </button>
@@ -269,7 +269,7 @@ function PreviewStep({
       </div>
 
       {tripStats.withTripName > 0 && (
-        <div className="rounded-2xl border border-(--border) bg-(--card) p-3 text-sm space-y-1.5">
+        <div className="rounded-[22px] soft-raised p-3 text-sm space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="font-medium">
               {t("import.tripsTitle")}
@@ -296,7 +296,7 @@ function PreviewStep({
       )}
 
       {/* Month breakdown */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-2">
+      <div className="rounded-[22px] soft-raised p-4 space-y-2">
         <h3 className="font-semibold text-sm">{t("import.byMonth")}</h3>
         <ul className="text-sm divide-y divide-(--border)">
           {monthSummary.map((m) => (
@@ -329,7 +329,7 @@ function PreviewStep({
       </div>
 
       {/* Rows */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) overflow-hidden">
+      <div className="rounded-[22px] soft-raised overflow-hidden">
         <div className="px-4 py-2.5 border-b border-(--border) text-sm font-semibold flex items-center gap-2">
           <JtIcon name="sparkles" size={18} className="text-(--accent)" />
           {t("import.previewTitle")}
@@ -361,7 +361,7 @@ function PreviewStep({
           type="button"
           onClick={onCancel}
           disabled={pending}
-          className="flex-1 px-4 py-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium"
+          className="flex-1 px-4 py-3 rounded-[16px] soft-raised hover:bg-(--background) text-sm font-medium"
         >
           {t("common.cancel")}
         </button>
@@ -464,7 +464,7 @@ function RowEditor({
       <select
         value={selectValue}
         onChange={(e) => handleSelect(e.target.value)}
-        className="px-2 py-1 rounded-lg border border-(--border) bg-(--card) text-xs max-w-[180px]"
+        className="px-2 py-1 rounded-[12px] soft-raised-sm text-xs max-w-[180px]"
       >
         <option value="" disabled>
           —
@@ -505,7 +505,7 @@ function RowEditor({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-(--border) bg-(--card) p-3">
+    <div className="rounded-[16px] soft-raised p-3">
       <div className="text-xs text-(--muted)">{label}</div>
       <div className="text-xl font-semibold tabular-nums">{value}</div>
     </div>

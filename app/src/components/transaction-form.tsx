@@ -392,7 +392,7 @@ export function TransactionForm({
             value={amountInput}
             onChange={(e) => setAmountInput(e.target.value)}
             placeholder={t("transactions.amountPlaceholder")}
-            className="flex-1 min-w-0 px-4 py-3 rounded-xl border border-(--border) bg-(--card) text-2xl font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)"
+            className="flex-1 min-w-0 px-4 py-3 rounded-[16px] soft-raised text-2xl font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-(--accent)"
             autoFocus={!initial}
           />
           <CurrencyPicker
@@ -433,7 +433,7 @@ export function TransactionForm({
       </div>
 
       {canSplit && (
-        <div className="rounded-xl border border-(--border) bg-(--card) p-3">
+        <div className="rounded-[16px] soft-raised p-3">
           <input type="hidden" name="splitWith" value={splitParam} />
           <label className="flex items-center justify-between gap-3 cursor-pointer">
             <span className="flex items-center gap-2 text-sm font-medium">
@@ -487,7 +487,7 @@ export function TransactionForm({
                           className="h-5 w-5 rounded-full"
                         />
                       ) : (
-                        <span className="h-5 w-5 rounded-full bg-(--card) border border-(--border) text-[10px] flex items-center justify-center font-semibold">
+                        <span className="h-5 w-5 rounded-full soft-raised-sm text-[10px] flex items-center justify-center font-semibold">
                           {m.name.slice(0, 1).toUpperCase()}
                         </span>
                       )}
@@ -517,7 +517,7 @@ export function TransactionForm({
           else gets a dropdown so old rows can be tagged or retagged
           freely. */}
       {((trips && trips.length > 0) || initial?.tripId) && (
-        <div className="rounded-xl border border-(--border) bg-(--card) p-3">
+        <div className="rounded-[16px] soft-raised p-3">
           <input type="hidden" name="tripId" value={tripId ?? ""} />
           {!initial && activeTrip ? (
             <label className="flex items-center justify-between gap-3 cursor-pointer">
@@ -582,7 +582,7 @@ export function TransactionForm({
           initial?.accountId &&
           !(accounts ?? []).some((a) => a.id === initial.accountId);
         return (
-          <div className="rounded-xl border border-(--border) bg-(--card) p-3">
+          <div className="rounded-[16px] soft-raised p-3">
             <input type="hidden" name="accountId" value={accountId ?? ""} />
             <div className="space-y-1.5">
               <label className="block text-sm font-medium flex items-center gap-2">
@@ -728,7 +728,7 @@ export function TransactionForm({
           // `required` validation only fires on submit, by which time the
           // effect has populated the value.
           suppressHydrationWarning
-          className="w-full px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--accent)"
+          className="w-full px-3 py-2.5 rounded-[16px] soft-raised focus:outline-none focus:ring-2 focus:ring-(--accent)"
         />
       </div>
 
@@ -754,7 +754,7 @@ export function TransactionForm({
               : undefined
           }
           autoComplete="off"
-          className="w-full px-3 py-2.5 rounded-xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--accent)"
+          className="w-full px-3 py-2.5 rounded-[16px] soft-raised focus:outline-none focus:ring-2 focus:ring-(--accent)"
         />
         {noteSuggestions && noteSuggestions.length > 0 && (
           <datalist id="tx-note-suggestions">
@@ -775,7 +775,7 @@ export function TransactionForm({
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex-1 px-4 py-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) transition font-medium"
+          className="flex-1 px-4 py-3 rounded-[16px] soft-raised hover:bg-(--background) transition font-medium"
         >
           {t("common.cancel")}
         </button>

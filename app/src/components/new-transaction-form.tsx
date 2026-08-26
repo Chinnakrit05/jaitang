@@ -341,7 +341,7 @@ export function NewTransactionForm({
           type="button"
           onClick={() => router.back()}
           aria-label={t("common.cancel")}
-          className="h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm hover:bg-(--background) transition"
+          className="h-10 w-10 rounded-full soft-raised-sm flex items-center justify-center shadow-sm hover:bg-(--background) transition"
         >
           <JtIcon name="x" size={18} />
         </button>
@@ -362,7 +362,7 @@ export function NewTransactionForm({
       </div>
 
       {/* Kind toggle */}
-      <div className="grid grid-cols-2 p-1.5 rounded-full border border-(--border) bg-(--card)">
+      <div className="grid grid-cols-2 p-1.5 rounded-full soft-raised-sm">
         <button
           type="button"
           onClick={() => setKind("expense")}
@@ -468,7 +468,7 @@ export function NewTransactionForm({
 
       {/* Note + Payment */}
       <div className="grid grid-cols-5 gap-3 items-stretch">
-        <label className="col-span-3 rounded-2xl border border-(--border) bg-(--card) px-4 py-3 flex items-start gap-2">
+        <label className="col-span-3 rounded-[22px] soft-raised px-4 py-3 flex items-start gap-2">
           <span className="text-base mt-0.5" aria-hidden>
             📝
           </span>
@@ -561,7 +561,7 @@ export function NewTransactionForm({
           common flow (use "now") needs zero taps and the override is
           one tap away when the user is logging something they paid
           for yesterday. */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) px-4 py-3 flex items-center justify-between gap-3">
+      <div className="rounded-[22px] soft-raised px-4 py-3 flex items-center justify-between gap-3">
         <label
           htmlFor="occurredAt-picker"
           className="text-sm font-medium text-(--foreground)/80 shrink-0"
@@ -661,10 +661,13 @@ function PayPill({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full h-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-2xl border bg-(--card) text-sm font-medium transition",
-        "border-(--border) text-(--foreground)"
+        "w-full h-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-[22px] text-sm font-medium transition",
+        selected ? "soft-well" : "soft-raised soft-pressable",
+        "text-(--foreground)"
       )}
-      style={selected ? { boxShadow: `inset 0 0 0 2px ${PEACH_STRONG}` } : undefined}
+      style={
+        selected ? { boxShadow: `inset 0 0 0 2px ${PEACH_STRONG}` } : undefined
+      }
     >
       <span className="flex items-center gap-2">
         <span aria-hidden>{icon}</span>
@@ -781,15 +784,17 @@ function CategoryTile({
         // readers.
         aria-disabled={editing}
         className={cn(
-          "w-full aspect-square rounded-2xl border bg-(--card) flex flex-col items-center justify-center gap-1 p-2 transition",
-          selected ? "border-transparent" : "border-(--border) hover:bg-(--background)",
+          "w-full aspect-square rounded-[22px] flex flex-col items-center justify-center gap-1 p-2 transition",
+          selected ? "soft-well" : "soft-raised soft-pressable",
           editing && "cursor-grab active:cursor-grabbing"
         )}
-        style={selected ? { boxShadow: `inset 0 0 0 2px ${PEACH_STRONG}` } : undefined}
+        style={
+          selected ? { boxShadow: `inset 0 0 0 2px ${PEACH_STRONG}` } : undefined
+        }
       >
         {parent && (
           <span
-            className="absolute top-1 right-1 h-5 w-5 rounded-full flex items-center justify-center bg-(--background) shadow-sm"
+            className="absolute top-1 right-1 h-5 w-5 rounded-full flex items-center justify-center soft-raised-sm"
             style={{ fontSize: 12, lineHeight: 1 }}
             title={parent.name}
             aria-label={parent.name}

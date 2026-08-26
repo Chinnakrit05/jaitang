@@ -21,7 +21,7 @@ export default async function ImportPage() {
       </div>
 
       {!aiEnabled && (
-        <div className="rounded-2xl border border-(--border) bg-(--card) p-4 text-sm text-(--muted)">
+        <div className="rounded-[22px] soft-raised p-4 text-sm text-(--muted)">
           {t("import.notConfigured")}
         </div>
       )}

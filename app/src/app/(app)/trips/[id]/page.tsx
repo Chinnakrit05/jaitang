@@ -106,7 +106,7 @@ export default async function TripDetailPage({
           so it stays visible regardless of how the title + badges wrap on
           narrow screens — previously it sat after the h1 in flex-wrap and
           got pushed below the fold on mobile. */}
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-5 relative">
+      <div className="rounded-[22px] soft-raised p-5 relative">
         {canManage && (
           <div className="absolute top-3 right-3 z-10">
             <EditTripModal trip={trip} ledgerCurrency={ledger.currency} />

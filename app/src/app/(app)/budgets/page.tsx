@@ -40,7 +40,7 @@ export default async function BudgetsPage() {
         <p className="text-sm text-(--muted) mt-1">{t("budgets.subtitle")}</p>
       </div>
 
-      <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
+      <ul className="rounded-[22px] soft-raised divide-y divide-(--border) overflow-hidden">
         {expenseCats.map((c) => (
           <BudgetRow
             key={c.id}

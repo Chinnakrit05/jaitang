@@ -28,7 +28,7 @@ export function MembersPanel({
   };
 
   return (
-    <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border) overflow-hidden">
+    <ul className="rounded-[22px] soft-raised divide-y divide-(--border) overflow-hidden">
       {members.map((m) => {
         const isOwner = m.role === "owner";
         const isYou = m.user_id === currentUserId;
@@ -79,7 +79,7 @@ export function MembersPanel({
                       router.refresh();
                     });
                   }}
-                  className="px-2 py-1 rounded-lg border border-(--border) bg-(--card) text-sm"
+                  className="px-2 py-1 rounded-[12px] soft-raised-sm text-sm"
                 >
                   <option value="editor">{ROLE_LABEL.editor}</option>
                   <option value="viewer">{ROLE_LABEL.viewer}</option>

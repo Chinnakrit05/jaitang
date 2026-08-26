@@ -99,7 +99,7 @@ export default async function CalendarPage({
       <div className="flex items-center justify-between">
         <Link
           href={`/calendar?ym=${prev}`}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm transition"
         >
           <JtIcon name="chevron-left" size={18} />
           {t("calendar.prev")}
@@ -107,7 +107,7 @@ export default async function CalendarPage({
         <h2 className="font-semibold text-lg">{monthLabel}</h2>
         <Link
           href={`/calendar?ym=${next}`}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm transition"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm transition"
         >
           {t("calendar.next")}
           <JtIcon name="chevron-right" size={18} />
@@ -163,7 +163,7 @@ export default async function CalendarPage({
       {/* Top 3 spending days — only render when we have any expense
           rows; new month / empty ledgers skip this entirely. */}
       {topDays.length > 0 && (
-        <section className="rounded-2xl border border-(--border) bg-(--card) p-4">
+        <section className="rounded-[22px] soft-raised p-4">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
             <JtIcon name="flame" size={18} className="text-(--expense)" />
             {t("calendar.topDaysHeading")}
@@ -237,7 +237,7 @@ function StatTile({
         : ""
       : "";
   return (
-    <div className="rounded-xl border border-(--border) bg-(--card) px-3 py-2.5 card-hover">
+    <div className="rounded-[16px] soft-raised px-3 py-2.5 card-hover">
       <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-(--muted) mb-1">
         <span className="font-medium truncate">{label}</span>
         <span className={`${cls} opacity-70`}>{icon}</span>

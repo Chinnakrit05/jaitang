@@ -103,7 +103,7 @@ export function EditAccountModal({
         onClick={openModal}
         aria-label={t("accounts.editAccount")}
         title={t("accounts.editAccount")}
-        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
+        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm font-medium transition"
       >
         <JtIcon name="pencil" size={18} />
         <span className="hidden sm:inline">{t("accounts.editAccount")}</span>
@@ -120,7 +120,7 @@ export function EditAccountModal({
           <div
             role="dialog"
             aria-modal="true"
-            className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,440px)] max-h-[85vh] overflow-y-auto rounded-2xl bg-(--card) border border-(--border) shadow-2xl p-5"
+            className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,440px)] max-h-[85vh] overflow-y-auto rounded-2xl soft-raised-sm shadow-2xl p-5"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-lg">
@@ -254,7 +254,7 @@ export function EditAccountModal({
                   type="button"
                   onClick={() => setOpen(false)}
                   disabled={pending}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 rounded-[16px] soft-raised hover:bg-(--background) text-sm font-medium disabled:opacity-50"
                 >
                   {t("common.cancel")}
                 </button>

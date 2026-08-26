@@ -66,7 +66,7 @@ export function ChatPanel({
       {/* Messages */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto rounded-2xl border border-(--border) bg-(--card) p-4 space-y-3"
+        className="flex-1 overflow-y-auto rounded-[22px] soft-raised p-4 space-y-3"
       >
         {empty ? (
           <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto">
@@ -133,7 +133,7 @@ export function ChatPanel({
           placeholder={t("chat.placeholder")}
           disabled={pending}
           maxLength={3000}
-          className="flex-1 px-4 py-3 rounded-2xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--accent) text-sm"
+          className="flex-1 px-4 py-3 rounded-[22px] soft-raised focus:outline-none focus:ring-2 focus:ring-(--accent) text-sm"
         />
         <button
           type="submit"

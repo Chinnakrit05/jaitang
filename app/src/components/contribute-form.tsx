@@ -50,7 +50,7 @@ export function ContributeForm({
         e.preventDefault();
         submit();
       }}
-      className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-2.5"
+      className="rounded-[22px] soft-raised p-4 space-y-2.5"
     >
       <h3 className="text-sm font-semibold flex items-center gap-2">
         <JtIcon name="plus-fab" size={18} />

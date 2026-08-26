@@ -22,7 +22,7 @@ export default async function LoginPage() {
       <main className="flex-1 flex items-center justify-center px-6 relative overflow-hidden">
         <DecorativePattern kind="confetti" className="top-8 left-8 hidden sm:block opacity-80" />
         <DecorativePattern kind="confetti" className="bottom-8 right-8 hidden sm:block opacity-80 rotate-180" />
-        <div className="w-full max-w-sm rounded-2xl border border-(--border) bg-(--card) p-8 shadow-sm card-premium relative">
+        <div className="w-full max-w-sm rounded-[22px] soft-raised p-8 shadow-sm card-premium relative">
           <div className="text-center mb-8">
             <span className="text-5xl block mb-3">💰</span>
             <h1 className="text-2xl font-bold mb-1">{t("login.title")}</h1>
@@ -37,7 +37,7 @@ export default async function LoginPage() {
           >
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center gap-3 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-3 font-medium transition"
+              className="w-full inline-flex items-center justify-center gap-3 rounded-[16px] soft-raised hover:bg-(--background) px-4 py-3 font-medium transition"
             >
               <GoogleIcon />
               {t("login.continueWithGoogle")}

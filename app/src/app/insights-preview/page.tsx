@@ -75,7 +75,7 @@ export default function InsightsPreviewPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 soft-page">
       <div className="max-w-md mx-auto px-4 pt-6 space-y-4">
         <div>
           <h1 className="text-2xl font-bold">{t("insights.title")}</h1>
@@ -217,7 +217,7 @@ export default function InsightsPreviewPage() {
         </section>
 
         {selectedRow && (
-          <section className="rounded-2xl border border-(--border) bg-(--card) overflow-hidden">
+          <section className="rounded-[22px] soft-raised overflow-hidden">
             <header className="flex items-center gap-3 px-4 py-3 bg-(--background)/40">
               <span
                 className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
@@ -312,7 +312,7 @@ function PaymentCard({
   ofExpenseLabel: string;
 }) {
   return (
-    <div className="rounded-2xl border border-(--border) bg-(--card) px-4 py-3">
+    <div className="rounded-[22px] soft-raised px-4 py-3">
       <div className="flex items-center gap-2 text-(--muted)">
         {icon}
         <span className="text-sm font-medium">{label}</span>

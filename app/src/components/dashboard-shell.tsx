@@ -98,7 +98,7 @@ export async function DashboardShell({
   const personalLabel = t("ledgers.personal");
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col soft-page">
       {/* Top bar — fully hidden. We adopted the mobile shell as the
           canonical layout for every viewport, so the desktop header
           (logo / ledger pill / period stat / theme toggle / logout)
@@ -108,7 +108,7 @@ export async function DashboardShell({
           so the props (NavbarStat / ThemeToggle / signOut form) still
           have a stable home if we ever want a tablet/desktop variant
           back. */}
-      <header className="hidden items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-(--border) header-accent-edge sticky top-0 z-20 bg-(--background)/80 backdrop-blur">
+      <header className="hidden items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-(--border) header-accent-edge sticky top-0 z-20 bg-(--soft-surface)/85 backdrop-blur">
         <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
           <span className="text-xl">📒</span>
           <span className="font-semibold hidden sm:inline">{t("appName")}</span>
@@ -117,7 +117,7 @@ export async function DashboardShell({
         {activeLedger && (
           <Link
             href="/ledgers"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) transition text-sm min-w-0"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full soft-raised-sm hover:bg-(--background) transition text-sm min-w-0"
           >
             <span className="shrink-0"><EmojiOrIcon value={activeLedger.icon} fallback="users" size={20} /></span>
             <span className="font-medium truncate max-w-[140px]">
@@ -152,7 +152,7 @@ export async function DashboardShell({
               className="h-9 w-9 rounded-full border border-(--border)"
             />
           ) : (
-            <div className="h-9 w-9 rounded-full bg-(--card) border border-(--border) flex items-center justify-center text-sm font-semibold">
+            <div className="h-9 w-9 rounded-full soft-raised-sm flex items-center justify-center text-sm font-semibold">
               {(userName ?? "?").slice(0, 1).toUpperCase()}
             </div>
           )}

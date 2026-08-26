@@ -124,7 +124,7 @@ export function RecurringPanel({
         <Link
           href="/more"
           aria-label={t("common.back")}
-          className="h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm hover:bg-(--background) transition"
+          className="h-10 w-10 rounded-full soft-raised-sm flex items-center justify-center shadow-sm hover:bg-(--background) transition"
         >
           <JtIcon name="chevron-left" size={18} />
         </Link>
@@ -255,7 +255,7 @@ export function RecurringPanel({
 
       {/* Undo toast — sits above the bottom nav; one delete at a time. */}
       {deletedRule && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full border border-(--border) bg-(--card) shadow-lg">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full soft-raised-sm shadow-lg">
           <span className="text-sm truncate max-w-48">
             {t("recurring.deletedToast", { name: deletedRule.label })}
           </span>
@@ -330,7 +330,7 @@ function CreateRecurringForm({
           }
         });
       }}
-      className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-4"
+      className="rounded-[22px] soft-raised p-5 space-y-4"
     >
       <div className="grid grid-cols-2 gap-2 p-1 bg-(--background) rounded-xl">
         <button
@@ -483,7 +483,7 @@ function CreateRecurringForm({
         <button
           type="button"
           onClick={onDone}
-          className="flex-1 px-3 py-2 rounded-lg border border-(--border) bg-(--card) text-sm"
+          className="flex-1 px-3 py-2 rounded-[12px] soft-raised-sm text-sm"
         >
           {t("common.cancel")}
         </button>
@@ -811,7 +811,7 @@ function EditRecurringModal({
       <div
         role="dialog"
         aria-modal="true"
-        className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,500px)] max-h-[85vh] overflow-y-auto rounded-2xl bg-(--card) border border-(--border) shadow-2xl p-5"
+        className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,500px)] max-h-[85vh] overflow-y-auto rounded-2xl soft-raised-sm shadow-2xl p-5"
       >
         <h2 className="font-semibold text-lg mb-4">{t("recurring.editTitle")}</h2>
         <div className="space-y-3">
@@ -931,7 +931,7 @@ function EditRecurringModal({
               type="button"
               onClick={onClose}
               disabled={pending}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 rounded-[16px] soft-raised hover:bg-(--background) text-sm font-medium disabled:opacity-50"
             >
               {t("common.cancel")}
             </button>
@@ -1039,7 +1039,7 @@ function ReorderableRuleList({
   }
 
   const listClass =
-    "rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border)/60 overflow-hidden";
+    "rounded-[22px] soft-raised divide-y divide-(--border)/60 overflow-hidden";
 
   if (!reordering) {
     return (

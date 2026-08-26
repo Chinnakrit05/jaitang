@@ -50,7 +50,7 @@ export default async function AccountsPage() {
         {active.length >= 2 && (
           <Link
             href="/transfers/new"
-            className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition"
+            className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm font-medium transition"
           >
             <JtIcon name="arrow-left-right" size={18} />
             <span className="hidden sm:inline">{t("transfers.newButton")}</span>
@@ -61,7 +61,7 @@ export default async function AccountsPage() {
       {/* Net worth chart — only render when the user has at least one
           account (otherwise the chart is just a flat line at 0). */}
       {accounts.length > 0 && (
-        <section className="rounded-2xl border border-(--border) bg-(--card) p-5 card-hover">
+        <section className="rounded-[22px] soft-raised p-5 card-hover">
           <div className="flex items-center gap-2 mb-3">
             <JtIcon name="insights" size={20} className="text-(--accent)" />
             <h2 className="font-semibold text-sm">{t("netWorth.heading")}</h2>
@@ -98,7 +98,7 @@ export default async function AccountsPage() {
       </section>
 
       {/* Create form */}
-      <section className="rounded-2xl border border-(--border) bg-(--card) p-5 space-y-3">
+      <section className="rounded-[22px] soft-raised p-5 space-y-3">
         <h2 className="font-semibold flex items-center gap-2">
           <JtIcon name="plus-fab" size={20} />
           {t("accounts.createTitle")}

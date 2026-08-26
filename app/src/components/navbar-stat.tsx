@@ -64,7 +64,7 @@ export function NavbarStat({
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={pending}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-(--border) bg-(--card) hover:bg-(--background) transition text-sm tabular-nums disabled:opacity-60"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full soft-raised-sm hover:bg-(--background) transition text-sm tabular-nums disabled:opacity-60"
         aria-label={t("navbarStat.label")}
         title={t(`navbarStat.periods.${period}`)}
       >
@@ -80,7 +80,7 @@ export function NavbarStat({
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-44 rounded-xl border border-(--border) bg-(--card) shadow-lg z-30 py-1">
+        <div className="absolute right-0 mt-2 w-44 rounded-[16px] soft-raised shadow-lg z-30 py-1">
           {PERIODS.map((p) => (
             <button
               key={p}

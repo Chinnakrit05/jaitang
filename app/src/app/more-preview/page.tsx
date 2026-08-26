@@ -76,7 +76,7 @@ export default function MorePreviewPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 soft-page">
       <div className="max-w-md mx-auto px-4 pt-6 space-y-5">
         <h1 className="text-2xl font-bold">{t("nav.more")}</h1>
 
@@ -117,7 +117,7 @@ export default function MorePreviewPage() {
               <Link
                 key={q.href}
                 href={q.href}
-                className="flex flex-col items-center gap-2 rounded-2xl border border-(--border) bg-(--card) px-3 py-4 hover:bg-(--background) transition"
+                className="flex flex-col items-center gap-2 rounded-[22px] soft-raised px-3 py-4 hover:bg-(--background) transition"
               >
                 <span
                   className="h-14 w-14 rounded-2xl flex items-center justify-center"
@@ -137,7 +137,7 @@ export default function MorePreviewPage() {
           <h2 className="text-xs font-semibold text-(--muted) px-1 mb-2">
             {t("more.general")}
           </h2>
-          <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border)/60 overflow-hidden">
+          <ul className="rounded-[22px] soft-raised divide-y divide-(--border)/60 overflow-hidden">
             {general.map((g) => (
               <li key={g.href}>
                 <Link

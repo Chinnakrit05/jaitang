@@ -129,7 +129,7 @@ export default async function MorePage() {
             <Link
               key={q.href}
               href={q.href}
-              className="flex flex-col items-center gap-2 rounded-2xl border border-(--border) bg-(--card) px-3 py-4 hover:bg-(--background) transition"
+              className="flex flex-col items-center gap-2 rounded-[22px] soft-raised px-3 py-4 hover:bg-(--background) transition"
             >
               <span
                 className="h-14 w-14 rounded-2xl flex items-center justify-center"
@@ -150,7 +150,7 @@ export default async function MorePage() {
         <h2 className="text-xs font-semibold text-(--muted) px-1 mb-2">
           {t("more.general")}
         </h2>
-        <ul className="rounded-2xl border border-(--border) bg-(--card) divide-y divide-(--border)/60 overflow-hidden">
+        <ul className="rounded-[22px] soft-raised divide-y divide-(--border)/60 overflow-hidden">
           {general.map((g) => (
             <li key={g.href}>
               <Link
@@ -189,7 +189,7 @@ export default async function MorePage() {
       >
         <button
           type="submit"
-          className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-2xl border border-(--border) bg-(--card) text-sm font-medium text-(--muted) hover:text-(--foreground) hover:bg-(--background) transition"
+          className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-[22px] soft-raised text-sm font-medium text-(--muted) hover:text-(--foreground) hover:bg-(--background) transition"
         >
           <JtIcon name="logout" size={18} />
           {t("common.logoutFull")}

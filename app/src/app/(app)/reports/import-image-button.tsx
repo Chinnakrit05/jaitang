@@ -119,7 +119,7 @@ export function ImportImageButton({
         disabled={parsing}
         aria-label={t("reports.import.button")}
         title={t("reports.import.button")}
-        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium transition disabled:opacity-60"
+        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-2.5 rounded-[12px] soft-raised-sm hover:bg-(--background) text-sm font-medium transition disabled:opacity-60"
       >
         {parsing ? (
           <JtIcon name="loader-2" size={18} className="animate-spin" />
@@ -146,7 +146,7 @@ export function ImportImageButton({
           <div
             role="dialog"
             aria-modal="true"
-            className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(94vw,460px)] max-h-[88vh] flex flex-col rounded-2xl bg-(--card) border border-(--border) shadow-2xl"
+            className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[min(94vw,460px)] max-h-[88vh] flex flex-col rounded-2xl soft-raised-sm shadow-2xl"
           >
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <h2 className="font-semibold text-lg">{t("reports.import.title")}</h2>
@@ -240,7 +240,7 @@ export function ImportImageButton({
                 type="button"
                 onClick={close}
                 disabled={committing}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) text-sm font-medium disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 rounded-[16px] soft-raised hover:bg-(--background) text-sm font-medium disabled:opacity-50"
               >
                 {t("common.cancel")}
               </button>

@@ -98,7 +98,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
           disabled={pending}
           aria-label={t("ocr.selectImage")}
           title={error ?? t("ocr.title")}
-          className="h-10 w-10 rounded-full bg-(--card) border border-(--border) flex items-center justify-center shadow-sm hover:bg-(--background) transition disabled:opacity-60"
+          className="h-10 w-10 rounded-full soft-raised-sm flex items-center justify-center shadow-sm hover:bg-(--background) transition disabled:opacity-60"
         >
           {pending ? (
             <JtIcon name="loader-2" size={18} className="animate-spin" />
@@ -140,7 +140,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-[16px] soft-raised hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
           {pending ? (
             <>

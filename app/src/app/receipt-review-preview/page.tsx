@@ -53,11 +53,11 @@ export default function ReceiptReviewPreviewPage() {
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 soft-page">
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-4 py-2 rounded-xl border border-(--border) bg-(--card) text-sm font-medium"
+        className="px-4 py-2 rounded-[16px] soft-raised text-sm font-medium"
       >
         เปิดหน้าต่างรีวิวใบเสร็จ
       </button>

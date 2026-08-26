@@ -72,7 +72,7 @@ export function SubscriptionStats({
     <div className="space-y-3">
       {/* Headline stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-(--border) bg-(--card) p-4 card-hover">
+        <div className="rounded-[22px] soft-raised p-4 card-hover">
           <div className="flex items-center justify-between text-xs uppercase tracking-wide text-(--muted) mb-2">
             <span className="font-medium">
               {t("subscriptions.monthlyCost")}
@@ -101,7 +101,7 @@ export function SubscriptionStats({
         </div>
 
         {incomeEntries.length > 0 && (
-          <div className="rounded-2xl border border-(--border) bg-(--card) p-4 card-hover">
+          <div className="rounded-[22px] soft-raised p-4 card-hover">
             <div className="flex items-center justify-between text-xs uppercase tracking-wide text-(--muted) mb-2">
               <span className="font-medium">
                 {t("subscriptions.monthlyIncome")}

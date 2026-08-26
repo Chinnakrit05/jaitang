@@ -48,7 +48,7 @@ export function QuickAddPanel() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-(--border) bg-(--card) p-4 space-y-3">
+      <div className="rounded-[22px] soft-raised p-4 space-y-3">
         <div className="flex items-start gap-2">
           <JtIcon name="sparkles" size={22} className="text-(--accent) shrink-0 mt-1" />
           <p className="text-sm text-(--muted)">{t("quick.hint")}</p>
@@ -99,7 +99,7 @@ export function QuickAddPanel() {
             type="button"
             onClick={() => setText(ex)}
             disabled={pending}
-            className="text-xs px-2.5 py-1 rounded-full border border-(--border) bg-(--card) text-(--muted) hover:text-(--foreground) hover:bg-(--background) transition disabled:opacity-50"
+            className="text-xs px-2.5 py-1 rounded-full soft-raised-sm text-(--muted) hover:text-(--foreground) hover:bg-(--background) transition disabled:opacity-50"
           >
             {ex}
           </button>

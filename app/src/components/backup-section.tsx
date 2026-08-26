@@ -72,7 +72,7 @@ export function BackupSection() {
             inputRef.current?.click();
           }}
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-xl border border-(--border) bg-(--card) hover:bg-(--background) px-4 py-2.5 text-sm font-medium disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-[16px] soft-raised hover:bg-(--background) px-4 py-2.5 text-sm font-medium disabled:opacity-50"
         >
           {pending ? (
             <>
