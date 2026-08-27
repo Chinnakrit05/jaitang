@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { JtIcon, EmojiOrIcon, type IconName } from "@/components/icons";
+import {
+  JtIcon,
+  EmojiOrIcon,
+  ICON_PICKER_GROUPS,
+  PICKER_ICON_NAMES,
+  type IconName,
+} from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -21,33 +27,9 @@ const PRESET_COLORS = [
   "#22c55e", "#84cc16", "#14b8a6", "#06b6d4",
 ];
 
-// Curated icon library for the category picker. Wider than the
-// original 14 because the click-to-cycle UX got tedious once we had
-// more than ~6 categories; the new grid picker shows them all at
-// once. Grouped loosely by use case so the spatial layout maps to
-// "what kind of thing am I logging" — food first, transport, etc.
-// Two old emoji choices (shirt 👕, dog 🐶) still don't have a Sticker
-// Pop equivalent so they're omitted; categories that picked those
-// previously still render fine via EmojiOrIcon at display time.
-const PRESET_ICONS: IconName[] = [
-  // Food + drink
-  "ramen", "coffee",
-  // Transport + travel
-  "car", "airplane", "cruise-ship", "backpack", "mountain", "beach", "camping",
-  // Shopping + lifestyle
-  "shopping-cart", "gift", "tag",
-  // Home + bills
-  "house", "pill", "shield-check",
-  // Tech + entertainment
-  "laptop", "smartphone", "game-controller", "books", "party", "mic", "volume-2",
-  // Money + finance
-  "money-bag", "piggy-bank", "credit-card", "cash-stack", "gold-coin", "bitcoin",
-  // Other catch-all
-  "award", "graduation-cap", "target-domain", "flame", "sparkle",
-];
-// Plain emoji default so a freshly-opened create form shows the
-// same look users will pick from below (no JtIcon placeholder).
-const DEFAULT_CATEGORY_ICON = "✨";
+// A vector name rather than the old "✨" char, so a category created
+// without touching the picker still follows the active icon style.
+const DEFAULT_CATEGORY_ICON = "sparkle";
 
 type OtherLedger = {
   id: string;
@@ -600,27 +582,24 @@ const EMOJI_GROUPS: Array<{ key: string; label: string; emojis: string[] }> = [
   },
 ];
 
-/** Flat lookup of every emoji we know about — used to detect whether
- *  the stored `icon` value lives in the emoji or the JtIcon bucket. */
-const ALL_PRESET_EMOJIS = new Set(
-  EMOJI_GROUPS.flatMap((g) => g.emojis)
-);
-
 /**
  * Inline picker for the category create + edit forms. Two tabs:
- *   - Icons → curated JtIcons (PRESET_ICONS)
- *   - Emoji → 400+ emoji bucketed into category strips
+ *   - ไอคอน  → 250+ JtIcons, grouped (picker-groups.ts)
+ *   - อิโมจิ  → 550+ emoji, same groups
  *
- * Emoji tab adds a second row of group pills (food / transport /
- * shopping / …) so the user can jump straight to the relevant page
- * instead of scrolling through every option. The grid itself caps
- * height + scrolls vertically so a long group doesn't push the
- * Save button off-screen.
+ * The icon tab was hidden for a while because the only styles then were
+ * the hand-drawn ones, which read as too illustrative next to the rest of
+ * the UI. Lucide and Tabler changed that, and only an icon name can follow
+ * the style the user picked — an emoji is a font glyph and always looks
+ * the same. So icons lead, and emoji stay for everything no icon set
+ * draws (specific dishes, animals, faces).
  *
- * Tap a tile to pick; selected tile lights up with the accent. The
- * stored `icon` column accepts either kind — display goes through
- * <EmojiOrIcon> which branches on whether the value matches an icon
- * name.
+ * Both tabs put the group strip on top so the user jumps to the right page
+ * instead of scrolling a 500-tile wall, and both cap the grid height so a
+ * long group can't push the Save button off-screen.
+ *
+ * The stored `icon` column takes either kind — display goes through
+ * <EmojiOrIcon>, which branches on whether the value is a known name.
  */
 function IconPickerGrid({
   value,
@@ -629,34 +608,67 @@ function IconPickerGrid({
   value: string;
   onChange: (icon: string) => void;
 }) {
-  // Icon (JtIcon) tab is hidden for now per product call — the emoji
-  // catalog covers the common cases and the JtIcon set looked too
-  // illustrative next to the rest of the iOS-style UI. Variables
-  // PRESET_ICONS / ALL_PRESET_EMOJIS are kept for the rare existing
-  // category that still references a JtIcon name (rendered via
-  // <EmojiOrIcon> at display time).
-  // Open the emoji group that contains the current value, falling
-  // back to the first group otherwise.
-  const initialEmojiGroup =
-    EMOJI_GROUPS.find((g) => g.emojis.includes(value))?.key ??
-    EMOJI_GROUPS[0].key;
-  const [emojiGroup, setEmojiGroup] = useState<string>(initialEmojiGroup);
-  const activeGroup =
-    EMOJI_GROUPS.find((g) => g.key === emojiGroup) ?? EMOJI_GROUPS[0];
+  const t = useTranslations();
+  // Open on whichever tab the current value came from, so editing a
+  // category lands next to what it already has.
+  const [tab, setTab] = useState<"icon" | "emoji">(
+    PICKER_ICON_NAMES.has(value) ? "icon" : "emoji"
+  );
+  const [iconGroup, setIconGroup] = useState<string>(
+    () =>
+      ICON_PICKER_GROUPS.find((g) =>
+        (g.names as string[]).includes(value)
+      )?.key ?? ICON_PICKER_GROUPS[0].key
+  );
+  const [emojiGroup, setEmojiGroup] = useState<string>(
+    () => EMOJI_GROUPS.find((g) => g.emojis.includes(value))?.key ?? EMOJI_GROUPS[0].key
+  );
+
+  const isIcons = tab === "icon";
+  // One shape for both tabs so the strip and the grid are written once.
+  const groups = isIcons
+    ? ICON_PICKER_GROUPS.map((g) => ({
+        key: g.key,
+        label: g.label,
+        items: g.names as string[],
+      }))
+    : EMOJI_GROUPS.map((g) => ({ key: g.key, label: g.label, items: g.emojis }));
+  const groupKey = isIcons ? iconGroup : emojiGroup;
+  const setGroupKey = isIcons ? setIconGroup : setEmojiGroup;
+  const activeGroup = groups.find((g) => g.key === groupKey) ?? groups[0];
 
   return (
     <div className="rounded-lg border border-(--border) bg-(--background)/40 p-2 space-y-2">
+      <div className="grid grid-cols-2 gap-1 p-0.5 rounded-lg bg-(--card)">
+        {(["icon", "emoji"] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => setTab(k)}
+            aria-pressed={tab === k}
+            className={cn(
+              "py-1.5 rounded-md text-xs font-medium transition",
+              tab === k
+                ? "bg-(--accent)/20 text-(--foreground)"
+                : "text-(--muted) hover:text-(--foreground)"
+            )}
+          >
+            {k === "icon" ? t("categories.iconTab") : t("categories.emojiTab")}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-2">
-        {/* Group strip — emoji labels as compact chips so the row
-            stays scannable even with 13 groups. */}
+        {/* Group strip — emoji chips so the row stays scannable at 13
+            groups, on both tabs. */}
         <div className="flex gap-1 overflow-x-auto scrollbar-none -mx-2 px-2 pb-1">
-          {EMOJI_GROUPS.map((g) => {
-            const isActive = g.key === emojiGroup;
+          {groups.map((g) => {
+            const isActive = g.key === groupKey;
             return (
               <button
                 key={g.key}
                 type="button"
-                onClick={() => setEmojiGroup(g.key)}
+                onClick={() => setGroupKey(g.key)}
                 aria-pressed={isActive}
                 aria-label={g.key}
                 className={cn(
@@ -671,33 +683,35 @@ function IconPickerGrid({
             );
           })}
         </div>
-        {/* Scrollable grid, capped so very long groups don't push
-            the Save button off-screen. */}
         <div className="max-h-64 overflow-y-auto pr-1">
           <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
-            {activeGroup.emojis.map((e, idx) => {
-              const isActive = value === e;
+            {activeGroup.items.map((item, idx) => {
+              const isActive = value === item;
               return (
                 <button
-                  key={`${e}-${idx}`}
+                  key={`${item}-${idx}`}
                   type="button"
-                  onClick={() => onChange(e)}
-                  aria-label={e}
+                  onClick={() => onChange(item)}
+                  aria-label={item}
                   aria-pressed={isActive}
                   className={cn(
                     "aspect-square rounded-lg flex items-center justify-center text-xl leading-none transition",
-                      isActive
-                        ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
-                        : "hover:bg-(--card)"
-                    )}
-                  >
-                    {e}
-                  </button>
-                );
-              })}
-            </div>
+                    isActive
+                      ? "bg-(--accent)/15 ring-2 ring-(--accent)/50"
+                      : "hover:bg-(--card)"
+                  )}
+                >
+                  {isIcons ? (
+                    <JtIcon name={item as IconName} size={22} />
+                  ) : (
+                    item
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
+      </div>
     </div>
   );
 }

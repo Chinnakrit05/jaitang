@@ -125,7 +125,9 @@ export async function createCategory(
     .insert({
       ledger_id: ledgerId,
       name: input.name,
-      icon: input.icon ?? "✨",
+      // A name, not the old "✨" char, so a category created without a
+      // pick still follows the active icon style.
+      icon: input.icon ?? "sparkle",
       color: input.color ?? "#94a3b8",
       kind: input.kind,
       sort_order: nextOrder,
