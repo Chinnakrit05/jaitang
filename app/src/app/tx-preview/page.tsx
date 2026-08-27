@@ -37,7 +37,9 @@ export default function TransactionsPreviewPage() {
       id: "c3",
       ledger_id: "demo",
       name: "คาเฟ่",
-      icon: "☕",
+      // Stored as a JtIcon name rather than an emoji: the icon column
+      // holds both formats, and the preview should exercise both.
+      icon: "coffee",
       color: null,
       kind: "expense",
       sort_order: 3,
@@ -135,7 +137,7 @@ export default function TransactionsPreviewPage() {
       note: "รำๆๆๆๆๆ",
       payment_method: "transfer",
       occurred_at: "2026-05-25T17:12:00+07:00",
-      category: { id: "c3", name: "คาเฟ่", icon: "☕", color: null },
+      category: { id: "c3", name: "คาเฟ่", icon: "coffee", color: null },
     },
     {
       ...baseTx,

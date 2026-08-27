@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { JtIcon, iconNameToEmoji } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 
 import { getLocale, getTranslations } from "next-intl/server";
@@ -383,9 +383,9 @@ function CategoryList({
           return (
             <div key={`${c.category_id}-${c.name}`}>
               <div className="flex items-center justify-between text-xs">
-                <span className="truncate">
-                  {c.icon ? `${iconNameToEmoji(c.icon)} ` : ""}
-                  {c.name || "—"}
+                <span className="flex items-center gap-1 min-w-0">
+                  <EmojiOrIcon value={c.icon} size={13} className="shrink-0" />
+                  <span className="truncate">{c.name || "—"}</span>
                 </span>
                 <span className={`tabular-nums font-medium ${textCls}`}>
                   {formatCurrency(c.total, currency, fmtLocale)}{" "}
@@ -430,7 +430,14 @@ function BiggestCard({
         {formatCurrency(tx.amount, currency, fmtLocale)}
       </div>
       <div className="text-xs text-(--muted) mt-1">
-        {tx.category ? `${tx.category.icon ?? ""} ${tx.category.name}` : "—"}
+        {tx.category ? (
+          <span className="inline-flex items-center gap-1 align-middle">
+            <EmojiOrIcon value={tx.category.icon} size={13} />
+            {tx.category.name}
+          </span>
+        ) : (
+          "—"
+        )}
         {" • "}
         {formatDate(tx.occurred_at, fmtLocale)}
       </div>

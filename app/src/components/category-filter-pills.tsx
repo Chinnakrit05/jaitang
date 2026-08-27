@@ -5,7 +5,7 @@ import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { iconNameToEmoji } from "@/components/icons";
+import { EmojiOrIcon } from "@/components/icons";
 
 /**
  * Horizontal scrollable category filter pills. First pill is "ทั้งหมด"
@@ -68,9 +68,7 @@ export function CategoryFilterPills({ categories }: { categories: Category[] }) 
                 : "bg-(--card) text-(--foreground) border border-(--border) hover:border-(--muted)/40"
             )}
           >
-            <span aria-hidden className="text-base leading-none">
-              {iconNameToEmoji(c.icon)}
-            </span>
+            <EmojiOrIcon value={c.icon} size={16} className="shrink-0" />
             <span className="truncate max-w-[120px]">{c.name}</span>
           </button>
         );

@@ -16,7 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 import type { MonthSummary } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
-import { iconNameToEmoji } from "@/components/icons";
+import { EmojiOrIcon } from "@/components/icons";
 
 const FALLBACK_COLORS = [
   "#f97316",
@@ -96,9 +96,8 @@ export function ExpenseByCategoryChart({ summary, currency, fmtLocale }: ChartPr
                   className="h-2.5 w-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: d.color }}
                 />
-                <span className="truncate">
-                  {iconNameToEmoji(d.icon)} {d.name}
-                </span>
+                <EmojiOrIcon value={d.icon} size={15} className="shrink-0" />
+                <span className="truncate">{d.name}</span>
               </span>
               <span className="text-(--muted) tabular-nums shrink-0">
                 {formatCurrency(d.value, currency, fmtLocale)}

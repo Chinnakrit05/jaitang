@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { JtIcon } from "@/components/icons";
+import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -185,9 +185,7 @@ export function MonthHeatmap({
                 {expense > 0 && (
                   <span className="mt-1 inline-flex items-center gap-0.5 text-[9px] leading-none font-medium opacity-90">
                     {topIcon && (
-                      <span className="text-[10px]" aria-hidden>
-                        {topIcon}
-                      </span>
+                      <EmojiOrIcon value={topIcon} size={10} />
                     )}
                     <span className="tabular-nums">
                       {compactAmount(expense)}
@@ -288,8 +286,12 @@ export function MonthHeatmap({
                     key={tx.id}
                     className="flex items-center gap-3 px-3 py-2 hover:bg-(--card) transition group"
                   >
-                    <span className="text-lg shrink-0">
-                      {tx.category?.icon ?? "✨"}
+                    <span className="shrink-0 inline-flex">
+                      <EmojiOrIcon
+                        value={tx.category?.icon}
+                        fallback="✨"
+                        size={18}
+                      />
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">
