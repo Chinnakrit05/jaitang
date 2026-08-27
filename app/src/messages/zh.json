@@ -807,7 +807,25 @@
     "wipeAllHint": "删除您拥有的所有账本(包括记录、分类、预算、定期、推送通知)并退出登录。他人分享给您的账本不受影响。",
     "wipeAllButton": "删除全部并退出登录",
     "wipeAllConfirmType": "请输入「DELETE」以确认",
-    "wipeWorking": "删除中…"
+    "wipeWorking": "删除中…",
+    "iconMigration": {
+      "title": "把 emoji 换成图标",
+      "hint": "emoji 是文字符号而不是矢量图，无法跟随图标风格。这里只替换有图标可以对应的那些。",
+      "scan": "先查看",
+      "scanning": "检查中…",
+      "summary": "已检查 {scanned} 项 · {changes} 项可更换",
+      "none": "没有需要更换的项目",
+      "keptCount": "已选择 {count} 项",
+      "apply": "更换 {count} 项",
+      "applying": "保存中…",
+      "done": "已更换 {count} 项",
+      "appliedPartially": "保存了 {count} 项后出错：{error}",
+      "kindCategory": "分类",
+      "kindAccount": "账户",
+      "kindTrip": "旅行",
+      "kindGoal": "目标",
+      "kindLedger": "账本"
+    }
   },
   "navbarStat": {
     "label": "周期统计",

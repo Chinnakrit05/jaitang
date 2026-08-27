@@ -817,7 +817,25 @@
     "wipeAllHint": "Removes every ledger you own — its transactions, categories, budgets, recurring rules, and push subscriptions — then signs you out. Ledgers others shared with you are untouched.",
     "wipeAllButton": "Delete everything and sign out",
     "wipeAllConfirmType": "Type \"DELETE\" to confirm",
-    "wipeWorking": "Deleting…"
+    "wipeWorking": "Deleting…",
+    "iconMigration": {
+      "title": "Convert emoji to icons",
+      "hint": "An emoji is a text glyph, not a vector, so it can't follow the icon style. This swaps the ones an icon can stand in for.",
+      "scan": "Check first",
+      "scanning": "Checking…",
+      "summary": "Checked {scanned} · {changes} can change",
+      "none": "Nothing to convert",
+      "keptCount": "{count} selected",
+      "apply": "Convert {count}",
+      "applying": "Saving…",
+      "done": "Converted {count}",
+      "appliedPartially": "Saved {count}, then hit a problem: {error}",
+      "kindCategory": "Category",
+      "kindAccount": "Account",
+      "kindTrip": "Trip",
+      "kindGoal": "Goal",
+      "kindLedger": "Ledger"
+    }
   },
   "navbarStat": {
     "label": "Period summary",

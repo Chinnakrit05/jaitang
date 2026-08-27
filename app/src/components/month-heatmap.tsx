@@ -289,7 +289,7 @@ export function MonthHeatmap({
                     <span className="shrink-0 inline-flex">
                       <EmojiOrIcon
                         value={tx.category?.icon}
-                        fallback="✨"
+                        fallback="sparkle"
                         size={18}
                       />
                     </span>

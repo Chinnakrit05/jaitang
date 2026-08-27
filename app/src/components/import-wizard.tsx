@@ -415,7 +415,7 @@ function RowEditor({
       onPatch({
         categoryId: null,
         newCategoryName: row.newCategoryName ?? "ใหม่",
-        newCategoryIcon: row.newCategoryIcon ?? "✨",
+        newCategoryIcon: row.newCategoryIcon ?? "sparkle",
       });
       return;
     }

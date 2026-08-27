@@ -807,7 +807,25 @@
     "wipeAllHint": "あなたが所有する全帳簿(取引、カテゴリ、予算、定期取引、プッシュ通知)を削除してサインアウトします。他人が共有した帳簿は影響を受けません。",
     "wipeAllButton": "全て削除してサインアウト",
     "wipeAllConfirmType": "確認のため「DELETE」と入力",
-    "wipeWorking": "削除中…"
+    "wipeWorking": "削除中…",
+    "iconMigration": {
+      "title": "絵文字をアイコンに変換",
+      "hint": "絵文字は文字であってベクター画像ではないため、アイコンスタイルには追従しません。アイコンで置き換えられるものだけを差し替えます。",
+      "scan": "先に確認する",
+      "scanning": "確認中…",
+      "summary": "{scanned}件を確認 · {changes}件が変更できます",
+      "none": "変換するものはありません",
+      "keptCount": "{count}件を選択中",
+      "apply": "{count}件を変換",
+      "applying": "保存中…",
+      "done": "{count}件を変換しました",
+      "appliedPartially": "{count}件を保存した後に問題が発生しました: {error}",
+      "kindCategory": "カテゴリ",
+      "kindAccount": "口座",
+      "kindTrip": "旅行",
+      "kindGoal": "目標",
+      "kindLedger": "帳簿"
+    }
   },
   "navbarStat": {
     "label": "期間サマリー",

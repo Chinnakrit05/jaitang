@@ -1,12 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { Category, TxKind } from "@/lib/types";
+import { iconNameForEmoji } from "./emoji-to-icon";
 
 export type CategorySuggestion = {
   /** category id from the existing list, or null if none fits */
   categoryId: string | null;
   /** if proposing a new category instead, this is the new name */
   newCategoryName: string | null;
-  /** suggested icon (emoji) when proposing new */
+  /** suggested icon when proposing a new category: an icon name when
+   *  the emoji the model picked maps to one, else the emoji itself */
   newCategoryIcon: string | null;
 };
 
@@ -122,7 +124,12 @@ Mapping hints:
     result.set(item.key, {
       categoryId: useExisting ? m.categoryId : null,
       newCategoryName: useExisting ? null : (m.newCategoryName ?? null),
-      newCategoryIcon: useExisting ? null : (m.newCategoryIcon ?? "✨"),
+      // The model is asked for an emoji because that is a thing it is
+      // good at; we convert it to an icon name where one exists, so the
+      // categories an import creates follow the icon style like the rest.
+      newCategoryIcon: useExisting
+        ? null
+        : iconNameForEmoji(m.newCategoryIcon) ?? m.newCategoryIcon ?? "sparkle",
     });
   }
 

@@ -2,6 +2,7 @@ import { requireSession } from "@/lib/session";
 import { JtIcon } from "@/components/icons";
 import { getTranslations } from "next-intl/server";
 import { ThemeControls } from "@/components/theme-controls";
+import { IconMigrationSection } from "@/components/icon-migration-section";
 import { PushToggle } from "@/components/push-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { BackupSection } from "@/components/backup-section";
@@ -75,6 +76,16 @@ export default async function SettingsPage() {
           <p className="text-sm text-(--muted) mt-1">{t("settings.themeHint")}</p>
         </div>
         <ThemeControls />
+      </section>
+
+      <section className="rounded-[22px] soft-raised p-5 space-y-3">
+        <h2 className="font-semibold">
+          {t("settings.iconMigration.title")}
+        </h2>
+        <p className="text-sm text-(--muted)">
+          {t("settings.iconMigration.hint")}
+        </p>
+        <IconMigrationSection />
       </section>
 
       <section className="rounded-[22px] soft-raised p-5 space-y-3">

@@ -44,7 +44,7 @@ export function ExpenseByCategoryChart({ summary, currency, fmtLocale }: ChartPr
     .map((c, i) => ({
       name: c.name,
       value: c.total,
-      icon: c.icon ?? "✨",
+      icon: c.icon ?? "sparkle",
       color: c.color ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length],
     }));
 

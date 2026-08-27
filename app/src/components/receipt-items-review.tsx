@@ -198,7 +198,7 @@ export function ReceiptItemsReview({
                 <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-(--border) bg-(--card)">
                   <span className="flex items-center gap-2 min-w-0">
                     {category ? (
-                      <EmojiOrIcon value={category.icon ?? "✨"} size={18} />
+                      <EmojiOrIcon value={category.icon ?? "sparkle"} size={18} />
                     ) : (
                       <JtIcon name="help-circle" size={16} />
                     )}

@@ -352,7 +352,7 @@ export async function applyImportAction(
     if (newCategoryCache.has(cacheKey)) continue;
     const cat = await createCategory(ledgerId, {
       name: r.newCategoryName,
-      icon: r.newCategoryIcon ?? "✨",
+      icon: r.newCategoryIcon ?? "sparkle",
       kind: r.kind,
     });
     newCategoryCache.set(cacheKey, cat.id);
