@@ -14,6 +14,7 @@
 // ICON_STYLES / ICON_STYLE_LABELS in icon-names.ts.
 
 import { readFile, writeFile } from 'node:fs/promises';
+import { EXTRA_ICONS, extraIconNamesSource } from './extra-icons.mjs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,6 +22,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const NAMES_TS = join(ROOT, 'src', 'components', 'icons', 'icon-names.ts');
 const LUCIDE_DIR = join(ROOT, 'node_modules', 'lucide-react', 'dist', 'esm', 'icons');
 const OUT_SPRITE = join(ROOT, 'public', 'icons-lucide.svg');
+const OUT_EXTRA_TS = join(ROOT, 'src', 'components', 'icons', 'extra-icon-names.ts');
 
 /**
  * App icon name -> Lucide icon name, for the names Lucide doesn't carry
@@ -121,29 +123,34 @@ async function readLucideNode(lucideName, depth = 0) {
 }
 
 async function main() {
+  // The shared 137 first, then the vector-only extras. Both end up in the
+  // same sprite; what separates them is that the hand-drawn styles have no
+  // symbol for the second group, which is what JtIcon's fallback handles.
   const names = await readIconNames();
   const symbols = [];
   const substitutions = [];
 
-  for (const name of names) {
-    const lucideName = ALIASES[name] ?? name;
-    if (lucideName !== name) substitutions.push(`${name} -> ${lucideName}`);
-    let nodes;
-    try {
-      nodes = await readLucideNode(lucideName);
-    } catch (err) {
-      // Fail loudly: a silently missing symbol renders as an empty box.
-      throw new Error(`icon "${name}" (lucide "${lucideName}"): ${err.message}`);
-    }
-    // Lucide's own 24-unit grid is kept rather than rescaled to the 48-unit
+  // Lucide's own 24-unit grid is kept rather than rescaled to the 48-unit
     // box the other sprites use. <use> maps the symbol's viewBox onto the
     // host <svg>'s viewport, so it scales to match — and stroke-width
     // scales with it, which is what keeps the weight right at every size.
+  async function addSymbol(name, sourceName) {
+    if (sourceName !== name) substitutions.push(`${name} -> ${sourceName}`);
+    let nodes;
+    try {
+      nodes = await readLucideNode(sourceName);
+    } catch (err) {
+      // Fail loudly: a silently missing symbol renders as an empty box.
+      throw new Error(`icon "${name}" (lucide "${sourceName}"): ${err.message}`);
+    }
     symbols.push(
       `<symbol id="ic-${name}" viewBox="0 0 24 24" fill="none" stroke="currentColor" ` +
         `stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${nodes}</symbol>`
     );
   }
+
+  for (const name of names) await addSymbol(name, ALIASES[name] ?? name);
+  for (const icon of EXTRA_ICONS) await addSymbol(icon.name, icon.lucide ?? icon.name);
 
   const sprite =
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
@@ -163,7 +170,13 @@ async function main() {
     await writeFile(NAMES_TS, ts, 'utf8');
   }
 
-  console.log(`icons-lucide.svg: ${symbols.length} symbols`);
+  // Regenerated from extra-icons.mjs alone, so both builders write the
+  // same bytes and neither has to run before the other.
+  await writeFile(OUT_EXTRA_TS, extraIconNamesSource(), 'utf8');
+
+  console.log(
+    `icons-lucide.svg: ${symbols.length} symbols (${names.length} shared + ${EXTRA_ICONS.length} extra)`
+  );
   console.log(`aliased: ${substitutions.length}`);
 }
 

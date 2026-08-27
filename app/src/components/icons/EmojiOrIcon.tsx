@@ -1,7 +1,8 @@
-import { ICON_NAMES, type IconName } from "./icon-names";
-import { JtIcon } from "./JtIcon";
+import { ICON_NAMES, type IconName as SharedIconName } from "./icon-names";
+import { EXTRA_ICON_NAMES } from "./extra-icon-names";
+import { JtIcon, type IconName } from "./JtIcon";
 
-const ICON_NAME_SET = new Set<string>(ICON_NAMES);
+const ICON_NAME_SET = new Set<string>([...ICON_NAMES, ...EXTRA_ICON_NAMES]);
 
 /**
  * Unicode emoji fallback for places where SVG can't render — most importantly
@@ -9,7 +10,7 @@ const ICON_NAME_SET = new Set<string>(ICON_NAMES);
  * Returns the emoji character that visually maps to the icon name, or the
  * input value as-is if it's already an emoji / unknown string.
  */
-const NAME_TO_EMOJI: Partial<Record<IconName, string>> = {
+const NAME_TO_EMOJI: Partial<Record<SharedIconName, string>> = {
   // Account palette
   "cash-stack": "💵",
   "piggy-bank": "🐷",
@@ -50,7 +51,7 @@ const NAME_TO_EMOJI: Partial<Record<IconName, string>> = {
 
 export function iconNameToEmoji(value: string | null | undefined): string {
   if (!value) return "";
-  return NAME_TO_EMOJI[value as IconName] ?? value;
+  return NAME_TO_EMOJI[value as SharedIconName] ?? value;
 }
 
 type Props = {
