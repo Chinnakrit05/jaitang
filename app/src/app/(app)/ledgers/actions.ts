@@ -56,7 +56,10 @@ export async function createSharedLedgerAction(formData: FormData) {
     .select("id")
     .single();
   if (error) throw error;
-  await sb.rpc("seed_default_categories", { _ledger_id: created.id });
+  // The argument name has to match the function's parameter: PostgREST
+  // resolves an RPC by named argument, so "_ledger_id" reached no
+  // function at all and the new ledger came up with no categories.
+  await sb.rpc("seed_default_categories", { p_ledger_id: created.id });
 
   refreshAll();
   redirect(`/ledgers/${created.id}/members`);

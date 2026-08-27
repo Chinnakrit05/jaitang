@@ -20,7 +20,7 @@ create table if not exists public.users (
 create table if not exists public.ledgers (
   id uuid primary key default uuid_generate_v4(),
   name text not null,
-  icon text default '📒',
+  icon text default 'ledgers',
   color text default '#4cc9f0',
   currency text default 'THB',
   owner_id uuid not null references public.users(id) on delete cascade,
@@ -65,7 +65,7 @@ create table if not exists public.categories (
   id uuid primary key default uuid_generate_v4(),
   ledger_id uuid not null references public.ledgers(id) on delete cascade,
   name text not null,
-  icon text default '✨',
+  icon text default 'sparkle',
   color text default '#94a3b8',
   kind tx_kind not null,
   sort_order int not null default 0,
@@ -89,7 +89,7 @@ create table if not exists public.trips (
   id uuid primary key default uuid_generate_v4(),
   ledger_id uuid not null references public.ledgers(id) on delete cascade,
   name text not null,
-  icon text default '✈️',
+  icon text default 'airplane',
   color text default '#3b82f6',
   starts_at timestamptz,
   ends_at timestamptz,
@@ -120,7 +120,7 @@ create table if not exists public.accounts (
   ledger_id uuid not null references public.ledgers(id) on delete cascade,
   name text not null,
   type text not null check (type in ('cash', 'bank', 'credit_card', 'e_wallet')),
-  icon text default '💵',
+  icon text default 'banknote',
   color text default '#10b981',
   -- Starting balance (e.g. ATM has ฿2,000 cash when you create the account).
   -- Editable later via update.
@@ -488,7 +488,7 @@ create table if not exists public.goals (
   id uuid primary key default uuid_generate_v4(),
   ledger_id uuid not null references public.ledgers(id) on delete cascade,
   name text not null,
-  icon text default '🎯',
+  icon text default 'bullseye',
   color text default '#10b981',
   target_amount numeric(14, 2) not null check (target_amount > 0),
   deadline timestamptz,
@@ -640,23 +640,86 @@ alter table public.loan_repayments enable row level security;
 
 -- ============================================================
 -- Seed defaults helper (called on user's first ledger creation)
+--
+-- Icons are JtIcon names rather than emoji chars: the column takes either,
+-- but only a name follows the icon style the user picked. Each one here is
+-- what the settings converter turns the old emoji into, so a fresh ledger
+-- and a converted one end up identical.
 -- ============================================================
-create or replace function public.seed_default_categories(_ledger_id uuid)
-returns void as $$
-begin
-  insert into public.categories (ledger_id, name, icon, color, kind, sort_order) values
-    (_ledger_id, 'อาหาร', '🍜', '#f97316', 'expense', 1),
-    (_ledger_id, 'เดินทาง', '🚗', '#3b82f6', 'expense', 2),
-    (_ledger_id, 'ของใช้', '🛒', '#a855f7', 'expense', 3),
-    (_ledger_id, 'บันเทิง', '🎮', '#ec4899', 'expense', 4),
-    (_ledger_id, 'สุขภาพ', '💊', '#10b981', 'expense', 5),
-    (_ledger_id, 'ที่อยู่อาศัย', '🏠', '#64748b', 'expense', 6),
-    (_ledger_id, 'การศึกษา', '📚', '#0ea5e9', 'expense', 7),
-    (_ledger_id, 'อื่น ๆ', '✨', '#94a3b8', 'expense', 8),
-    (_ledger_id, 'เงินเดือน', '💰', '#22c55e', 'income', 1),
-    (_ledger_id, 'โบนัส', '🎁', '#84cc16', 'income', 2),
-    (_ledger_id, 'ขายของ', '🏷️', '#14b8a6', 'income', 3),
-    (_ledger_id, 'ลงทุน', '📈', '#06b6d4', 'income', 4),
-    (_ledger_id, 'อื่น ๆ', '✨', '#94a3b8', 'income', 5);
-end;
-$$ language plpgsql;
+-- Corrected 2026-08-27 to match what production actually runs. The version
+-- that used to live here had drifted badly: a different parameter name, a
+-- void return, no SECURITY DEFINER, no auth or membership check, no
+-- "already seeded" guard, and a different category list with no
+-- subcategories. Anything generated from this file was therefore weaker
+-- than the real thing.
+create or replace function public.seed_default_categories(p_ledger_id uuid)
+returns integer
+language plpgsql
+security definer
+set search_path to 'public'
+as $function$
+DECLARE
+  uid uuid;
+  inserted_count int := 0;
+  food_id uuid;
+  travel_id uuid;
+  shopping_id uuid;
+BEGIN
+  uid := auth.uid();
+  IF uid IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.ledger_members
+    WHERE ledger_id = p_ledger_id AND user_id = uid
+  ) THEN
+    RAISE EXCEPTION 'Not a member of this ledger';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM public.categories
+    WHERE ledger_id = p_ledger_id AND deleted_at IS NULL
+  ) THEN
+    RETURN 0;
+  END IF;
+
+  INSERT INTO public.categories (ledger_id, name, icon, kind, sort_order)
+    VALUES (p_ledger_id, 'อาหาร', 'ramen', 'expense'::tx_kind, 0)
+    RETURNING id INTO food_id;
+  INSERT INTO public.categories (ledger_id, name, icon, kind, sort_order)
+    VALUES (p_ledger_id, 'เดินทาง', 'car', 'expense'::tx_kind, 1)
+    RETURNING id INTO travel_id;
+  INSERT INTO public.categories (ledger_id, name, icon, kind, sort_order)
+    VALUES (p_ledger_id, 'ช้อปปิ้ง', 'shopping-bag', 'expense'::tx_kind, 2)
+    RETURNING id INTO shopping_id;
+
+  INSERT INTO public.categories (ledger_id, name, icon, kind, sort_order)
+    VALUES
+      (p_ledger_id, 'สุขภาพ', 'pill', 'expense'::tx_kind, 3),
+      (p_ledger_id, 'บิล', 'receipt', 'expense'::tx_kind, 4),
+      (p_ledger_id, 'บันเทิง', 'movie', 'expense'::tx_kind, 5),
+      (p_ledger_id, 'บ้าน', 'house', 'expense'::tx_kind, 6),
+      (p_ledger_id, 'การศึกษา', 'graduation-cap', 'expense'::tx_kind, 7);
+
+  INSERT INTO public.categories (ledger_id, name, icon, kind, parent_id, sort_order)
+    VALUES
+      (p_ledger_id, 'คาเฟ่', 'coffee', 'expense'::tx_kind, food_id, 0),
+      (p_ledger_id, 'ของหวาน', 'cake', 'expense'::tx_kind, food_id, 1),
+      (p_ledger_id, 'น้ำมัน', 'fuel', 'expense'::tx_kind, travel_id, 0),
+      (p_ledger_id, 'ขนส่งสาธารณะ', 'train', 'expense'::tx_kind, travel_id, 1),
+      (p_ledger_id, 'เสื้อผ้า', 'shirt', 'expense'::tx_kind, shopping_id, 0);
+
+  INSERT INTO public.categories (ledger_id, name, icon, kind, sort_order)
+    VALUES
+      (p_ledger_id, 'เงินเดือน', 'money-bag', 'income'::tx_kind, 0),
+      (p_ledger_id, 'รายรับพิเศษ', 'gift', 'income'::tx_kind, 1),
+      (p_ledger_id, 'ดอกเบี้ย / ลงทุน', 'banknote', 'income'::tx_kind, 2);
+
+  SELECT COUNT(*) INTO inserted_count
+  FROM public.categories
+  WHERE ledger_id = p_ledger_id AND deleted_at IS NULL;
+
+  RETURN inserted_count;
+END;
+$function$;

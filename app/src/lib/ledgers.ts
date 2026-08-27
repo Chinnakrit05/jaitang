@@ -70,8 +70,11 @@ export async function ensurePersonalLedger(userId: string) {
   }
   if (!created) throw new Error("Failed to create personal ledger");
 
+  // Named argument, so it must be the function's own parameter name —
+  // see ledgers/actions.ts. This one throws, so a first-time sign-in was
+  // failing outright rather than quietly seeding nothing.
   const { error: seedErr } = await sb.rpc("seed_default_categories", {
-    _ledger_id: created.id,
+    p_ledger_id: created.id,
   });
   if (seedErr) throw seedErr;
 
