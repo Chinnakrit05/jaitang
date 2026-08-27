@@ -171,8 +171,8 @@ export function CategoryManager({
 
       {/* Undo toast — sits above the bottom nav; one delete at a time. */}
       {deletedCategory && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full soft-raised-sm shadow-lg">
-          <span className="text-sm truncate max-w-48">
+        <div className="fixed bottom-24 inset-x-4 z-50 mx-auto w-fit max-w-[calc(100%-2rem)] flex items-center gap-3 px-4 py-2.5 rounded-full soft-raised-sm shadow-lg">
+          <span className="min-w-0 text-sm truncate">
             {t("categories.deletedToast", { name: deletedCategory.label })}
           </span>
           <button
@@ -212,6 +212,9 @@ function CreateCategoryForm({
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [parentId, setParentId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  // The picker is 250px of tiles. Left open it pushed the category list
+  // itself off a phone screen, so it opens from the icon tile instead.
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <form
@@ -239,12 +242,20 @@ function CreateCategoryForm({
       className="rounded-[22px] soft-raised p-4 space-y-3"
     >
       <div className="flex items-center gap-2">
-        <span
-          aria-label={t("ledgers.icon")}
-          className="px-3 py-2 rounded-lg border border-(--border) bg-(--background) flex items-center justify-center shrink-0"
+        <button
+          type="button"
+          onClick={() => setPickerOpen((open) => !open)}
+          aria-expanded={pickerOpen}
+          aria-label={t("categories.iconTab")}
+          className={cn(
+            "shrink-0 h-11 w-11 rounded-[14px] border bg-(--background) flex items-center justify-center transition",
+            pickerOpen
+              ? "border-(--accent) ring-2 ring-(--accent)/40"
+              : "border-(--border)"
+          )}
         >
-          <EmojiOrIcon value={icon} size={28} />
-        </span>
+          <EmojiOrIcon value={icon} size={26} />
+        </button>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -254,21 +265,25 @@ function CreateCategoryForm({
               : t("categories.incomePlaceholder")
           }
           maxLength={50}
-          className="flex-1 px-3 py-2 rounded-lg border border-(--border) bg-(--background) focus:outline-none focus:ring-2 focus:ring-(--accent)"
+          // min-w-0 is what stops this pushing the add button off the
+          // screen: without it the input refuses to shrink past its
+          // placeholder and the row overflows the card.
+          className="min-w-0 flex-1 h-11 px-3 rounded-[14px] border border-(--border) bg-(--background) focus:outline-none focus:ring-2 focus:ring-(--accent)"
         />
         <button
           type="submit"
           disabled={pending || !name.trim()}
-          className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-(--accent) text-(--accent-foreground) font-medium text-sm disabled:opacity-50"
+          // The label is hidden on a phone, so the button needs a name.
+          aria-label={t("categories.addButton")}
+          className="shrink-0 h-11 inline-flex items-center gap-1 px-3 sm:px-4 rounded-[14px] bg-(--accent) text-(--accent-foreground) font-medium text-sm disabled:opacity-50"
         >
-          <JtIcon name="plus-fab" size={20} /> {t("categories.addButton")}
+          <JtIcon name="plus-fab" size={20} />
+          {/* Label only where the row has room for it. */}
+          <span className="hidden sm:inline">{t("categories.addButton")}</span>
         </button>
       </div>
 
-      {/* Visible icon picker grid — tap any tile to set the create
-          icon. Replaces the old click-to-cycle button so the user
-          can see all options at once. */}
-      <IconPickerGrid value={icon} onChange={setIcon} />
+      {pickerOpen && <IconPickerGrid value={icon} onChange={setIcon} />}
       <div className="flex flex-wrap gap-1.5">
         {PRESET_COLORS.map((c) => (
           <button
@@ -277,7 +292,7 @@ function CreateCategoryForm({
             onClick={() => setColor(c)}
             aria-label={c}
             className={cn(
-              "h-6 w-6 rounded-full border-2 transition",
+              "h-7 w-7 shrink-0 rounded-full border-2 transition",
               color === c ? "border-(--foreground) scale-110" : "border-transparent"
             )}
             style={{ backgroundColor: c }}
@@ -285,12 +300,16 @@ function CreateCategoryForm({
         ))}
       </div>
       {parents.length > 0 && (
-        <div className="flex items-center gap-2 text-xs">
-          <label className="text-(--muted)">{t("categories.parentLabel")}</label>
+        <label className="flex items-center gap-2 text-xs">
+          {/* shrink-0 + nowrap: the select was squeezing this label into
+              three stacked lines on a phone. */}
+          <span className="shrink-0 whitespace-nowrap text-(--muted)">
+            {t("categories.parentLabel")}
+          </span>
           <select
             value={parentId}
             onChange={(e) => setParentId(e.target.value)}
-            className="flex-1 px-2 py-1.5 rounded-lg border border-(--border) bg-(--background) text-sm"
+            className="min-w-0 flex-1 h-9 px-2 rounded-[12px] border border-(--border) bg-(--background) text-sm"
           >
             <option value="">{t("categories.parentNone")}</option>
             {parents.map((p) => (
@@ -299,7 +318,7 @@ function CreateCategoryForm({
               </option>
             ))}
           </select>
-        </div>
+        </label>
       )}
       {error && <p className="text-xs text-(--expense)">{error}</p>}
     </form>
@@ -325,6 +344,7 @@ function CategoryRow({
   const [name, setName] = useState(category.name);
   const [icon, setIcon] = useState(category.icon ?? DEFAULT_CATEGORY_ICON);
   const [parentId, setParentId] = useState<string>(category.parent_id ?? "");
+  const [pickerOpen, setPickerOpen] = useState(false);
   // Don't let a category that already has children become a sub itself —
   // backend will reject it but disable the dropdown options to make that
   // clear in the UI. This is a soft hint; the server is the authority.
@@ -357,25 +377,41 @@ function CategoryRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 px-4 py-3 hover:bg-(--background) transition",
-        indent && "pl-10",
+        "flex items-center gap-3 px-3 sm:px-4 py-2.5 hover:bg-(--background) transition",
+        // Sub-rows sit in from the left, but only while they are a row:
+        // an editing sub needs the full width for its form.
+        indent && !editing && "pl-9 sm:pl-12",
+        indent && editing && "pl-4 sm:pl-6",
       )}
     >
       {editing ? (
-        <div className="flex-1 flex flex-col gap-2">
+        // min-w-0: without it flex-1 sizes to the picker's natural width
+        // and the whole edit form runs past the right edge of the card.
+        <div className="min-w-0 flex-1 flex flex-col gap-2">
           {/* Name + live icon preview. Action buttons live on their
               own row below (full-width text labels) — the previous
               icon-only check/x inside this header row got lost next
               to the parent dropdown on narrow mobile widths. */}
           <div className="flex items-center gap-2">
-            <span className="px-2 py-1 rounded-lg border border-(--border) bg-(--background) flex items-center justify-center shrink-0">
-              <EmojiOrIcon value={icon} size={26} />
-            </span>
+            <button
+              type="button"
+              onClick={() => setPickerOpen((open) => !open)}
+              aria-expanded={pickerOpen}
+              aria-label={t("categories.iconTab")}
+              className={cn(
+                "shrink-0 h-10 w-10 rounded-[12px] border bg-(--background) flex items-center justify-center transition",
+                pickerOpen
+                  ? "border-(--accent) ring-2 ring-(--accent)/40"
+                  : "border-(--border)"
+              )}
+            >
+              <EmojiOrIcon value={icon} size={24} />
+            </button>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={50}
-              className="flex-1 px-2 py-1.5 rounded-lg border border-(--border) bg-(--background)"
+              className="min-w-0 flex-1 h-10 px-2.5 rounded-[12px] border border-(--border) bg-(--background)"
               autoFocus
             />
           </div>
@@ -383,7 +419,7 @@ function CategoryRow({
             <select
               value={parentId}
               onChange={(e) => setParentId(e.target.value)}
-              className="px-2 py-1.5 rounded-lg border border-(--border) bg-(--background) text-sm"
+              className="w-full min-w-0 h-10 px-2.5 rounded-[12px] border border-(--border) bg-(--background) text-sm"
               aria-label={t("categories.parentLabel")}
             >
               <option value="">{t("categories.parentNone")}</option>
@@ -395,7 +431,7 @@ function CategoryRow({
             </select>
           )}
           {/* Action row lives ABOVE the icon picker so it stays
-              visible without scrolling past 50 tiles. */}
+              visible without scrolling past the tiles. */}
           <div className="flex gap-2">
             <button
               type="button"
@@ -419,32 +455,42 @@ function CategoryRow({
               {pending ? t("common.saving") : t("common.save")}
             </button>
           </div>
-          <IconPickerGrid value={icon} onChange={setIcon} />
+          {pickerOpen && <IconPickerGrid value={icon} onChange={setIcon} />}
         </div>
       ) : (
         <>
-          <EmojiOrIcon value={category.icon} fallback={DEFAULT_CATEGORY_ICON} size={28} />
-          <span className="flex-1 font-medium">{category.name}</span>
+          <span className="shrink-0">
+            <EmojiOrIcon
+              value={category.icon}
+              fallback={DEFAULT_CATEGORY_ICON}
+              size={indent ? 24 : 28}
+            />
+          </span>
+          {/* min-w-0 + truncate, so a long name ends in an ellipsis
+              instead of wrapping the row to three lines. */}
+          <span className="min-w-0 flex-1 font-medium truncate">
+            {category.name}
+          </span>
           <span
-            className="h-3 w-3 rounded-full"
+            className="h-2.5 w-2.5 shrink-0 rounded-full"
             style={{ backgroundColor: category.color ?? "#94a3b8" }}
           />
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="p-1.5 rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
+            className="shrink-0 h-9 w-9 grid place-items-center rounded-lg text-(--muted) hover:bg-(--card) hover:text-(--foreground)"
             aria-label={t("common.edit")}
           >
-            <JtIcon name="pencil" size={20} />
+            <JtIcon name="pencil" size={19} />
           </button>
           <button
             type="button"
             onClick={remove}
             disabled={pending}
-            className="p-1.5 rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
+            className="shrink-0 h-9 w-9 grid place-items-center rounded-lg text-(--muted) hover:bg-(--expense)/10 hover:text-(--expense)"
             aria-label={t("common.delete")}
           >
-            <JtIcon name="trash2" size={20} />
+            <JtIcon name="trash2" size={19} />
           </button>
         </>
       )}
@@ -683,8 +729,8 @@ function IconPickerGrid({
             );
           })}
         </div>
-        <div className="max-h-64 overflow-y-auto pr-1">
-          <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
+        <div className="max-h-56 sm:max-h-64 overflow-y-auto pr-1">
+          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-1.5">
             {activeGroup.items.map((item, idx) => {
               const isActive = value === item;
               return (
