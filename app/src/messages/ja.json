@@ -768,6 +768,20 @@
     "saving": "保存中…",
     "savedPartially": "{count}件を保存したところでエラーが発生しました: {error}"
   },
+  "recategorize": {
+    "aria": "AIでカテゴリを付け直す",
+    "title": "AIでカテゴリを付け直す",
+    "scanning": "{month}の取引を読んでいます…",
+    "summary": "{scanned}件を確認・{changes}件が移動候補",
+    "noChanges": "すべて適切なカテゴリに入っています。",
+    "noNote": "(メモなし)",
+    "unset": "カテゴリなし",
+    "maybe": "やや不確か",
+    "keptCount": "{count}件を選択中",
+    "apply": "{count}件を移動",
+    "applying": "保存中…",
+    "appliedPartially": "{count}件を移動したところでエラーが発生しました: {error}"
+  },
   "settings": {
     "title": "設定",
     "subtitle": "アカウント、通知、テーマ",

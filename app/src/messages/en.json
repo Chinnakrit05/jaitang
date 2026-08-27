@@ -778,6 +778,20 @@
     "saving": "Saving…",
     "savedPartially": "Saved {count} before hitting an error: {error}"
   },
+  "recategorize": {
+    "aria": "Re-file this month with AI",
+    "title": "Re-file with AI",
+    "scanning": "Reading {month}…",
+    "summary": "Read {scanned} · {changes} to move",
+    "noChanges": "Everything is already filed where it belongs.",
+    "noNote": "(no note)",
+    "unset": "No category",
+    "maybe": "unsure",
+    "keptCount": "{count} selected",
+    "apply": "Move {count}",
+    "applying": "Saving…",
+    "appliedPartially": "Moved {count} before hitting an error: {error}"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Account, notifications, and theme",

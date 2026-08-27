@@ -26,8 +26,10 @@ export async function parseReceiptItemsAction(
 ): Promise<
   { ok: true; result: ParsedReceiptItems } | { ok: false; error: string }
 > {
+  // See recategorize-action: requireSession throws Next's redirect, so
+  // it must not sit inside the catch.
+  const { ledgerId } = await requireSession();
   try {
-    const { ledgerId } = await requireSession();
     const categories = await listCategories(ledgerId);
     const result = await parseReceiptLineItems(imageDataUrl, categories);
     return { ok: true, result };

@@ -768,6 +768,20 @@
     "saving": "保存中…",
     "savedPartially": "已保存 {count} 笔后出错：{error}"
   },
+  "recategorize": {
+    "aria": "用 AI 重新分类",
+    "title": "用 AI 重新分类",
+    "scanning": "正在读取 {month} 的记录…",
+    "summary": "已读 {scanned} 笔 · 建议移动 {changes} 笔",
+    "noChanges": "所有记录都已在合适的分类中。",
+    "noNote": "(无备注)",
+    "unset": "无分类",
+    "maybe": "不太确定",
+    "keptCount": "已选 {count} 笔",
+    "apply": "移动 {count} 笔",
+    "applying": "保存中…",
+    "appliedPartially": "已移动 {count} 笔后出错：{error}"
+  },
   "settings": {
     "title": "设置",
     "subtitle": "账户、通知与主题",
