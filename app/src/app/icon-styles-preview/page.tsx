@@ -46,7 +46,7 @@ export default function IconStylesPreview() {
         ))}
       </div>
 
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         {ICON_STYLES.map((s) => (
           <section
             key={s}

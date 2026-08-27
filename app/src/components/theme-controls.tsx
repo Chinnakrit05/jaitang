@@ -324,8 +324,8 @@ function IconStyleSwitcher() {
   const PREVIEW = ["home", "money-bag", "airplane", "ramen"] as const;
   return (
     <div className="space-y-3">
-      {/* Six styles now that Lucide is in: three columns reads better
-          than six cramped ones, and the tiles keep their preview row. */}
+      {/* Seven styles now that Tabler is in: three columns reads better
+          than seven cramped ones, and the tiles keep their preview row. */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {ICON_STYLES.map((s) => {
           const isActive = active === s;
