@@ -6,9 +6,25 @@ import { requireSession } from "@/lib/session";
 import { listCategories } from "@/lib/categories";
 import { createTransaction } from "@/lib/transactions";
 import {
+  groupItemsByCategory,
   parseReceiptLineItems,
   type ParsedReceiptItems,
 } from "@/lib/receipt-items";
+import { listPendingRecurring } from "@/lib/recurring";
+import { matchRecurring } from "@/lib/recurring-match";
+
+/** A due bill the scan looks like paying, with what the banner needs to
+ *  name it. */
+export type ScanRecurringMatch = {
+  ruleId: string;
+  note: string;
+  categoryName: string | null;
+  categoryIcon: string | null;
+  lastFillAmount: number | null;
+  dueAt: string;
+  amount: number;
+  confidence: "high" | "medium";
+};
 
 /** Mirrors refreshAll() in ./actions.ts — a "use server" module can only
  *  export async functions, so the list can't be shared from there. Keep
@@ -24,7 +40,8 @@ function refreshAll() {
 export async function parseReceiptItemsAction(
   imageDataUrl: string
 ): Promise<
-  { ok: true; result: ParsedReceiptItems } | { ok: false; error: string }
+  | { ok: true; result: ParsedReceiptItems; recurring: ScanRecurringMatch | null }
+  | { ok: false; error: string }
 > {
   // See recategorize-action: requireSession throws Next's redirect, so
   // it must not sit inside the catch.
@@ -32,11 +49,79 @@ export async function parseReceiptItemsAction(
   try {
     const categories = await listCategories(ledgerId);
     const result = await parseReceiptLineItems(imageDataUrl, categories);
-    return { ok: true, result };
+    const recurring = await findRecurringForScan(ledgerId, result, categories);
+    return { ok: true, result, recurring };
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "ไม่สามารถอ่านใบเสร็จได้";
     return { ok: false, error: message };
+  }
+}
+
+/**
+ * Does this scan look like paying a bill the ledger is already waiting
+ * on?
+ *
+ * Only scans that come to a single payment are considered. A receipt
+ * that splits across categories is a shop run, not the electricity bill,
+ * and offering to file it against a recurring rule there would be noise.
+ *
+ * A miss here costs nothing — the scan carries on into the form as it
+ * always has — so a failure to read the rules is swallowed rather than
+ * failing the whole scan.
+ */
+async function findRecurringForScan(
+  ledgerId: string,
+  result: ParsedReceiptItems,
+  categories: Awaited<ReturnType<typeof listCategories>>
+): Promise<ScanRecurringMatch | null> {
+  try {
+    const groups = groupItemsByCategory(result.items);
+    if (groups.length > 1) return null;
+
+    const amount =
+      groups[0]?.amount ?? result.total ?? 0;
+    if (amount <= 0) return null;
+
+    // Due, still waiting for an amount: exactly the rules where the user
+    // would otherwise record this payment twice.
+    const pending = await listPendingRecurring(ledgerId);
+    if (pending.length === 0) return null;
+
+    const match = matchRecurring(
+      {
+        kind: result.kind,
+        merchant: result.merchant,
+        itemText: result.items.map((i) => i.name).join(" "),
+        amount,
+        categoryIds: groups[0]?.categoryId ? [groups[0].categoryId] : [],
+      },
+      pending.map((r) => ({
+        id: r.id,
+        note: r.note,
+        kind: r.kind,
+        categoryId: r.category_id,
+        lastFillAmount: r.last_fill_amount,
+      }))
+    );
+    if (!match) return null;
+
+    const rule = pending.find((r) => r.id === match.ruleId);
+    if (!rule) return null;
+    const category = categories.find((c) => c.id === rule.category_id);
+    return {
+      ruleId: rule.id,
+      note: rule.note ?? category?.name ?? "",
+      categoryName: category?.name ?? null,
+      categoryIcon: category?.icon ?? null,
+      lastFillAmount: rule.last_fill_amount,
+      dueAt: rule.next_run_at,
+      amount,
+      confidence: match.confidence,
+    };
+  } catch {
+    // The scan itself is fine; the offer is a bonus.
+    return null;
   }
 }
 

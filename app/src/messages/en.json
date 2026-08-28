@@ -342,7 +342,14 @@
     "variableBillBadge": "📝 Awaiting amount",
     "listHelper": "💡 Tap a row to edit · long-press to delete",
     "reorderButton": "Reorder",
-    "reorderHelper": "💡 Drag a row to reorder · tap ✓ Done to save"
+    "reorderHelper": "💡 Drag a row to reorder · tap ✓ Done to save",
+    "scanMatch": {
+      "title": "Matches a bill that's due",
+      "maybe": "not sure",
+      "lastCycle": "Last cycle {amount}",
+      "fill": "File as the recurring bill",
+      "dismiss": "Add new"
+    }
   },
   "balances": {
     "title": "Balances",

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { NewTransactionForm } from "@/components/new-transaction-form";
 import { ReceiptUploader } from "@/components/receipt-uploader";
 import { ReceiptItemsReview } from "@/components/receipt-items-review";
+import { RecurringScanBanner } from "@/components/recurring-scan-banner";
+import type { ScanRecurringMatch } from "@/app/(app)/transactions/receipt-items-action";
 import type {
   AccountChoice,
   TripChoice,
@@ -47,6 +49,9 @@ export function NewTransactionPage({
   const [formKey, setFormKey] = useState(0);
   const [initial, setInitial] = useState<Initial | undefined>(undefined);
   const [review, setReview] = useState<ParsedReceiptItems | null>(null);
+  // A due bill this scan looks like paying. Offered above the form; the
+  // form is filled in either way, so ignoring it changes nothing.
+  const [recurring, setRecurring] = useState<ScanRecurringMatch | null>(null);
 
   /**
    * Route a scan to whichever surface fits what came back.
@@ -57,13 +62,21 @@ export function NewTransactionPage({
    * row would be a step for nothing. Anything that genuinely splits
    * across categories opens the review sheet.
    */
-  function applyScan(result: ParsedReceiptItems) {
+  function applyScan(
+    result: ParsedReceiptItems,
+    match: ScanRecurringMatch | null
+  ) {
     const groups = groupItemsByCategory(result.items);
 
     if (groups.length > 1) {
+      // A receipt that splits across categories is a shop run, not a
+      // bill; the action doesn't match those, and the review sheet has
+      // no room for the offer anyway.
+      setRecurring(null);
       setReview(result);
       return;
     }
+    setRecurring(match);
 
     const only = groups[0];
     setInitial({
@@ -84,6 +97,15 @@ export function NewTransactionPage({
 
   return (
     <>
+      {recurring && (
+        <div className="mb-3">
+          <RecurringScanBanner
+            match={recurring}
+            currency={currency ?? "THB"}
+            onDismiss={() => setRecurring(null)}
+          />
+        </div>
+      )}
       <NewTransactionForm
         key={formKey}
         categories={categories}

@@ -4,13 +4,20 @@ import { useState, useTransition, useRef } from "react";
 import { JtIcon } from "@/components/icons";
 import { useTranslations } from "next-intl";
 
-import { parseReceiptItemsAction } from "@/app/(app)/transactions/receipt-items-action";
+import {
+  parseReceiptItemsAction,
+  type ScanRecurringMatch,
+} from "@/app/(app)/transactions/receipt-items-action";
 import type { ParsedReceiptItems } from "@/lib/receipt-items";
 
 const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
 
 type Props = {
-  onParsed: (result: ParsedReceiptItems) => void;
+  onParsed: (
+    result: ParsedReceiptItems,
+    /** A due bill this scan looks like paying, when there is one. */
+    recurring: ScanRecurringMatch | null
+  ) => void;
   /** "card" (default) renders the full uploader card with title + hint.
    *  "compact" renders a single circular icon button — used by the new
    *  add-transaction layout where the scan affordance lives in the
@@ -70,7 +77,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
           return;
         }
         setConfidence(result.result.confidence);
-        onParsed(result.result);
+        onParsed(result.result, result.recurring);
       } catch (e) {
         setError(e instanceof Error ? e.message : t("ocr.confidenceLow"));
       }

@@ -332,7 +332,14 @@
     "variableBillBadge": "📝 金額待ち",
     "listHelper": "💡 タップで編集・長押しで削除",
     "reorderButton": "並べ替え",
-    "reorderHelper": "💡 行をドラッグして並べ替え · ✓ 完了で保存"
+    "reorderHelper": "💡 行をドラッグして並べ替え · ✓ 完了で保存",
+    "scanMatch": {
+      "title": "期限が来ている定期支払いと一致",
+      "maybe": "不確か",
+      "lastCycle": "前回 {amount}",
+      "fill": "定期支払いとして記録",
+      "dismiss": "新規で追加"
+    }
   },
   "balances": {
     "title": "精算",
