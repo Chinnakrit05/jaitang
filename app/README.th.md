@@ -52,7 +52,8 @@
 - **PWA** — มี manifest + install prompt (Chrome/Edge อัตโนมัติ, iOS Safari แสดง hint ให้ทำเอง) ใช้งาน offline-tolerant
 - **Push notifications** — Web Push API แจ้งเตือนรายการใหม่ในสมุดที่แชร์ + การเคลียร์หนี้
 - **Theme** — light/dark โหมด ตามระบบหรือสลับเอง + 6 accent colors + 4 seasonal palettes
-- **5 icon styles** — Sticker Pop (default) / Doodle / Watercolor / Geometric / Pixel Art เลือกที่ Settings → "สไตล์ไอคอน" sprite สลับทันทีทั้งแอป (เก็บใน `localStorage["jt-icon-style"]`)
+- **7 icon styles** — Sticker Pop (default) / Doodle / Watercolor / Geometric / Pixel Art / Lucide / Tabler เลือกที่ Settings → "สไตล์ไอคอน" sprite สลับทันทีทั้งแอป (เก็บใน `localStorage["jt-icon-style"]`) ห้าสไตล์วาดมือใช้ชื่อร่วมกัน 137 ชื่อ ส่วน Lucide/Tabler มีเพิ่มอีก 129 (`scripts/extra-icons.mjs`) — ชื่อกลุ่มหลังนี้ถ้าอยู่สไตล์วาดมือจะตกไปใช้ Tabler
+- **อีโมจิเป็นภาพ** — อีโมจิในหน้าเลือกหมวดวาดด้วย [OpenMoji](https://openmoji.org) ไม่ใช่ฟอนต์ของเครื่อง ทุกอุปกรณ์จึงเห็นเหมือนกัน `scripts/build-emoji-assets.mjs` ก็อปเฉพาะตัวที่ใช้ไปไว้ที่ `public/emoji` **OpenMoji เป็น CC BY-SA 4.0** — เครดิตในหน้า Settings กับไฟล์ `public/emoji/LICENSE.txt` เป็นข้อบังคับ อย่าลบตราบใดที่ยังใช้ภาพชุดนี้
 - **สมุดแชร์** — ทุกสมุด (รวมสมุดส่วนตัว) เชิญผ่านลิงก์/QR ได้ มี roles owner/editor/viewer
 - **Backup / restore** — JSON export + import ทั้งสมุด (categories, tx, trips, goals, accounts, transfers, recurring, splits)
 

@@ -516,7 +516,7 @@ export function NewTransactionForm({
               <AccountPill
                 key={a.id}
                 label={a.name}
-                icon={a.icon ?? "💰"}
+                icon={a.icon ?? "money-bag"}
                 selected={accountId === a.id}
                 onClick={() => setAccountId(a.id)}
               />
@@ -715,7 +715,7 @@ function AccountPill({
           : undefined
       }
     >
-      {icon && <span aria-hidden>{icon}</span>}
+      {icon && <EmojiOrIcon value={icon} size={16} />}
       <span>{label}</span>
     </button>
   );

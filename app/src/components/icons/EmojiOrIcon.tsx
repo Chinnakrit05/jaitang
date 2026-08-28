@@ -1,5 +1,6 @@
 import { ICON_NAMES, type IconName as SharedIconName } from "./icon-names";
 import { EXTRA_ICON_NAMES } from "./extra-icon-names";
+import { emojiAssetName, emojiAssetUrl } from "./emoji-asset";
 import { JtIcon, type IconName } from "./JtIcon";
 
 const ICON_NAME_SET = new Set<string>([...ICON_NAMES, ...EXTRA_ICON_NAMES]);
@@ -59,6 +60,10 @@ type Props = {
   size?: number;
   fallback?: string; // shown when value is empty
   className?: string;
+  /** Defer loading the drawing until it scrolls into view. For the
+   *  picker, where a group is 60 tiles at once; off elsewhere, since a
+   *  row icon should be there the moment the row is. */
+  lazy?: boolean;
 };
 
 /**
@@ -70,12 +75,40 @@ type Props = {
  * value matches a known sprite symbol we resolve it via `<JtIcon>`,
  * otherwise we render it inline as text (works for emoji + plain text).
  */
-export function EmojiOrIcon({ value, size = 24, fallback, className }: Props) {
+export function EmojiOrIcon({
+  value,
+  size = 24,
+  fallback,
+  className,
+  lazy,
+}: Props) {
   const v = value ?? fallback ?? "";
   if (!v) return null;
   if (ICON_NAME_SET.has(v)) {
     return <JtIcon name={v as IconName} size={size} className={className} />;
   }
+  const asset = emojiAssetName(v);
+  if (asset) {
+    return (
+      // A plain <img>, not next/image: these are static same-origin SVGs
+      // at a fixed 20-30px, so there is nothing for the optimizer to do,
+      // and it refuses SVG anyway without dangerouslyAllowSVG.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={emojiAssetUrl(asset)}
+        alt=""
+        aria-hidden="true"
+        width={size}
+        height={size}
+        loading={lazy ? "lazy" : undefined}
+        decoding="async"
+        draggable={false}
+        className={className}
+        style={{ width: size, height: size, display: "block" }}
+      />
+    );
+  }
+  // No drawing for this one — the system font still knows it.
   return (
     <span
       className={className}

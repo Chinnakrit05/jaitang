@@ -9,6 +9,8 @@ export {
   type IconStyle,
 } from "./JtIcon";
 export { EmojiOrIcon, iconNameToEmoji } from "./EmojiOrIcon";
+export { emojiAssetName, emojiAssetUrl } from "./emoji-asset";
+export { EMOJI_GROUPS, type EmojiGroup } from "./emoji-groups";
 export {
   ICON_PICKER_GROUPS,
   PICKER_ICON_NAMES,

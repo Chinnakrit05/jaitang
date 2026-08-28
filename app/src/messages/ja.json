@@ -825,7 +825,8 @@
       "kindTrip": "旅行",
       "kindGoal": "目標",
       "kindLedger": "帳簿"
-    }
+    },
+    "emojiCredit": "絵文字はすべて OpenMoji — オープンソースの絵文字・アイコンプロジェクト — によるものです。"
   },
   "navbarStat": {
     "label": "期間サマリー",

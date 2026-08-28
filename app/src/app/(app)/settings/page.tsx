@@ -76,6 +76,29 @@ export default async function SettingsPage() {
           <p className="text-sm text-(--muted) mt-1">{t("settings.themeHint")}</p>
         </div>
         <ThemeControls />
+        {/* Required by OpenMoji's CC BY-SA 4.0 licence — the emoji
+            artwork in public/emoji comes from them. Don't remove it
+            without removing the artwork. */}
+        <p className="text-[11px] text-(--muted) leading-relaxed">
+          {t("settings.emojiCredit")}{" "}
+          <a
+            href="https://openmoji.org"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            openmoji.org
+          </a>
+          {" · "}
+          <a
+            href="/emoji/LICENSE.txt"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            CC BY-SA 4.0
+          </a>
+        </p>
       </section>
 
       <section className="rounded-[22px] soft-raised p-5 space-y-3">

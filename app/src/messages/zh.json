@@ -825,7 +825,8 @@
       "kindTrip": "旅行",
       "kindGoal": "目标",
       "kindLedger": "账本"
-    }
+    },
+    "emojiCredit": "所有 emoji 由 OpenMoji 设计 — 开源 emoji 与图标项目。"
   },
   "navbarStat": {
     "label": "周期统计",

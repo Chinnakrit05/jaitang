@@ -102,7 +102,7 @@ export async function RecentTransactionsCompact({
                           color: tx.trip.color ?? "var(--accent)",
                         }}
                       >
-                        <span aria-hidden>{tx.trip.icon ?? "✈️"}</span>
+                        <EmojiOrIcon value={tx.trip.icon} fallback="airplane" size={13} />
                         <span className="truncate max-w-[80px]">
                           {tx.trip.name}
                         </span>

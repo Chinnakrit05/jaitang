@@ -835,7 +835,8 @@
       "kindTrip": "Trip",
       "kindGoal": "Goal",
       "kindLedger": "Ledger"
-    }
+    },
+    "emojiCredit": "All emojis designed by OpenMoji — the open-source emoji and icon project."
   },
   "navbarStat": {
     "label": "Period summary",

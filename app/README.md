@@ -52,7 +52,8 @@ Multi-currency, multi-ledger, AI-aware, PWA-installable. Built for Thai but spea
 - **PWA** — manifest + install prompt (Chromium auto, iOS Safari with manual hint). Works offline-tolerant.
 - **Push notifications** — Web Push API for new transactions in shared ledgers, settlements.
 - **Light + dark theme** — system-aware default with manual toggle. 6 accents + 4 seasonal palettes.
-- **5 icon styles** — Sticker Pop (default) / Doodle / Watercolor / Geometric / Pixel Art. Pick in Settings → Icon style; the chosen sprite swaps every `<JtIcon>` in the app instantly. Persisted in `localStorage["jt-icon-style"]`.
+- **7 icon styles** — Sticker Pop (default) / Doodle / Watercolor / Geometric / Pixel Art / Lucide / Tabler. Pick in Settings → Icon style; the chosen sprite swaps every `<JtIcon>` in the app instantly. Persisted in `localStorage["jt-icon-style"]`. The five hand-drawn sets share 137 names; Lucide and Tabler add 129 more (`scripts/extra-icons.mjs`) and a hand-drawn style falls back to Tabler for those.
+- **Emoji artwork** — the emoji in the category picker are drawn from [OpenMoji](https://openmoji.org) rather than the system font, so every device shows the same thing. `scripts/build-emoji-assets.mjs` copies just the ones the picker offers into `public/emoji`. **OpenMoji is CC BY-SA 4.0** — the credit line in Settings and `public/emoji/LICENSE.txt` are required; don't drop them while the artwork ships.
 - **Shared ledgers** — every ledger (including the auto-created personal one) can be invited via link/QR with owner/editor/viewer roles.
 - **Backup / restore** — JSON export + import for full migration (categories, tx, trips, goals, accounts, transfers, recurring, splits).
 
