@@ -110,7 +110,7 @@ export function TransactionFilters({
             <option value="none">{t("transactions.filters.noTrip")}</option>
             {trips.map((tr) => (
               <option key={tr.id} value={tr.id}>
-                {(tr.icon ?? "✈️") + " " + tr.name}
+                {iconNameToEmoji(tr.icon ?? "airplane") + " " + tr.name}
                 {tr.archived ? " ·archived" : ""}
               </option>
             ))}

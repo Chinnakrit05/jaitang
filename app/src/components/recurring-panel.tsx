@@ -439,7 +439,7 @@ function CreateRecurringForm({
               .filter((a) => a.currency === currency)
               .map((a) => (
                 <option key={a.id} value={a.id}>
-                  {(a.icon ?? "💰") + " " + a.name}
+                  {iconNameToEmoji(a.icon ?? "money-bag") + " " + a.name}
                 </option>
               ))}
           </select>
@@ -457,7 +457,7 @@ function CreateRecurringForm({
             <option value="">{t("trips.noTrip")}</option>
             {trips.map((tr) => (
               <option key={tr.id} value={tr.id}>
-                {(tr.icon ?? "✈️") + " " + tr.name}
+                {iconNameToEmoji(tr.icon ?? "airplane") + " " + tr.name}
               </option>
             ))}
           </select>
@@ -893,7 +893,7 @@ function EditRecurringModal({
                 .filter((a) => a.currency === currency)
                 .map((a) => (
                   <option key={a.id} value={a.id}>
-                    {(a.icon ?? "💰") + " " + a.name}
+                    {iconNameToEmoji(a.icon ?? "money-bag") + " " + a.name}
                   </option>
                 ))}
             </select>
@@ -905,7 +905,7 @@ function EditRecurringModal({
               <option value="">{t("trips.noTrip")}</option>
               {trips.map((tr) => (
                 <option key={tr.id} value={tr.id}>
-                  {(tr.icon ?? "✈️") + " " + tr.name}
+                  {iconNameToEmoji(tr.icon ?? "airplane") + " " + tr.name}
                 </option>
               ))}
             </select>
