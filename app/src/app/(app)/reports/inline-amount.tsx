@@ -43,12 +43,23 @@ export function InlineAmount({
    *  the cell as "-" instead of a number on first paint. */
   skipped?: boolean;
 }) {
-  // Comma-formatted view of a numeric value — `1000` → `1,000`. Used
-  // outside the edit cursor so the saved amount reads cleanly; while
-  // the input is focused we drop back to the raw digits so the
-  // caret behaviour stays predictable as the user types.
+  // Comma-formatted view of a numeric value — `1000` → `1,000`,
+  // `2349.81` → `2,349.81`. Used outside the edit cursor so the saved
+  // amount reads cleanly; while the input is focused we drop back to
+  // the raw digits so the caret behaviour stays predictable as the
+  // user types.
+  //
+  // Grouping applies to decimals too: this used to hand anything
+  // non-integer to String(), which printed a bill as "2349.81" in a
+  // column of "20,000"s. Capped at 2 decimals to match the column the
+  // value came from (numeric(14,2)) — the display can't round away a
+  // precision the database cannot hold, and it is the displayed string
+  // that gets parsed back on the next commit.
   const fmt = (n: number) =>
-    Number.isInteger(n) ? n.toLocaleString("en-US") : String(n);
+    n.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
   // "Skipped" rows render the cell as "-" instead of a number. The
   // user marks one by typing "-" into the input when onSkip is wired.
   const [skipped, setSkipped] = useState<boolean>(skippedProp);
