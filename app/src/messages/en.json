@@ -763,17 +763,13 @@
   "ocr": {
     "title": "Scan receipt or transfer slip with AI",
     "hint": "Upload a photo of a receipt or bank/PromptPay slip — we read amount, recipient, date, and category.",
-    "selectImage": "Choose image / take photo",
     "reading": "Reading receipt…",
     "fileTooLarge": "File too large (over 16 MB)",
     "confidenceHigh": "Read everything",
     "confidenceMedium": "Partial read — please verify",
     "confidenceLow": "Hard to read — manual entry recommended",
-    "camera": {
-      "shutter": "Take photo",
-      "gallery": "Choose from library",
-      "denied": "Couldn't open the camera — pick a photo instead"
-    }
+    "takePhoto": "Take photo",
+    "chooseImage": "Choose image"
   },
   "receiptItems": {
     "title": "Split receipt into transactions",

@@ -753,17 +753,13 @@
   "ocr": {
     "title": "用 AI 扫描收据或转账凭证",
     "hint": "上传收据或银行/PromptPay 转账凭证的照片 — 自动识别金额、收款人、日期、分类。",
-    "selectImage": "选择图片 / 拍照",
     "reading": "正在读取收据…",
     "fileTooLarge": "文件过大(超过 16 MB)",
     "confidenceHigh": "全部读取",
     "confidenceMedium": "部分读取 — 请核对",
     "confidenceLow": "难以识别 — 建议手动输入",
-    "camera": {
-      "shutter": "拍照",
-      "gallery": "从相册选择",
-      "denied": "无法打开相机 — 可以改为选择照片"
-    }
+    "takePhoto": "拍照",
+    "chooseImage": "选择图片"
   },
   "receiptItems": {
     "title": "将收据拆分为多笔记录",
