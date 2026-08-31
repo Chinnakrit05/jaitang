@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { JtIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 type Result = { ok: true } | { ok: false; error: string };
@@ -80,25 +81,49 @@ export function MonthNoteChip({
     );
   }
 
+  // An annotated month wears its note; an empty one is just a quiet
+  // glyph. The dashed "+ หมายเหตุ" pill this replaced was wider than
+  // most of the notes it was offering to hold, on every row that had
+  // none — which is most rows, most months.
+  if (!saved) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        disabled={pending}
+        title={error ?? undefined}
+        aria-label={t("reports.monthNote.add")}
+        className={cn(
+          // The box is 24px so it can be tapped; the mark inside is
+          // 14px so it stays out of the way. -my-1 keeps the taller
+          // hit area from growing the row.
+          "shrink-0 -my-1 h-6 w-6 inline-flex items-center justify-center rounded-md transition",
+          error ? "text-(--expense)" : "text-(--muted) opacity-55",
+          pending && "opacity-40"
+        )}
+      >
+        <JtIcon name="file-text" size={14} />
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={() => setEditing(true)}
       disabled={pending}
-      title={error ?? (saved || undefined)}
-      aria-label={t("reports.monthNote.add")}
+      title={error ?? saved}
       className={cn(
-        "shrink min-w-0 max-w-[132px] inline-flex items-center gap-1 rounded-full px-2 py-[1px] text-[10px] leading-5 transition",
-        saved
-          ? "bg-(--peach-soft) text-(--peach-fg)"
-          : "border border-dashed border-(--muted)/45 text-(--muted)",
+        // -my-1 for the same reason as the empty state's hit box: the
+        // chip is taller than the 13px title beside it, and without
+        // this an annotated row stands 6px taller than its neighbours.
+        "shrink min-w-0 max-w-[132px] -my-1 inline-flex items-center gap-1 rounded-full px-2 py-[1px] text-[10px] leading-5 transition",
+        "bg-(--peach-soft) text-(--peach-fg)",
         pending && "opacity-60",
-        error && "border-(--expense) text-(--expense)"
+        error && "bg-transparent border border-(--expense) text-(--expense)"
       )}
     >
-      <span className="truncate">
-        {saved || `+ ${t("reports.monthNote.add")}`}
-      </span>
+      <span className="truncate">{saved}</span>
     </button>
   );
 }
