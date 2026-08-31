@@ -91,7 +91,10 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
           ref={inputRef}
           type="file"
           accept="image/*"
-          capture="environment"
+          // No `capture`: it sends the tap straight to the camera and
+          // hides the photo library, which is where a slip usually
+          // already is by the time it gets recorded. Without it the OS
+          // offers both, which is what the button has always said.
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0];
@@ -133,7 +136,8 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
         ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"
+        // Same as the compact variant above — the OS picker offers the
+        // camera and the library; `capture` would offer only the camera.
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
