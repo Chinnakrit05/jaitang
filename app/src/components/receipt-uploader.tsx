@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from "react";
 import { JtIcon } from "@/components/icons";
+import { ScanLoadingOverlay } from "@/components/scan-loading-overlay";
 import { useTranslations } from "next-intl";
 
 import {
@@ -138,6 +139,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
         >
           <JtIcon name="upload" size={18} />
         </button>
+        {pending && <ScanLoadingOverlay />}
       </>
     );
   }
@@ -225,6 +227,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
           <span>{error}</span>
         </div>
       )}
+      {pending && <ScanLoadingOverlay />}
     </div>
   );
 }

@@ -759,7 +759,8 @@
     "confidenceMedium": "部分读取 — 请核对",
     "confidenceLow": "难以识别 — 建议手动输入",
     "takePhoto": "拍照",
-    "chooseImage": "选择图片"
+    "chooseImage": "选择图片",
+    "readingSub": "AI 正在读取项目"
   },
   "receiptItems": {
     "title": "将收据拆分为多笔记录",

@@ -759,7 +759,8 @@
     "confidenceMedium": "一部のみ — 確認してください",
     "confidenceLow": "読み取り困難 — 手動入力をおすすめします",
     "takePhoto": "撮影",
-    "chooseImage": "写真を選ぶ"
+    "chooseImage": "写真を選ぶ",
+    "readingSub": "AIが項目を読み取っています"
   },
   "receiptItems": {
     "title": "レシートを取引に分割",

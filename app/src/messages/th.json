@@ -769,7 +769,8 @@
     "confidenceMedium": "อ่านบางส่วน — ตรวจก่อนบันทึก",
     "confidenceLow": "อ่านไม่ค่อยชัด — ใส่เองดีกว่า",
     "takePhoto": "ถ่ายรูป",
-    "chooseImage": "เลือกรูปจากเครื่อง"
+    "chooseImage": "เลือกรูปจากเครื่อง",
+    "readingSub": "AI กำลังแยกรายการ"
   },
   "receiptItems": {
     "title": "แยกรายการจากใบเสร็จ",

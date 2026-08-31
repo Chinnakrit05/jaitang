@@ -769,7 +769,8 @@
     "confidenceMedium": "Partial read — please verify",
     "confidenceLow": "Hard to read — manual entry recommended",
     "takePhoto": "Take photo",
-    "chooseImage": "Choose image"
+    "chooseImage": "Choose image",
+    "readingSub": "AI is reading the lines"
   },
   "receiptItems": {
     "title": "Split receipt into transactions",
