@@ -768,7 +768,12 @@
     "fileTooLarge": "File too large (over 16 MB)",
     "confidenceHigh": "Read everything",
     "confidenceMedium": "Partial read — please verify",
-    "confidenceLow": "Hard to read — manual entry recommended"
+    "confidenceLow": "Hard to read — manual entry recommended",
+    "camera": {
+      "shutter": "Take photo",
+      "gallery": "Choose from library",
+      "denied": "Couldn't open the camera — pick a photo instead"
+    }
   },
   "receiptItems": {
     "title": "Split receipt into transactions",

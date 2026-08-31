@@ -758,7 +758,12 @@
     "fileTooLarge": "ファイルが大きすぎます(16 MB 超)",
     "confidenceHigh": "完全に読み取りました",
     "confidenceMedium": "一部のみ — 確認してください",
-    "confidenceLow": "読み取り困難 — 手動入力をおすすめします"
+    "confidenceLow": "読み取り困難 — 手動入力をおすすめします",
+    "camera": {
+      "shutter": "撮影",
+      "gallery": "ライブラリから選ぶ",
+      "denied": "カメラを開けませんでした — 代わりに写真を選べます"
+    }
   },
   "receiptItems": {
     "title": "レシートを取引に分割",

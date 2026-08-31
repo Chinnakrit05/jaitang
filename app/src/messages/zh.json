@@ -758,7 +758,12 @@
     "fileTooLarge": "文件过大(超过 16 MB)",
     "confidenceHigh": "全部读取",
     "confidenceMedium": "部分读取 — 请核对",
-    "confidenceLow": "难以识别 — 建议手动输入"
+    "confidenceLow": "难以识别 — 建议手动输入",
+    "camera": {
+      "shutter": "拍照",
+      "gallery": "从相册选择",
+      "denied": "无法打开相机 — 可以改为选择照片"
+    }
   },
   "receiptItems": {
     "title": "将收据拆分为多笔记录",

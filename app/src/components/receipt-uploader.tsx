@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from "react";
 import { JtIcon } from "@/components/icons";
+import { ReceiptCamera } from "@/components/receipt-camera";
 import { useTranslations } from "next-intl";
 
 import {
@@ -60,17 +61,15 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
   const [confidence, setConfidence] = useState<
     ParsedReceiptItems["confidence"] | null
   >(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
-  function handleFile(file: File) {
+  /** Everything past the image itself: both the camera and the file
+   *  picker end up here with a JPEG data URL. */
+  function scan(dataUrl: string) {
     setError(null);
     setConfidence(null);
-    if (file.size > MAX_BYTES * 4) {
-      setError(t("ocr.fileTooLarge"));
-      return;
-    }
     startTransition(async () => {
       try {
-        const dataUrl = await fileToDataUrl(file);
         const result = await parseReceiptItemsAction(dataUrl);
         if (!result.ok) {
           setError(result.error);
@@ -83,6 +82,37 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
       }
     });
   }
+
+  function handleFile(file: File) {
+    setError(null);
+    setConfidence(null);
+    if (file.size > MAX_BYTES * 4) {
+      setError(t("ocr.fileTooLarge"));
+      return;
+    }
+    startTransition(async () => {
+      try {
+        scan(await fileToDataUrl(file));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : t("ocr.confidenceLow"));
+      }
+    });
+  }
+
+  /** The viewfinder, and the library button inside it. */
+  const camera = cameraOpen ? (
+    <ReceiptCamera
+      onCapture={(dataUrl) => {
+        setCameraOpen(false);
+        scan(dataUrl);
+      }}
+      onPickFile={() => {
+        setCameraOpen(false);
+        inputRef.current?.click();
+      }}
+      onClose={() => setCameraOpen(false)}
+    />
+  ) : null;
 
   if (variant === "compact") {
     return (
@@ -104,7 +134,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
         />
         <button
           type="button"
-          onClick={() => inputRef.current?.click()}
+          onClick={() => setCameraOpen(true)}
           disabled={pending}
           aria-label={t("ocr.selectImage")}
           title={error ?? t("ocr.title")}
@@ -116,6 +146,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
             <JtIcon name="camera" size={18} />
           )}
         </button>
+        {camera}
       </>
     );
   }
@@ -149,7 +180,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          onClick={() => inputRef.current?.click()}
+          onClick={() => setCameraOpen(true)}
           disabled={pending}
           className="inline-flex items-center gap-2 rounded-[16px] soft-raised hover:bg-(--background) px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
@@ -192,6 +223,7 @@ export function ReceiptUploader({ onParsed, variant = "card" }: Props) {
           <span>{error}</span>
         </div>
       )}
+      {camera}
     </div>
   );
 }
