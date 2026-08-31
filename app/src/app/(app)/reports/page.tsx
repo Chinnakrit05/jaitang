@@ -521,9 +521,12 @@ function RuleRow({
             it belongs to the month on screen. min-w-0 on the title so
             a long name yields to the chip instead of pushing it out. */}
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="min-w-0 flex-1">
-            <InlineNote initial={note} placeholder={catName || "—"} action={noteAction} />
-          </span>
+          <InlineNote
+            hug
+            initial={note}
+            placeholder={catName || "—"}
+            action={noteAction}
+          />
           <MonthNoteChip
             key={`note-${viewedYear}-${viewedMonth}`}
             initial={monthNote}
