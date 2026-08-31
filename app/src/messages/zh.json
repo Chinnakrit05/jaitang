@@ -939,6 +939,10 @@
       "toggleKind": "切换收入/支出",
       "addCount": "添加 {count} 条",
       "noneSelected": "未选择任何条目"
+    },
+    "monthNote": {
+      "add": "备注",
+      "placeholder": "本月备注"
     }
   }
 }

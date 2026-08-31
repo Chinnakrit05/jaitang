@@ -15,6 +15,7 @@ import {
   updateRecurringFillAmount,
   skipRecurringPeriod,
   setRecurringMonthAmount,
+  setRecurringMonthNote,
 } from "@/lib/recurring";
 import { SUPPORTED_CODES } from "@/lib/currencies";
 
@@ -365,6 +366,41 @@ export async function setRecurringMonthAmountAction(
     month: parsed.data.month,
     amount: parsed.data.amount,
     skipped: parsed.data.skipped,
+  });
+  refresh();
+  return { ok: true as const };
+}
+
+const MonthNoteSchema = z.object({
+  year: z.coerce.number().int().min(1970).max(9999),
+  month: z.coerce.number().int().min(1).max(12),
+  // Same ceiling as a transaction note. Empty clears the month.
+  note: z.string().max(500),
+});
+
+/**
+ * Annotate one month of a recurring rule.
+ *
+ * Separate from the rule's own `note`, which the row's title edits and
+ * which every month shares: this one says what happened in May without
+ * changing what the bill is called.
+ */
+export async function setRecurringMonthNoteAction(
+  ruleId: string,
+  input: { year: number; month: number; note: string },
+) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+  const parsed = MonthNoteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  await setRecurringMonthNote({
+    ruleId,
+    ledgerId,
+    year: parsed.data.year,
+    month: parsed.data.month,
+    note: parsed.data.note,
   });
   refresh();
   return { ok: true as const };

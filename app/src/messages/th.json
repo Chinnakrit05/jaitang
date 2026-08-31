@@ -949,6 +949,10 @@
       "toggleKind": "สลับรับ/จ่าย",
       "addCount": "เพิ่ม {count} รายการ",
       "noneSelected": "ยังไม่ได้เลือกรายการ"
+    },
+    "monthNote": {
+      "add": "หมายเหตุ",
+      "placeholder": "หมายเหตุของเดือนนี้"
     }
   }
 }

@@ -949,6 +949,10 @@
       "toggleKind": "Toggle income/expense",
       "addCount": "Add {count} items",
       "noneSelected": "No rows selected"
+    },
+    "monthNote": {
+      "add": "note",
+      "placeholder": "Note for this month"
     }
   }
 }

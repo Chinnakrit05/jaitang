@@ -88,6 +88,9 @@ export type BackupRecurring = {
   day_of_week: number | null;
   next_run_at: string;
   active: boolean;
+  /** Notes keyed "YYYY-MM". Absent in backups taken before the column
+   *  existed; restore treats that as no notes. */
+  month_notes?: Record<string, string> | null;
 };
 
 export type BackupSplit = {
@@ -168,7 +171,7 @@ export async function collectBackup(userId: string): Promise<BackupFile> {
         sb
           .from("recurring_transactions")
           .select(
-            "id, category_id, kind, amount, note, period, day_of_month, day_of_week, next_run_at, active"
+            "id, category_id, kind, amount, note, period, day_of_month, day_of_week, next_run_at, active, month_notes"
           )
           .eq("ledger_id", l.id)
           // Same policy as transactions/categories above: the backup
@@ -385,6 +388,8 @@ const BackupSchema = z.object({
           day_of_week: z.number().nullable(),
           next_run_at: z.string(),
           active: z.boolean(),
+          // Optional: backups predating the column carry no key.
+          month_notes: z.record(z.string(), z.string()).nullish(),
         })
       ),
       splits: z
@@ -675,6 +680,7 @@ export async function restoreBackup(
         day_of_week: r.day_of_week,
         next_run_at: r.next_run_at,
         active: r.active,
+        month_notes: r.month_notes ?? {},
       }));
       const { error: rerr } = await sb.from("recurring_transactions").insert(rows);
       if (rerr) throw rerr;

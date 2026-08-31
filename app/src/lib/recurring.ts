@@ -1,5 +1,11 @@
 import { getServerSupabase } from "@/lib/supabase/server";
 import { fetchFxRate } from "@/lib/fx";
+import {
+  mergeMonthNote,
+  monthNoteKey,
+  readMonthNotes,
+  type MonthNotes,
+} from "@/lib/recurring-month-note";
 import type { TxKind } from "@/lib/types";
 
 export type RecurPeriod = "daily" | "weekly" | "monthly" | "yearly";
@@ -36,6 +42,9 @@ export type RecurringRule = {
   /** User-controlled display order on /recurring. 0 = unsorted (the
    *  default). Reorder action assigns increasing values. */
   sort_order: number;
+  /** Notes keyed "YYYY-MM" — one rule, a different note per month.
+   *  Empty object for a rule nobody has annotated. */
+  month_notes: MonthNotes;
   active: boolean;
   created_at: string;
   category?: { id: string; name: string; icon: string | null; color: string | null } | null;
@@ -187,7 +196,7 @@ export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> 
   const { data, error } = await sb
     .from("recurring_transactions")
     .select(
-      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, sort_order, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)"
+      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, sort_order, month_notes, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)"
     )
     .eq("ledger_id", ledgerId)
     .is("deleted_at", null)
@@ -205,6 +214,7 @@ export async function listRecurring(ledgerId: string): Promise<RecurringRule[]> 
         ? null
         : Number(r.last_fill_amount),
     sort_order: typeof r.sort_order === "number" ? r.sort_order : 0,
+    month_notes: readMonthNotes(r.month_notes),
     account_id: r.account_id ?? null,
     trip_id: r.trip_id ?? null,
     fx_currency: r.fx_currency ?? null,
@@ -453,7 +463,7 @@ export async function listPendingRecurring(
   const { data, error } = await sb
     .from("recurring_transactions")
     .select(
-      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, sort_order, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)",
+      "id, ledger_id, user_id, category_id, account_id, trip_id, fx_currency, kind, amount, note, period, day_of_month, day_of_week, next_run_at, last_run_at, last_fill_amount, sort_order, month_notes, active, created_at, category:categories(id, name, icon, color), account:accounts(id, name, icon, currency), trip:trips(id, name, icon, currency)",
     )
     .eq("ledger_id", ledgerId)
     .eq("active", true)
@@ -470,6 +480,7 @@ export async function listPendingRecurring(
         ? null
         : Number(r.last_fill_amount),
     sort_order: typeof r.sort_order === "number" ? r.sort_order : 0,
+    month_notes: readMonthNotes(r.month_notes),
     account_id: r.account_id ?? null,
     trip_id: r.trip_id ?? null,
     fx_currency: r.fx_currency ?? null,
@@ -955,4 +966,48 @@ export async function setRecurringMonthAmount(input: {
       })
       .eq("id", input.ruleId);
   }
+}
+
+/**
+ * Set (or clear) the note a rule carries for one month.
+ *
+ * Read-modify-write on the whole `month_notes` object rather than a
+ * `jsonb_set` — PostgREST can't express one, and adding an RPC for it
+ * would be a second production migration. The window between the read
+ * and the write only matters if two people annotate the SAME rule at
+ * the same moment, and the loser's note is simply not saved; nothing
+ * else in the object is disturbed, because the merge copies it.
+ */
+export async function setRecurringMonthNote(input: {
+  ruleId: string;
+  ledgerId: string;
+  /** Calendar year of the month being annotated. */
+  year: number;
+  /** 1..12 — the month being annotated. */
+  month: number;
+  /** Empty (or blank) clears the month's note. */
+  note: string;
+}): Promise<void> {
+  const sb = getServerSupabase();
+  const { data: rule, error } = await sb
+    .from("recurring_transactions")
+    .select("month_notes")
+    .eq("id", input.ruleId)
+    .eq("ledger_id", input.ledgerId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw error;
+  if (!rule) throw new Error("Rule not found");
+
+  const next = mergeMonthNote(
+    readMonthNotes(rule.month_notes),
+    monthNoteKey(input.year, input.month),
+    input.note
+  );
+  const { error: upErr } = await sb
+    .from("recurring_transactions")
+    .update({ month_notes: next })
+    .eq("id", input.ruleId)
+    .eq("ledger_id", input.ledgerId);
+  if (upErr) throw upErr;
 }

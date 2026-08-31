@@ -369,6 +369,13 @@ create table if not exists public.recurring_transactions (
   next_run_at timestamptz not null,
   last_run_at timestamptz,
   active boolean not null default true,
+  -- Per-month notes, keyed "YYYY-MM" -> text. The note belongs to the
+  -- month, not the rule: "ค่าไฟ" is the rule, "จ่ายรวม 2 เดือน" is what
+  -- happened in May. Kept here rather than on the materialized
+  -- transaction because that row's note carries the "[ค่าประจำ]" tag
+  -- /reports uses to recognise it, and because a month can want a note
+  -- before its amount is known (variable-cost bills).
+  month_notes jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
 

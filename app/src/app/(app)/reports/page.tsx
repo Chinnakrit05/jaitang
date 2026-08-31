@@ -15,13 +15,16 @@ import {
 import { deleteTransactionAction } from "@/app/(app)/transactions/actions";
 import {
   setRecurringMonthAmountAction,
+  setRecurringMonthNoteAction,
   toggleRecurringAction,
 } from "@/app/(app)/recurring/actions";
 import { InlineAmount } from "./inline-amount";
+import { MonthNoteChip } from "./month-note-chip";
 import { InlineNote } from "./inline-note";
 import { DeleteRowButton, PauseRuleButton } from "./row-actions";
 import { AddRow } from "./add-row";
 import { ImportImageButton } from "./import-image-button";
+import { monthNoteKey } from "@/lib/recurring-month-note";
 
 /**
  * Monthly review page. Mirrors the Figma "รายงานรายเดือน" mockup:
@@ -424,6 +427,8 @@ function RuleRow({
 }) {
   const note = rule.note ?? "";
   const catName = rule.category?.name ?? "";
+  // The note for the month on screen — not the rule's own note above.
+  const monthNote = rule.month_notes[monthNoteKey(viewedYear, viewedMonth)] ?? "";
 
   // Per-month override model: every edit on /reports writes (or
   // updates) one tx in the viewed month. The rule template is never
@@ -474,6 +479,14 @@ function RuleRow({
     "use server";
     return updateRecurringNoteAction(rule.id, next);
   }
+  async function monthNoteAction(next: string) {
+    "use server";
+    return setRecurringMonthNoteAction(rule.id, {
+      year: viewedYear,
+      month: viewedMonth,
+      note: next,
+    });
+  }
   async function pauseAction() {
     "use server";
     // Pause instead of delete — the row disappears from /reports
@@ -503,7 +516,20 @@ function RuleRow({
         <EmojiOrIcon value={rule.category?.icon} fallback="recurring" size={12} />
       </span>
       <div className="flex-1 min-w-0">
-        <InlineNote initial={note} placeholder={catName || "—"} action={noteAction} />
+        {/* Title line carries two different notes: <InlineNote> edits
+            the rule's own name (every month sees it), the chip beside
+            it belongs to the month on screen. min-w-0 on the title so
+            a long name yields to the chip instead of pushing it out. */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="min-w-0 flex-1">
+            <InlineNote initial={note} placeholder={catName || "—"} action={noteAction} />
+          </span>
+          <MonthNoteChip
+            key={`note-${viewedYear}-${viewedMonth}`}
+            initial={monthNote}
+            action={monthNoteAction}
+          />
+        </div>
         <p className="text-[11px] text-(--muted) leading-tight truncate">
           {catName || rule.period}
         </p>

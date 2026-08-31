@@ -939,6 +939,10 @@
       "toggleKind": "収入/支出を切替",
       "addCount": "{count} 件を追加",
       "noneSelected": "項目が選択されていません"
+    },
+    "monthNote": {
+      "add": "メモ",
+      "placeholder": "今月のメモ"
     }
   }
 }
