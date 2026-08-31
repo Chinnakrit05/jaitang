@@ -210,7 +210,6 @@ export default async function ReportsPage({
         currency={currency}
         totalLabel={t("reports.totalIncome")}
         viewedIsCurrent={viewedIsCurrent}
-        viewedIsFuture={viewedIsFuture}
         viewedYear={year}
         viewedMonth={month}
         findRuleTx={findRuleTx}
@@ -226,7 +225,6 @@ export default async function ReportsPage({
         currency={currency}
         totalLabel={t("reports.totalExpense")}
         viewedIsCurrent={viewedIsCurrent}
-        viewedIsFuture={viewedIsFuture}
         viewedYear={year}
         viewedMonth={month}
         findRuleTx={findRuleTx}
@@ -278,7 +276,6 @@ function ReportSection({
   currency,
   totalLabel,
   viewedIsCurrent,
-  viewedIsFuture,
   viewedYear,
   viewedMonth,
   findRuleTx,
@@ -291,7 +288,6 @@ function ReportSection({
   currency: string;
   totalLabel: string;
   viewedIsCurrent: boolean;
-  viewedIsFuture: boolean;
   viewedYear: number;
   viewedMonth: number;
   findRuleTx: (r: Rule) => Tx | undefined;
@@ -321,7 +317,6 @@ function ReportSection({
             currency={currency}
             matched={findRuleTx(r)}
             viewedIsCurrent={viewedIsCurrent}
-            viewedIsFuture={viewedIsFuture}
             viewedYear={viewedYear}
             viewedMonth={viewedMonth}
           />
@@ -411,7 +406,6 @@ function RuleRow({
   currency,
   matched,
   viewedIsCurrent,
-  viewedIsFuture,
   viewedYear,
   viewedMonth,
 }: {
@@ -421,7 +415,6 @@ function RuleRow({
    *  and the skipped state. Absent = no override yet for this month. */
   matched: Tx | undefined;
   viewedIsCurrent: boolean;
-  viewedIsFuture: boolean;
   viewedYear: number;
   viewedMonth: number;
 }) {
@@ -445,17 +438,19 @@ function RuleRow({
   // pre-fill (so the user can edit it down without retyping); variable
   // pending rules show the dashed empty state; everything else falls
   // back to 0.
+  // No override tx for this month means nobody has filled it in, and
+  // the cell says so with "-". It used to resolve to 0 for past and
+  // future months, which put a column of ฿0 next to real amounts and
+  // read as "this month cost nothing". The one value still pre-filled
+  // is a fixed-amount rule in the CURRENT month: the template amount,
+  // so the user can edit it down without retyping it.
   const initialAmount: number | null = matched
     ? matched.skipped
       ? 0
       : matched.amount
-    : viewedIsFuture
-    ? 0
-    : viewedIsCurrent
-    ? isVariable
-      ? null
-      : rule.amount
-    : 0;
+    : viewedIsCurrent && !isVariable
+    ? rule.amount
+    : null;
 
   async function amountAction(amount: number) {
     "use server";

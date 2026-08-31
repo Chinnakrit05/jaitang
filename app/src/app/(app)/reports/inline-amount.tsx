@@ -63,8 +63,11 @@ export function InlineAmount({
   // "Skipped" rows render the cell as "-" instead of a number. The
   // user marks one by typing "-" into the input when onSkip is wired.
   const [skipped, setSkipped] = useState<boolean>(skippedProp);
+  // "-" covers both "nobody has filled this in" and "explicitly no
+  // value this period". Neither is a number, and a column of 0s for
+  // months nobody has touched reads as "this cost nothing".
   const [value, setValue] = useState<string>(
-    skippedProp ? "-" : initial === null ? "" : fmt(initial)
+    initial === null || skippedProp ? "-" : fmt(initial)
   );
   // Extra addends added via the "+" button. Each is an independent
   // input rendered to the left of the main one. Order: index 0 is
@@ -112,30 +115,32 @@ export function InlineAmount({
           setJustSaved(true);
         } else {
           setError(result.error);
-          setValue(savedValue === null ? "" : fmt(savedValue));
+          setValue(savedValue === null ? "-" : fmt(savedValue));
         }
       });
       return;
     }
     // Sum strips commas first. Allow 0 here — we'll branch below.
+    // Blank entries are dropped BEFORE Number() gets them: Number("")
+    // is 0, so an untouched field used to commit a real 0 the moment
+    // focus left it, which is how unfilled months ended up as ฿0.
     const parsed = [...extras, value]
-      .map((v) => Number(v.replace(/,/g, "")))
+      .map((v) => v.replace(/,/g, "").trim())
+      .filter((v) => v !== "")
+      .map(Number)
       .filter((n) => Number.isFinite(n) && n >= 0);
     if (parsed.length === 0) {
-      // Nothing to commit — revert + collapse extras.
+      // Nothing to commit — revert + collapse extras. An unfilled cell
+      // goes back to "-" rather than staying blank: opening the field
+      // and closing it again should leave the month exactly as it was.
       setExtras([]);
-      if (skipped) {
-        setValue("-");
-        return;
-      }
-      if (savedValue !== null) setValue(fmt(savedValue));
-      else setValue("");
+      setValue(savedValue === null || skipped ? "-" : fmt(savedValue));
       return;
     }
     const num = parsed.reduce((s, n) => s + n, 0);
     if (!Number.isFinite(num) || num < 0) {
       setExtras([]);
-      setValue(savedValue === null ? "" : fmt(savedValue));
+      setValue(savedValue === null ? "-" : fmt(savedValue));
       return;
     }
     if (num === savedValue && !skipped) {
@@ -151,7 +156,7 @@ export function InlineAmount({
     // transaction edit form is the right place to delete instead.
     if (!onSkip && num === 0) {
       setExtras([]);
-      setValue(savedValue === null ? "" : fmt(savedValue));
+      setValue(savedValue === null ? "-" : fmt(savedValue));
       return;
     }
     startTransition(async () => {
@@ -164,7 +169,7 @@ export function InlineAmount({
       } else {
         setError(result.error);
         setExtras([]);
-        setValue(savedValue === null ? "" : fmt(savedValue));
+        setValue(savedValue === null ? "-" : fmt(savedValue));
       }
     });
   }
@@ -172,18 +177,17 @@ export function InlineAmount({
   // Format currency prefix — keep it tiny so the input stays close to
   // the number for tap-targeting on mobile.
   const symbol = currency === "THB" ? "฿" : currency;
-  // When the field has no committed value yet, surface a dashed pill
-  // so the user can tell at a glance that the row is awaiting input.
-  // Once they commit a number, fall back to the seamless text look.
+  // A cell with nothing in it now says so with a muted "-", so the
+  // dashed "awaiting input" pill it used to wear would be a border
+  // around a dash. The flag stays for the placeholder colour while
+  // the field is open and empty.
   const emptyState = savedValue === null && extras.length === 0;
 
   return (
     <span
       ref={extrasContainerRef}
       className={cn(
-        "inline-flex items-center justify-end gap-0.5 tabular-nums transition",
-        emptyState &&
-          "border border-dashed border-(--accent)/60 rounded-md px-1.5 py-0.5 bg-(--accent)/5"
+        "inline-flex items-center justify-end gap-0.5 tabular-nums transition"
       )}
       title={error ?? undefined}
       onBlur={(e) => {
@@ -289,13 +293,7 @@ export function InlineAmount({
           }
           if (e.key === "Escape") {
             setExtras([]);
-            setValue(
-              skipped
-                ? "-"
-                : savedValue === null
-                ? ""
-                : fmt(savedValue)
-            );
+            setValue(skipped || savedValue === null ? "-" : fmt(savedValue));
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}
@@ -304,6 +302,9 @@ export function InlineAmount({
         className={cn(
           "bg-transparent text-right font-semibold tabular-nums text-[13px] focus:outline-none focus:bg-(--card) focus:px-1 focus:rounded transition",
           error ? "text-(--expense)" : "text-(--foreground)",
+          // The dash is an absence, not a figure — it shouldn't read
+          // with the same weight as the amounts around it.
+          value === "-" && "text-(--muted)",
           emptyState && "placeholder:text-(--accent)/70",
           pending && "opacity-60"
         )}
