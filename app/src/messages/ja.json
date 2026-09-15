@@ -947,6 +947,7 @@
     "monthNote": {
       "add": "メモ",
       "placeholder": "今月のメモ"
-    }
+    },
+    "categoryTotal": "合計 {amount}"
   }
 }

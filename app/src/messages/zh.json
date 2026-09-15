@@ -947,6 +947,7 @@
     "monthNote": {
       "add": "备注",
       "placeholder": "本月备注"
-    }
+    },
+    "categoryTotal": "合计 {amount}"
   }
 }

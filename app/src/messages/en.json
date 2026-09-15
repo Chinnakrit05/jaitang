@@ -957,6 +957,7 @@
     "monthNote": {
       "add": "note",
       "placeholder": "Note for this month"
-    }
+    },
+    "categoryTotal": "Total {amount}"
   }
 }

@@ -3,6 +3,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { requireSession } from "@/lib/session";
 import { listTransactions } from "@/lib/transactions";
+import { listCategories } from "@/lib/categories";
+import { categorySpend } from "@/lib/category-spend";
 import { listRecurring } from "@/lib/recurring";
 import { nowInBusinessTz } from "@/lib/business-tz";
 import { intlLocale } from "@/lib/locale-format";
@@ -69,9 +71,10 @@ export default async function ReportsPage({
   const from = new Date(Date.UTC(year, month - 1, 1)).toISOString();
   const to = new Date(Date.UTC(year, month, 1)).toISOString();
 
-  const [allTxs, recurring] = await Promise.all([
+  const [allTxs, recurring, categories] = await Promise.all([
     listTransactions({ ledgerId, from, to }),
     listRecurring(ledgerId),
+    listCategories(ledgerId),
   ]);
   const activeRecurring = recurring.filter((r) => r.active);
 
@@ -100,6 +103,39 @@ export default async function ReportsPage({
   const viewedIsFuture =
     year > currentYear || (year === currentYear && month > currentMonth);
   const viewedIsCurrent = year === currentYear && month === currentMonth;
+
+  // Rows that show what their category has spent this month, next to
+  // the amount. Hardcoded on purpose, at the user's request, for these
+  // two only: they are buckets the month's receipts get rolled up into
+  // by hand, and the running category total is the number checked
+  // before typing the roll-up in. Matched on the rule's category name,
+  // so renaming either category means changing it here too.
+  const CATEGORY_TOTAL_RULES = new Set(["แมว", "ของใช้ในครัวเรือน"]);
+
+  /**
+   * "รวม ฿640" for a rule on the list above, null for every other rule.
+   *
+   * Counts the ordinary transactions in the rule's category and its
+   * subcategories — `listTxs`, which has already dropped the rows the
+   * rules materialise — so the roll-up row can't count itself: once
+   * 1,805 is typed into แมว, that [ค่าประจำ] row is not part of the
+   * total it was copied from.
+   */
+  function categoryTotalLabel(r: (typeof activeRecurring)[number]) {
+    if (!r.category_id || !r.category || !CATEGORY_TOTAL_RULES.has(r.category.name)) {
+      return null;
+    }
+    const total = categorySpend(listTxs, categories, {
+      kind: r.kind,
+      categoryId: r.category_id,
+    });
+    // Read at call time: `currency` is declared further down the page,
+    // and this only runs once the sections render.
+    const symbol = currency === "THB" ? "฿" : `${currency} `;
+    return t("reports.categoryTotal", {
+      amount: `${symbol}${total.toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
+    });
+  }
 
   // Per-rule override tx for the viewed month. Strong link via
   // `recurring_id` (set on new rows by setRecurringMonthAmount and
@@ -213,6 +249,7 @@ export default async function ReportsPage({
         viewedYear={year}
         viewedMonth={month}
         findRuleTx={findRuleTx}
+        categoryTotalLabel={categoryTotalLabel}
       />
 
       {/* Expense section */}
@@ -228,6 +265,7 @@ export default async function ReportsPage({
         viewedYear={year}
         viewedMonth={month}
         findRuleTx={findRuleTx}
+        categoryTotalLabel={categoryTotalLabel}
       />
     </div>
   );
@@ -279,6 +317,7 @@ function ReportSection({
   viewedYear,
   viewedMonth,
   findRuleTx,
+  categoryTotalLabel,
 }: {
   kind: "income" | "expense";
   title: string;
@@ -291,6 +330,7 @@ function ReportSection({
   viewedYear: number;
   viewedMonth: number;
   findRuleTx: (r: Rule) => Tx | undefined;
+  categoryTotalLabel: (r: Rule) => string | null;
 }) {
   const headerColor = kind === "income" ? "#16A34A" : "#DC2626";
   const hasRows = rules.length > 0 || txs.length > 0;
@@ -316,6 +356,7 @@ function ReportSection({
             rule={r}
             currency={currency}
             matched={findRuleTx(r)}
+            categoryTotal={categoryTotalLabel(r)}
             viewedIsCurrent={viewedIsCurrent}
             viewedYear={viewedYear}
             viewedMonth={viewedMonth}
@@ -405,6 +446,7 @@ function RuleRow({
   rule,
   currency,
   matched,
+  categoryTotal,
   viewedIsCurrent,
   viewedYear,
   viewedMonth,
@@ -414,6 +456,9 @@ function RuleRow({
   /** Per-month override tx (if any) — drives both the displayed value
    *  and the skipped state. Absent = no override yet for this month. */
   matched: Tx | undefined;
+  /** "รวม ฿640" — the category's spend this month, on the rows that
+   *  show one; null on the rest. */
+  categoryTotal: string | null;
   viewedIsCurrent: boolean;
   viewedYear: number;
   viewedMonth: number;
@@ -537,6 +582,11 @@ function RuleRow({
           without it, React keeps the prior month's local useState
           (the input would keep showing 2,438 when the next month's
           value is 0). */}
+      {categoryTotal && (
+        <span className="shrink-0 text-[11px] text-(--muted) tabular-nums whitespace-nowrap">
+          {categoryTotal}
+        </span>
+      )}
       <InlineAmount
         key={`amt-${viewedYear}-${viewedMonth}-${initialAmount ?? "null"}-${isSkipped ? "skip" : "ok"}`}
         initial={initialAmount}
