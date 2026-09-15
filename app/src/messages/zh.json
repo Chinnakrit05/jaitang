@@ -334,11 +334,13 @@
     "reorderButton": "重新排序",
     "reorderHelper": "💡 拖动行以重新排序 · 点 ✓ 完成保存",
     "scanMatch": {
-      "title": "与已到期的固定支出匹配",
+      "title": "全部计入固定支出「{name}」吗？",
       "maybe": "不确定",
-      "lastCycle": "上一期 {amount}",
-      "fill": "记为固定支出",
-      "dismiss": "新增记录"
+      "before": "本月已有",
+      "adding": "这张收据",
+      "after": "新合计",
+      "fill": "计入 {name}",
+      "dismiss": "作为新记录添加"
     }
   },
   "balances": {

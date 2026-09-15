@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   matchRecurring,
+  nameReadsLike,
+  scanMonth,
   textSimilarity,
   type RecurringCandidate,
   type ScanSummary,
@@ -110,5 +112,70 @@ describe("matchRecurring", () => {
 
   it("has nothing to offer when no bill is waiting", () => {
     expect(matchRecurring(scan(), [])).toBeNull();
+  });
+});
+
+describe("the cat bucket", () => {
+  const CAT = "33333333-3333-4333-8333-333333333333";
+  const OTHER = "44444444-4444-4444-8444-444444444444";
+  const cat: RecurringCandidate = {
+    id: "cat",
+    note: "แมว",
+    kind: "expense",
+    categoryId: CAT,
+    lastFillAmount: 1805,
+  };
+  const receipt: ScanSummary = {
+    kind: "expense",
+    merchant: "Pet Planet",
+    itemText: "อาหารแมว ทรายแมว ขนมแมว",
+    amount: 640,
+    categoryIds: [CAT],
+  };
+
+  it("finds a short rule name written inside the receipt lines", () => {
+    // Dice alone scores this 0.18 — a three-letter name inside a long
+    // line — and the text signal used to miss it entirely.
+    expect(textSimilarity("แมว", receipt.itemText)).toBeLessThan(0.34);
+    expect(nameReadsLike("แมว", receipt.itemText)).toBe(true);
+  });
+
+  it("is confident when both the category and the lines say แมว", () => {
+    const m = matchRecurring(receipt, [cat]);
+    expect(m?.ruleId).toBe("cat");
+    expect(m?.confidence).toBe("high");
+    expect(m?.reasons).toEqual(["category", "text"]);
+  });
+
+  it("still asks when the lines were filed under another category", () => {
+    const m = matchRecurring({ ...receipt, categoryIds: [OTHER] }, [cat]);
+    expect(m?.ruleId).toBe("cat");
+    expect(m?.reasons).toEqual(["text"]);
+    expect(m?.confidence).toBe("medium");
+  });
+
+  it("doesn't let a two-letter name match anything that contains it", () => {
+    // Containment only counts from three letters up; below that the
+    // name has to be genuinely similar, not merely present.
+    expect(nameReadsLike("AB", "ABC Mart")).toBe(false);
+  });
+});
+
+describe("scanMonth", () => {
+  const now = new Date("2026-09-15T05:00:00Z");
+
+  it("reads the month in Bangkok time, not UTC", () => {
+    // 00:30 on 1 September in Bangkok is still 31 August in UTC.
+    expect(scanMonth("2026-09-01T00:30:00+07:00", now)).toEqual({ year: 2026, month: 9 });
+    expect(scanMonth("2026-08-31T23:30:00+07:00", now)).toEqual({ year: 2026, month: 8 });
+  });
+
+  it("takes a date-only receipt at face value", () => {
+    expect(scanMonth("2026-07-04", now)).toEqual({ year: 2026, month: 7 });
+  });
+
+  it("falls back to today when the receipt had no readable date", () => {
+    expect(scanMonth(null, now)).toEqual({ year: 2026, month: 9 });
+    expect(scanMonth("not a date", now)).toEqual({ year: 2026, month: 9 });
   });
 });

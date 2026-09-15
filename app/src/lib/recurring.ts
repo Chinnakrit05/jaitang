@@ -780,6 +780,138 @@ export async function updateRecurringFillAmount(input: {
  * pre-date the column. When more than one matches, the most recent
  * occurrence wins.
  */
+/** The row a (rule, month) resolves to on /reports, if one exists. */
+type MonthOverride = {
+  id: string;
+  amount: number;
+  skipped: boolean;
+  fx_currency: string | null;
+  fx_rate: number | string | null;
+};
+
+/**
+ * Find the transaction that holds a rule's value for one month.
+ *
+ * recurring_id is the strong link; the category + "[ค่าประจำ]" fallback
+ * covers rows materialised before recurring_id existed. The UTC window
+ * matches the bounds /reports reads with, so this is the same row the
+ * page shows for that month — which is the point: reading and writing
+ * a month must agree on which row it is.
+ */
+async function findMonthOverride(input: {
+  ledgerId: string;
+  ruleId: string;
+  categoryId: string | null;
+  year: number;
+  /** 1..12 */
+  month: number;
+}): Promise<MonthOverride | null> {
+  const sb = getServerSupabase();
+  const monthStart = new Date(Date.UTC(input.year, input.month - 1, 1));
+  const monthEnd = new Date(Date.UTC(input.year, input.month, 1));
+  const columns = "id, amount, skipped, fx_currency, fx_rate";
+
+  const byRuleId = await sb
+    .from("transactions")
+    .select(columns)
+    .eq("ledger_id", input.ledgerId)
+    .eq("recurring_id", input.ruleId)
+    .gte("occurred_at", monthStart.toISOString())
+    .lt("occurred_at", monthEnd.toISOString())
+    .is("deleted_at", null)
+    .order("occurred_at", { ascending: false })
+    .limit(1);
+  if (byRuleId.error) throw byRuleId.error;
+  let row = byRuleId.data?.[0];
+
+  if (!row && input.categoryId) {
+    const byHeuristic = await sb
+      .from("transactions")
+      .select(columns)
+      .eq("ledger_id", input.ledgerId)
+      .eq("category_id", input.categoryId)
+      .like("note", "[ค่าประจำ]%")
+      .gte("occurred_at", monthStart.toISOString())
+      .lt("occurred_at", monthEnd.toISOString())
+      .is("deleted_at", null)
+      .order("occurred_at", { ascending: false })
+      .limit(1);
+    if (byHeuristic.error) throw byHeuristic.error;
+    row = byHeuristic.data?.[0];
+  }
+
+  if (!row) return null;
+  return {
+    id: row.id as string,
+    amount: Number(row.amount),
+    skipped: row.skipped === true,
+    fx_currency: (row.fx_currency as string | null) ?? null,
+    fx_rate: (row.fx_rate as number | string | null) ?? null,
+  };
+}
+
+/**
+ * What a rule holds for one month so far: the amount, or null when the
+ * month has no row yet or was marked "no value" (skipped).
+ */
+export async function getRecurringMonthAmount(input: {
+  ruleId: string;
+  ledgerId: string;
+  year: number;
+  month: number;
+}): Promise<number | null> {
+  const sb = getServerSupabase();
+  const { data: rule, error } = await sb
+    .from("recurring_transactions")
+    .select("category_id")
+    .eq("id", input.ruleId)
+    .eq("ledger_id", input.ledgerId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw error;
+  if (!rule) throw new Error("Rule not found");
+  const row = await findMonthOverride({
+    ...input,
+    categoryId: rule.category_id as string | null,
+  });
+  if (!row || row.skipped) return null;
+  return row.amount;
+}
+
+/**
+ * Add an amount on top of what a rule already holds for a month.
+ *
+ * This is the roll-up the user does by hand — the month's cat receipts
+ * summed into the "แมว" row — so it has to ADD. Filling (what a pending
+ * bill uses) inserts a fresh row with the new figure, which for a month
+ * that already holds 1,805 would put a second [ค่าประจำ] row beside it
+ * instead of making the one row 2,445.
+ *
+ * Read-then-write: two receipts added to the same rule in the same
+ * instant would lose one. It goes through setRecurringMonthAmount for
+ * the write so FX and the schedule anchor behave exactly as a typed
+ * edit on /reports does.
+ */
+export async function addToRecurringMonth(input: {
+  ruleId: string;
+  ledgerId: string;
+  year: number;
+  month: number;
+  amount: number;
+}): Promise<{ before: number | null; after: number }> {
+  const before = await getRecurringMonthAmount(input);
+  const after = Math.round(((before ?? 0) + input.amount) * 100) / 100;
+  await setRecurringMonthAmount({
+    ruleId: input.ruleId,
+    ledgerId: input.ledgerId,
+    year: input.year,
+    month: input.month,
+    amount: after,
+    skipped: false,
+  });
+  return { before, after };
+}
+
 export async function setRecurringMonthAmount(input: {
   ruleId: string;
   ledgerId: string;
@@ -805,48 +937,13 @@ export async function setRecurringMonthAmount(input: {
   if (re) throw re;
   if (!rule) throw new Error("Rule not found");
 
-  // UTC window for the calendar month. Matches the bounds /reports
-  // uses when it reads transactions, so a row we write here is
-  // guaranteed to surface in the right bucket on the next render.
-  const monthStart = new Date(Date.UTC(input.year, input.month - 1, 1));
-  const monthEnd = new Date(Date.UTC(input.year, input.month, 1));
-
-  // Find an existing override for this (rule, month). recurring_id
-  // is the strong link; the category-prefix fallback covers rules
-  // whose materialized txs were written before recurring_id existed.
-  type ExistingTx = {
-    id: string;
-    fx_currency: string | null;
-    fx_rate: number | string | null;
-  };
-  let existing: ExistingTx | null = null;
-  const byRuleId = await sb
-    .from("transactions")
-    .select("id, fx_currency, fx_rate")
-    .eq("ledger_id", input.ledgerId)
-    .eq("recurring_id", input.ruleId)
-    .gte("occurred_at", monthStart.toISOString())
-    .lt("occurred_at", monthEnd.toISOString())
-    .is("deleted_at", null)
-    .order("occurred_at", { ascending: false })
-    .limit(1);
-  if (byRuleId.error) throw byRuleId.error;
-  existing = (byRuleId.data?.[0] as ExistingTx | undefined) ?? null;
-  if (!existing && rule.category_id) {
-    const byHeuristic = await sb
-      .from("transactions")
-      .select("id, fx_currency, fx_rate")
-      .eq("ledger_id", input.ledgerId)
-      .eq("category_id", rule.category_id)
-      .like("note", "[ค่าประจำ]%")
-      .gte("occurred_at", monthStart.toISOString())
-      .lt("occurred_at", monthEnd.toISOString())
-      .is("deleted_at", null)
-      .order("occurred_at", { ascending: false })
-      .limit(1);
-    if (byHeuristic.error) throw byHeuristic.error;
-    existing = (byHeuristic.data?.[0] as ExistingTx | undefined) ?? null;
-  }
+  const existing = await findMonthOverride({
+    ledgerId: input.ledgerId,
+    ruleId: input.ruleId,
+    categoryId: rule.category_id,
+    year: input.year,
+    month: input.month,
+  });
 
   // Resolve home currency for the FX path. Skipped rows skip FX —
   // they're just a "no value" marker and don't need a foreign value.

@@ -1,4 +1,5 @@
 import type { TxKind } from "@/lib/types";
+import { nowInBusinessTz } from "@/lib/business-tz";
 
 /** What a scan looks like to the matcher. Trimmed to the fields that
  *  say anything about which bill this is. */
@@ -14,7 +15,7 @@ export type ScanSummary = {
   categoryIds: string[];
 };
 
-/** A due variable-cost rule, as far as matching is concerned. */
+/** An active recurring rule, as far as matching is concerned. */
 export type RecurringCandidate = {
   id: string;
   note: string | null;
@@ -74,14 +75,38 @@ export function textSimilarity(a: string, b: string): number {
 
 const TEXT_HIT = 0.34;
 const AMOUNT_TOLERANCE = 0.25;
+/** A rule name shorter than this is too common to count as found just
+ *  because its letters appear somewhere in a receipt. */
+const MIN_CONTAINED_NAME = 3;
 
 /**
- * Which recurring bill, if any, this scan looks like paying.
+ * Does the rule's name read like this text?
  *
- * Only rules that are already due and still waiting for an amount are
- * worth offering — those are the ones where the alternative is the user
- * recording the payment twice, once as a fresh transaction and once by
- * filling the bill. The caller is responsible for passing that set.
+ * Two ways to say yes, because one measure can't do both jobs:
+ *
+ *  - the name appears whole inside the text. This is the common case
+ *    and Dice is bad at it — "แมว" inside "อาหารแมว ทรายแมว ขนมแมว"
+ *    scores 0.18, because Dice divides by the length of both strings
+ *    and a receipt line is always much longer than a rule name.
+ *  - the two are similar overall (Dice), for a name that shows up spelt
+ *    a little differently rather than verbatim.
+ */
+export function nameReadsLike(name: string, text: string): boolean {
+  const n = normalize(name);
+  const t = normalize(text);
+  if (!n || !t) return false;
+  if (n.length >= MIN_CONTAINED_NAME && t.includes(n)) return true;
+  return textSimilarity(name, text) >= TEXT_HIT;
+}
+
+/**
+ * Which recurring rule, if any, this scan belongs in.
+ *
+ * Every active rule is a candidate, not only ones waiting for an amount.
+ * A rule like "แมว" is a bucket the month's cat spending is rolled up
+ * into, and it is precisely once it already holds something that the
+ * next cat receipt turns up — so "not yet filled" would rule out the
+ * case this exists for.
  *
  * Three independent signals, and one alone is only ever a question:
  *
@@ -118,10 +143,7 @@ export function matchRecurring(
       score += 3;
       reasons.push("category");
     }
-    const noteScore = rule.note
-      ? Math.max(0, ...scanTexts.map((text) => textSimilarity(rule.note!, text)))
-      : 0;
-    if (noteScore >= TEXT_HIT) {
+    if (rule.note && scanTexts.some((text) => nameReadsLike(rule.note!, text))) {
       score += 3;
       reasons.push("text");
     }
@@ -149,4 +171,24 @@ export function matchRecurring(
   if (!best) return null;
   const { ruleId, confidence, reasons } = best;
   return { ruleId, confidence, reasons };
+}
+
+/**
+ * The month a scanned receipt belongs to, as the person holding it would
+ * say it: the receipt's own date in Bangkok time, or today when the
+ * document didn't show one.
+ *
+ * Bangkok rather than UTC because the two disagree for the first seven
+ * hours of every month — a receipt from 00:30 on 1 September is still
+ * 31 August in UTC, and filing it into August would put it on the wrong
+ * page of /reports.
+ */
+export function scanMonth(
+  occurredAt: string | null,
+  now: Date = new Date()
+): { year: number; month: number } {
+  const parsed = occurredAt ? new Date(occurredAt) : null;
+  const at = parsed && !Number.isNaN(parsed.getTime()) ? parsed : now;
+  const local = nowInBusinessTz(at);
+  return { year: local.getUTCFullYear(), month: local.getUTCMonth() + 1 };
 }

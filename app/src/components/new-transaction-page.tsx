@@ -4,7 +4,7 @@ import { useState } from "react";
 import { NewTransactionForm } from "@/components/new-transaction-form";
 import { ReceiptUploader } from "@/components/receipt-uploader";
 import { ReceiptItemsReview } from "@/components/receipt-items-review";
-import { RecurringScanBanner } from "@/components/recurring-scan-banner";
+import { RecurringScanPrompt } from "@/components/recurring-scan-prompt";
 import type { ScanRecurringMatch } from "@/app/(app)/transactions/receipt-items-action";
 import type {
   AccountChoice,
@@ -49,8 +49,9 @@ export function NewTransactionPage({
   const [formKey, setFormKey] = useState(0);
   const [initial, setInitial] = useState<Initial | undefined>(undefined);
   const [review, setReview] = useState<ParsedReceiptItems | null>(null);
-  // A due bill this scan looks like paying. Offered above the form; the
-  // form is filled in either way, so ignoring it changes nothing.
+  // A recurring rule this scan looks like it belongs in. Asked about in
+  // a dialog over the form; the form is filled in either way, so
+  // answering "no" changes nothing.
   const [recurring, setRecurring] = useState<ScanRecurringMatch | null>(null);
 
   /**
@@ -98,13 +99,11 @@ export function NewTransactionPage({
   return (
     <>
       {recurring && (
-        <div className="mb-3">
-          <RecurringScanBanner
-            match={recurring}
-            currency={currency ?? "THB"}
-            onDismiss={() => setRecurring(null)}
-          />
-        </div>
+        <RecurringScanPrompt
+          match={recurring}
+          currency={currency ?? "THB"}
+          onDismiss={() => setRecurring(null)}
+        />
       )}
       <NewTransactionForm
         key={formKey}

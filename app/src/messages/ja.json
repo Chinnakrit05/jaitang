@@ -334,10 +334,12 @@
     "reorderButton": "並べ替え",
     "reorderHelper": "💡 行をドラッグして並べ替え · ✓ 完了で保存",
     "scanMatch": {
-      "title": "期限が来ている定期支払いと一致",
+      "title": "全額を定期「{name}」に入れますか？",
       "maybe": "不確か",
-      "lastCycle": "前回 {amount}",
-      "fill": "定期支払いとして記録",
+      "before": "今月これまで",
+      "adding": "このレシート",
+      "after": "新しい合計",
+      "fill": "{name}に追加",
       "dismiss": "新規で追加"
     }
   },

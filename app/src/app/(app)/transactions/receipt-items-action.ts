@@ -10,18 +10,22 @@ import {
   parseReceiptLineItems,
   type ParsedReceiptItems,
 } from "@/lib/receipt-items";
-import { listPendingRecurring } from "@/lib/recurring";
-import { matchRecurring } from "@/lib/recurring-match";
+import { getRecurringMonthAmount, listRecurring } from "@/lib/recurring";
+import { matchRecurring, scanMonth } from "@/lib/recurring-match";
 
-/** A due bill the scan looks like paying, with what the banner needs to
- *  name it. */
+/** A recurring rule the scan looks like it belongs in, with what the
+ *  prompt needs to ask about it. */
 export type ScanRecurringMatch = {
   ruleId: string;
   note: string;
   categoryName: string | null;
   categoryIcon: string | null;
-  lastFillAmount: number | null;
-  dueAt: string;
+  /** The month the receipt would be added into. */
+  year: number;
+  month: number;
+  /** What the rule already holds for that month; null when nothing yet. */
+  monthAmount: number | null;
+  /** The receipt's total — what "all of it" means. */
   amount: number;
   confidence: "high" | "medium";
 };
@@ -59,16 +63,21 @@ export async function parseReceiptItemsAction(
 }
 
 /**
- * Does this scan look like paying a bill the ledger is already waiting
- * on?
+ * Does this scan belong in one of the ledger's recurring rules?
  *
- * Only scans that come to a single payment are considered. A receipt
- * that splits across categories is a shop run, not the electricity bill,
- * and offering to file it against a recurring rule there would be noise.
+ * The case this exists for is a bucket: "แมว" holds the month's cat
+ * spending, rolled up from receipts. So every active rule is a
+ * candidate — including ones already holding something this month,
+ * which is exactly when the second cat receipt arrives. An earlier
+ * version looked only at rules still waiting for an amount, and a
+ * bucket stops waiting the moment its first receipt goes in.
+ *
+ * Only scans that come to a single payment are considered: a receipt
+ * that splits across categories is a shop run, not one rule's spending.
  *
  * A miss here costs nothing — the scan carries on into the form as it
- * always has — so a failure to read the rules is swallowed rather than
- * failing the whole scan.
+ * always has — so failing to read the rules is swallowed rather than
+ * failing the scan.
  */
 async function findRecurringForScan(
   ledgerId: string,
@@ -79,14 +88,11 @@ async function findRecurringForScan(
     const groups = groupItemsByCategory(result.items);
     if (groups.length > 1) return null;
 
-    const amount =
-      groups[0]?.amount ?? result.total ?? 0;
+    const amount = groups[0]?.amount ?? result.total ?? 0;
     if (amount <= 0) return null;
 
-    // Due, still waiting for an amount: exactly the rules where the user
-    // would otherwise record this payment twice.
-    const pending = await listPendingRecurring(ledgerId);
-    if (pending.length === 0) return null;
+    const rules = (await listRecurring(ledgerId)).filter((r) => r.active);
+    if (rules.length === 0) return null;
 
     const match = matchRecurring(
       {
@@ -96,7 +102,7 @@ async function findRecurringForScan(
         amount,
         categoryIds: groups[0]?.categoryId ? [groups[0].categoryId] : [],
       },
-      pending.map((r) => ({
+      rules.map((r) => ({
         id: r.id,
         note: r.note,
         kind: r.kind,
@@ -106,16 +112,24 @@ async function findRecurringForScan(
     );
     if (!match) return null;
 
-    const rule = pending.find((r) => r.id === match.ruleId);
+    const rule = rules.find((r) => r.id === match.ruleId);
     if (!rule) return null;
+    const { year, month } = scanMonth(result.occurredAt);
+    const monthAmount = await getRecurringMonthAmount({
+      ruleId: rule.id,
+      ledgerId,
+      year,
+      month,
+    });
     const category = categories.find((c) => c.id === rule.category_id);
     return {
       ruleId: rule.id,
       note: rule.note ?? category?.name ?? "",
       categoryName: category?.name ?? null,
       categoryIcon: category?.icon ?? null,
-      lastFillAmount: rule.last_fill_amount,
-      dueAt: rule.next_run_at,
+      year,
+      month,
+      monthAmount,
       amount,
       confidence: match.confidence,
     };

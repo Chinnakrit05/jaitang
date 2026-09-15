@@ -16,6 +16,7 @@ import {
   skipRecurringPeriod,
   setRecurringMonthAmount,
   setRecurringMonthNote,
+  addToRecurringMonth,
 } from "@/lib/recurring";
 import { SUPPORTED_CODES } from "@/lib/currencies";
 
@@ -369,6 +370,49 @@ export async function setRecurringMonthAmountAction(
   });
   refresh();
   return { ok: true as const };
+}
+
+const AddToMonthSchema = z.object({
+  year: z.coerce.number().int().min(1970).max(9999),
+  month: z.coerce.number().int().min(1).max(12),
+  // Strictly positive: this is a receipt being rolled in, and a 0 add
+  // would still write — pushing the schedule anchor for nothing.
+  amount: z.coerce.number().positive().max(1e10),
+});
+
+/**
+ * Roll a scanned receipt's total into a recurring rule's month.
+ *
+ * Adds to what the month already holds rather than replacing it — see
+ * addToRecurringMonth. Returns both figures so the caller can say what
+ * happened.
+ */
+export async function addScanToRecurringAction(
+  ruleId: string,
+  input: { year: number; month: number; amount: number },
+) {
+  const { ledgerId, role } = await requireSession();
+  assertWritable(role);
+  const parsed = AddToMonthSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  try {
+    const { before, after } = await addToRecurringMonth({
+      ruleId,
+      ledgerId,
+      year: parsed.data.year,
+      month: parsed.data.month,
+      amount: parsed.data.amount,
+    });
+    refresh();
+    return { ok: true as const, before, after };
+  } catch (err) {
+    return {
+      ok: false as const,
+      error: err instanceof Error ? err.message : "บันทึกไม่สำเร็จ",
+    };
+  }
 }
 
 const MonthNoteSchema = z.object({

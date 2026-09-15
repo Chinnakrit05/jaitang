@@ -344,11 +344,13 @@
     "reorderButton": "Reorder",
     "reorderHelper": "💡 Drag a row to reorder · tap ✓ Done to save",
     "scanMatch": {
-      "title": "Matches a bill that's due",
+      "title": "Put all of it into “{name}”?",
       "maybe": "not sure",
-      "lastCycle": "Last cycle {amount}",
-      "fill": "File as the recurring bill",
-      "dismiss": "Add new"
+      "before": "Already this month",
+      "adding": "This receipt",
+      "after": "New total",
+      "fill": "Add to {name}",
+      "dismiss": "Add as new"
     }
   },
   "balances": {
