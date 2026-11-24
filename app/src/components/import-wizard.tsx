@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { JtIcon, iconNameToEmoji } from "@/components/icons";
-import { sortByHierarchy } from "@/lib/categories";
+import { sortByHierarchy } from "@/lib/category-hierarchy";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 

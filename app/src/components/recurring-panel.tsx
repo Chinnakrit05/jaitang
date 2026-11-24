@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { JtIcon, EmojiOrIcon, iconNameToEmoji } from "@/components/icons";
-import { sortByHierarchy } from "@/lib/categories";
+import { sortByHierarchy } from "@/lib/category-hierarchy";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -25,7 +25,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import type { Category, TxKind } from "@/lib/types";
 import type { RecurPeriod, RecurringRule } from "@/lib/recurring";
-import { isAppliedThisPeriod } from "@/lib/recurring";
+import { isAppliedThisPeriod } from "@/lib/recurring-period";
 import {
   createRecurringAction,
   deleteRecurringAction,

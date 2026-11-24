@@ -5,7 +5,7 @@ import { JtIcon } from "@/components/icons";
 
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrency } from "@/lib/utils";
-import { type RecurringRule } from "@/lib/recurring";
+import type { RecurringRule } from "@/lib/recurring";
 
 /**
  * Stats banner at the top of /recurring:

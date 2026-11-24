@@ -26,7 +26,7 @@ import { ALL_CURRENCIES, PINNED_COUNT } from "@/lib/currencies";
 import { getFxRateAction } from "@/app/(app)/transactions/fx-actions";
 import { suggestCategoryAction } from "@/app/(app)/transactions/categorize-action";
 import { reorderCategoriesAction } from "@/app/(app)/categories/actions";
-import { sortByHierarchy } from "@/lib/categories";
+import { sortByHierarchy } from "@/lib/category-hierarchy";
 import { cn, formatCurrency } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 import { isPet, type Pet } from "@/lib/theme";
