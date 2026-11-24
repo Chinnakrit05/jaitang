@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSession, assertWritable } from "@/lib/session";
@@ -334,6 +335,7 @@ export async function applyImportAction(
   payload: unknown
 ): Promise<{ ok: true; created: number } | { ok: false; error: string }> {
   const { ledgerId, userId, role } = await requireSession();
+  setAuditVia("import");
   assertWritable(role);
 
   const parsed = ApplySchema.safeParse(payload);

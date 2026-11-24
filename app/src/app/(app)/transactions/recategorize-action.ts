@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/session";
@@ -114,6 +115,7 @@ export async function applyRecategorizeAction(
   { ok: true; applied: number } | { ok: false; error: string; applied: number }
 > {
   const { ledgerId } = await requireSession();
+  setAuditVia("recategorize");
   const parsed = ApplySchema.safeParse({ changes });
   if (!parsed.success) {
     return {

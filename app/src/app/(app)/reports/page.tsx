@@ -6,7 +6,13 @@ import { listTransactions } from "@/lib/transactions";
 import { listCategories } from "@/lib/categories";
 import { categorySpend } from "@/lib/category-spend";
 import { listRecurring } from "@/lib/recurring";
-import { nowInBusinessTz } from "@/lib/business-tz";
+import { BUSINESS_TZ, nowInBusinessTz } from "@/lib/business-tz";
+import {
+  actorNames,
+  listTxChanges,
+  summarizeChange,
+  type ChangeRecord,
+} from "@/lib/change-log";
 import { intlLocale } from "@/lib/locale-format";
 import { formatCurrencyCompact } from "@/lib/utils";
 import {
@@ -27,6 +33,10 @@ import { DeleteRowButton, PauseRuleButton } from "./row-actions";
 import { AddRow } from "./add-row";
 import { ImportImageButton } from "./import-image-button";
 import { monthNoteKey } from "@/lib/recurring-month-note";
+import { MonthHistory, type HistoryItem } from "./month-history";
+
+/** How many changes the history at the foot of the page lists. */
+const HISTORY_LIMIT = 50;
 
 /**
  * Monthly review page. Mirrors the Figma "รายงานรายเดือน" mockup:
@@ -71,10 +81,12 @@ export default async function ReportsPage({
   const from = new Date(Date.UTC(year, month - 1, 1)).toISOString();
   const to = new Date(Date.UTC(year, month, 1)).toISOString();
 
-  const [allTxs, recurring, categories] = await Promise.all([
+  const [allTxs, recurring, categories, changes] = await Promise.all([
     listTransactions({ ledgerId, from, to }),
     listRecurring(ledgerId),
     listCategories(ledgerId),
+    // One past the limit, to know whether there were more.
+    listTxChanges({ ledgerId, from, to, limit: HISTORY_LIMIT + 1 }),
   ]);
   const activeRecurring = recurring.filter((r) => r.active);
 
@@ -179,6 +191,38 @@ export default async function ReportsPage({
     month: "long",
     year: "numeric",
   }).format(new Date(year, month - 1, 1));
+  // The month's change history (see month-history.tsx).
+  const shownChanges = changes.slice(0, HISTORY_LIMIT);
+  const names = await actorNames(
+    shownChanges.flatMap((c) => (c.actorId ? [c.actorId] : [])),
+  );
+  const categoryName = new Map(categories.map((c) => [c.id, c.name]));
+  const changedAt = new Intl.DateTimeFormat(fmtLocale, {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: BUSINESS_TZ,
+  });
+  // Name the row the way the page does: a recurring month by its rule's
+  // note (stored after the "[ค่าประจำ]" tag), anything else by its note,
+  // and either by its category when there's no note.
+  function historyTitle(c: ChangeRecord): string {
+    const row = c.after ?? c.before;
+    if (!row) return "—";
+    const note = (row.note ?? "").replace(/^\s*\[ค่าประจำ\]\s*/, "").trim();
+    const category = row.category_id ? categoryName.get(row.category_id) : undefined;
+    return note || category || "—";
+  }
+  const historyItems: HistoryItem[] = shownChanges.map((c) => ({
+    id: c.id,
+    when: changedAt.format(new Date(c.changedAt)),
+    title: historyTitle(c),
+    summary: summarizeChange(c),
+    actor: c.actorId ? (names.get(c.actorId) ?? null) : null,
+    via: c.via,
+  }));
+
   const prev = month === 1 ? `${year - 1}-12` : `${year}-${String(month - 1).padStart(2, "0")}`;
   const next = month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, "0")}`;
   const currency = ledger.currency;
@@ -266,6 +310,13 @@ export default async function ReportsPage({
         viewedMonth={month}
         findRuleTx={findRuleTx}
         categoryTotalLabel={categoryTotalLabel}
+      />
+
+      <MonthHistory
+        items={historyItems}
+        truncated={changes.length > HISTORY_LIMIT}
+        currency={currency}
+        fmtLocale={fmtLocale}
       />
     </div>
   );

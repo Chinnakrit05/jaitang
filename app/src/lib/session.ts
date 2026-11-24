@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { resolveActiveLedger } from "@/lib/active-ledger";
 import { resolveActiveTrip } from "@/lib/active-trip";
 import { getServerSupabase } from "@/lib/supabase/server";
+import { openAuditScope } from "@/lib/audit-context";
 import type { LedgerRole } from "@/lib/role";
 
 export { assertOwner, assertWritable } from "@/lib/role";
@@ -50,9 +51,15 @@ export type SessionContext = {
  * the ledger again from the layout.
  */
 export const requireSession = cache(async (): Promise<SessionContext> => {
+  // Before the first await, on purpose: this is the only stretch that
+  // runs in the caller's context, so the scope it opens is the action's
+  // own. Every write the action makes afterwards is filed under this user
+  // in change_log. See audit-context.ts.
+  const audit = openAuditScope();
   const session = await auth();
   const userId = (session?.user as { id?: string } | undefined)?.id;
   if (!userId) redirect("/login");
+  audit.actor = userId;
 
   const ledgerId = await resolveActiveLedger(userId);
 

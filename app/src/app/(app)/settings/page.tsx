@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/session";
 import { JtIcon } from "@/components/icons";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ThemeControls } from "@/components/theme-controls";
 import { IconMigrationSection } from "@/components/icon-migration-section";
 import { PushToggle } from "@/components/push-toggle";
@@ -8,11 +8,28 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { BackupSection } from "@/components/backup-section";
 import { DangerZoneSection } from "@/components/danger-zone-section";
 import { signOut } from "@/auth";
+import { listAutoBackups } from "@/lib/auto-backup";
+import { intlLocale } from "@/lib/locale-format";
 
 
 export default async function SettingsPage() {
-  const { user, ledger, role } = await requireSession();
-  const t = await getTranslations();
+  const { user, userId, ledger, role } = await requireSession();
+  const [t, locale, backupDates] = await Promise.all([
+    getTranslations(),
+    getLocale(),
+    listAutoBackups(userId),
+  ]);
+  // The file is named by its Bangkok day; read it back as that same day.
+  const dayLabel = new Intl.DateTimeFormat(intlLocale(locale), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  const autoBackups = backupDates.map((date) => ({
+    date,
+    label: dayLabel.format(new Date(`${date}T00:00:00Z`)),
+  }));
   const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null;
 
   return (
@@ -114,7 +131,7 @@ export default async function SettingsPage() {
       <section className="rounded-[22px] soft-raised p-5 space-y-3">
         <h2 className="font-semibold">{t("backup.section")}</h2>
         <p className="text-sm text-(--muted)">{t("backup.sectionHint")}</p>
-        <BackupSection />
+        <BackupSection autoBackups={autoBackups} />
       </section>
 
       <section className="rounded-2xl border border-(--expense)/40 bg-(--expense)/5 p-5 space-y-3">

@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/session";
 import { restoreBackup, type RestoreSummary } from "@/lib/backup";
@@ -8,6 +9,7 @@ export async function restoreBackupAction(
   formData: FormData
 ): Promise<{ ok: true; summary: RestoreSummary } | { ok: false; error: string }> {
   const { userId } = await requireSession();
+  setAuditVia("restore");
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false, error: "ไม่มีไฟล์ / no file" };

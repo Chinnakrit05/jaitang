@@ -869,7 +869,12 @@
     "restoring": "Restoring…",
     "restoreDoneTitle": "Restored",
     "restoreSummary": "{ledgers} ledgers • {transactions} transactions • {categories} categories • {budgets} budgets • {recurring} recurring",
-    "skipped": "Skipped {count} ledger(s) you don't own"
+    "skipped": "Skipped {count} ledger(s) you don't own",
+    "autoTitle": "Automatic backups",
+    "autoHint": "Every night at 3 a.m. the app backs up all your books and keeps 30 days. Tap a date to download it, then restore it with the button below.",
+    "autoNone": "None yet. The first one is made tonight.",
+    "autoLatest": "Latest: {date}",
+    "autoOlder": "Earlier days ({count})"
   },
   "import": {
     "title": "Import from Numbers ✨",
@@ -959,5 +964,34 @@
       "placeholder": "Note for this month"
     },
     "categoryTotal": "Total {amount}"
+  },
+  "history": {
+    "title": "Changes this month",
+    "count": "{count, plural, one {# change} other {# changes}}",
+    "added": "Added {amount}",
+    "deleted": "Deleted ({amount})",
+    "restored": "Restored ({amount})",
+    "edited": "Edited {fields}",
+    "field": {
+      "note": "note",
+      "category": "category",
+      "date": "date",
+      "kind": "type",
+      "other": "details"
+    },
+    "via": {
+      "form": "Add/edit form",
+      "quick": "Quick add",
+      "reports": "Reports",
+      "scan": "Receipt scan",
+      "import": "Import",
+      "recurring": "Recurring",
+      "restore": "Backup restore",
+      "wipe": "Data wipe",
+      "recategorize": "AI recategorize",
+      "trip": "Trip",
+      "unknown": "Unknown source"
+    },
+    "truncated": "Showing the latest {count}"
   }
 }

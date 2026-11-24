@@ -859,7 +859,12 @@
     "restoring": "恢复中…",
     "restoreDoneTitle": "已恢复",
     "restoreSummary": "{ledgers} 个账本 • {transactions} 条交易 • {categories} 个分类 • {budgets} 个预算 • {recurring} 个定期",
-    "skipped": "已跳过 {count} 个非你拥有的账本"
+    "skipped": "已跳过 {count} 个非你拥有的账本",
+    "autoTitle": "自动备份",
+    "autoHint": "每晚 3 点自动备份你的所有账本，保留 30 天。点日期即可下载，再用下方按钮恢复。",
+    "autoNone": "还没有，今晚开始自动备份。",
+    "autoLatest": "最新：{date}",
+    "autoOlder": "更早（{count}）"
   },
   "import": {
     "title": "从 Numbers 导入 ✨",
@@ -949,5 +954,34 @@
       "placeholder": "本月备注"
     },
     "categoryTotal": "合计 {amount}"
+  },
+  "history": {
+    "title": "本月修改记录",
+    "count": "{count} 次",
+    "added": "新增 {amount}",
+    "deleted": "删除（{amount}）",
+    "restored": "恢复（{amount}）",
+    "edited": "修改了{fields}",
+    "field": {
+      "note": "备注",
+      "category": "分类",
+      "date": "日期",
+      "kind": "类型",
+      "other": "详情"
+    },
+    "via": {
+      "form": "添加/编辑页",
+      "quick": "快速记账",
+      "reports": "报表",
+      "scan": "扫描小票",
+      "import": "导入",
+      "recurring": "定期",
+      "restore": "备份恢复",
+      "wipe": "清除数据",
+      "recategorize": "AI 重新分类",
+      "trip": "旅行",
+      "unknown": "来源不明"
+    },
+    "truncated": "显示最近 {count} 次"
   }
 }

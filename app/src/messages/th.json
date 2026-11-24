@@ -869,7 +869,12 @@
     "restoring": "กำลังกู้คืน…",
     "restoreDoneTitle": "กู้คืนสำเร็จ",
     "restoreSummary": "สมุด {ledgers} เล่ม • รายการ {transactions} • หมวด {categories} • งบ {budgets} • ประจำ {recurring}",
-    "skipped": "ข้าม {count} สมุดที่ไม่ได้เป็นเจ้าของ"
+    "skipped": "ข้าม {count} สมุดที่ไม่ได้เป็นเจ้าของ",
+    "autoTitle": "Backup อัตโนมัติ",
+    "autoHint": "ระบบสำรองทุกสมุดของคุณให้ทุกคืนตอนตี 3 เก็บไว้ 30 วัน กดวันที่เพื่อดาวน์โหลด แล้วกู้คืนด้วยปุ่มด้านล่างได้",
+    "autoNone": "ยังไม่มี ระบบจะเริ่มเก็บให้คืนนี้",
+    "autoLatest": "ล่าสุด {date}",
+    "autoOlder": "วันก่อนหน้า ({count})"
   },
   "import": {
     "title": "นำเข้าจาก Numbers ✨",
@@ -959,5 +964,34 @@
       "placeholder": "หมายเหตุของเดือนนี้"
     },
     "categoryTotal": "รวม {amount}"
+  },
+  "history": {
+    "title": "ประวัติการแก้ไขเดือนนี้",
+    "count": "{count} ครั้ง",
+    "added": "เพิ่ม {amount}",
+    "deleted": "ลบ ({amount})",
+    "restored": "กู้คืน ({amount})",
+    "edited": "แก้ {fields}",
+    "field": {
+      "note": "หมายเหตุ",
+      "category": "หมวด",
+      "date": "วันที่",
+      "kind": "ประเภท",
+      "other": "รายละเอียด"
+    },
+    "via": {
+      "form": "หน้าเพิ่ม/แก้รายการ",
+      "quick": "จดด่วน",
+      "reports": "หน้ารายงาน",
+      "scan": "สแกนใบเสร็จ",
+      "import": "นำเข้า",
+      "recurring": "รายการประจำ",
+      "restore": "กู้คืน backup",
+      "wipe": "ล้างข้อมูล",
+      "recategorize": "AI จัดหมวด",
+      "trip": "ทริป",
+      "unknown": "ไม่ทราบที่มา"
+    },
+    "truncated": "แสดง {count} ครั้งล่าสุด"
   }
 }
