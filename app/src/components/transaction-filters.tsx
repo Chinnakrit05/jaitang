@@ -7,7 +7,7 @@ import type { Category, TxKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SearchInput } from "@/components/search-input";
 import { iconNameToEmoji } from "@/components/icons";
-import { sortByHierarchy } from "@/lib/categories";
+import { sortByHierarchy } from "@/lib/category-hierarchy";
 
 type TripOption = {
   id: string;

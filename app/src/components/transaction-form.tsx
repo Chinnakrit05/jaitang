@@ -5,7 +5,7 @@ import { JtIcon, EmojiOrIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import type { Category, PaymentMethod, TxKind } from "@/lib/types";
-import { sortByHierarchy } from "@/lib/categories";
+import { sortByHierarchy } from "@/lib/category-hierarchy";
 import { cn, formatCurrency, toLocalDateTimeInput } from "@/lib/utils";
 import { intlLocale } from "@/lib/locale-format";
 
