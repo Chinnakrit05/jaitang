@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -170,6 +171,7 @@ export async function unarchiveTripAction(tripId: string) {
 
 export async function deleteTripAction(tripId: string) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("trip");
   assertWritable(role);
   await deleteTrip(tripId, ledgerId);
   // Same reason as archive — drop a stale active-trip cookie pointing here.
@@ -180,6 +182,7 @@ export async function deleteTripAction(tripId: string) {
 
 export async function removeTransactionFromTripAction(txId: string) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("trip");
   assertWritable(role);
   await removeTransactionFromTrip(txId, ledgerId);
   refresh();

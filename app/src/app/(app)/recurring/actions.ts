@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -96,6 +97,7 @@ function defaultStartForPeriod(
 
 export async function createRecurringAction(formData: FormData) {
   const { ledgerId, userId, role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   const parsed = Schema.safeParse({
     kind: formData.get("kind"),
@@ -156,6 +158,7 @@ const UpdateSchema = Schema.partial().extend({
 
 export async function updateRecurringAction(id: string, formData: FormData) {
   const { role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
 
   // For updates, "amount" is null when blank (variable-cost rule), and a
@@ -201,6 +204,7 @@ export async function updateRecurringAction(id: string, formData: FormData) {
 
 export async function deleteRecurringAction(id: string) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   // Soft delete (tombstone) — recoverable via undoDeleteRecurringAction
   // below, which the post-delete toast calls.
@@ -216,6 +220,7 @@ export async function deleteRecurringAction(id: string) {
  */
 export async function undoDeleteRecurringAction(id: string) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   await restoreRecurring(id, ledgerId);
   refresh();
@@ -224,6 +229,7 @@ export async function undoDeleteRecurringAction(id: string) {
 
 export async function toggleRecurringAction(id: string, active: boolean) {
   const { role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   await setRecurringActive(id, active);
   refresh();
@@ -231,6 +237,7 @@ export async function toggleRecurringAction(id: string, active: boolean) {
 
 export async function runDueAction() {
   const { ledgerId } = await requireSession();
+  setAuditVia("recurring");
   const created = await applyDueRecurring(ledgerId);
   refresh();
   return { created };
@@ -245,6 +252,7 @@ export async function fillPendingRecurringAction(
   formData: FormData,
 ) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   const parsed = FillSchema.safeParse({ amount: formData.get("amount") });
   if (!parsed.success) {
@@ -270,6 +278,7 @@ export async function fillPendingRecurringAmountAction(
   amount: number,
 ) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   const parsed = FillSchema.safeParse({ amount });
   if (!parsed.success) {
@@ -295,6 +304,7 @@ export async function updateRecurringFillAmountAction(
   amount: number,
 ) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   const parsed = FillSchema.safeParse({ amount });
   if (!parsed.success) {
@@ -322,6 +332,7 @@ const ReorderSchema = z.object({
 
 export async function reorderRecurringAction(ids: string[]) {
   const { role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   const parsed = ReorderSchema.safeParse({ ids });
   if (!parsed.success) {
@@ -355,6 +366,7 @@ export async function setRecurringMonthAmountAction(
   input: { year: number; month: number; amount: number; skipped: boolean },
 ) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("reports");
   assertWritable(role);
   const parsed = MonthAmountSchema.safeParse(input);
   if (!parsed.success) {
@@ -392,6 +404,7 @@ export async function addScanToRecurringAction(
   input: { year: number; month: number; amount: number },
 ) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("scan");
   assertWritable(role);
   const parsed = AddToMonthSchema.safeParse(input);
   if (!parsed.success) {
@@ -434,6 +447,7 @@ export async function setRecurringMonthNoteAction(
   input: { year: number; month: number; note: string },
 ) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("reports");
   assertWritable(role);
   const parsed = MonthNoteSchema.safeParse(input);
   if (!parsed.success) {
@@ -457,6 +471,7 @@ export async function setRecurringMonthNoteAction(
  */
 export async function skipRecurringPeriodAction(ruleId: string) {
   const { ledgerId, role } = await requireSession();
+  setAuditVia("recurring");
   assertWritable(role);
   await skipRecurringPeriod({ ruleId, ledgerId });
   refresh();

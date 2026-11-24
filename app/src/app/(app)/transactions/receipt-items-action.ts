@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/session";
@@ -176,6 +177,7 @@ export async function createTransactionsFromReceiptAction(input: {
   | { ok: false; error: string; created: number }
 > {
   const { userId, ledgerId } = await requireSession();
+  setAuditVia("scan");
   const parsed = BulkSchema.safeParse(input);
   if (!parsed.success) {
     return {

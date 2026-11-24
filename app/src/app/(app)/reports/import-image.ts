@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
@@ -155,6 +156,7 @@ export async function commitImportedTransactionsAction(input: {
   rows: ParsedRow[];
 }): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
   const { userId, ledgerId, role } = await requireSession();
+  setAuditVia("import");
   assertWritable(role);
 
   const parsed = CommitSchema.safeParse(input);

@@ -859,7 +859,12 @@
     "restoring": "復元中…",
     "restoreDoneTitle": "復元しました",
     "restoreSummary": "帳簿 {ledgers} • 取引 {transactions} • カテゴリ {categories} • 予算 {budgets} • 定期 {recurring}",
-    "skipped": "所有していない帳簿 {count} 個をスキップ"
+    "skipped": "所有していない帳簿 {count} 個をスキップ",
+    "autoTitle": "自動バックアップ",
+    "autoHint": "毎晩3時にすべての帳簿をバックアップし、30日分保存します。日付をタップしてダウンロードし、下のボタンで復元できます。",
+    "autoNone": "まだありません。今夜から作成されます。",
+    "autoLatest": "最新：{date}",
+    "autoOlder": "それ以前（{count}）"
   },
   "import": {
     "title": "Numbers からインポート ✨",
@@ -949,5 +954,34 @@
       "placeholder": "今月のメモ"
     },
     "categoryTotal": "合計 {amount}"
+  },
+  "history": {
+    "title": "今月の変更履歴",
+    "count": "{count}件",
+    "added": "追加 {amount}",
+    "deleted": "削除（{amount}）",
+    "restored": "復元（{amount}）",
+    "edited": "{fields}を変更",
+    "field": {
+      "note": "メモ",
+      "category": "カテゴリ",
+      "date": "日付",
+      "kind": "種類",
+      "other": "詳細"
+    },
+    "via": {
+      "form": "入力・編集画面",
+      "quick": "クイック追加",
+      "reports": "レポート",
+      "scan": "レシート読み取り",
+      "import": "インポート",
+      "recurring": "定期",
+      "restore": "バックアップ復元",
+      "wipe": "データ削除",
+      "recategorize": "AI再分類",
+      "trip": "旅行",
+      "unknown": "不明"
+    },
+    "truncated": "最新{count}件を表示"
   }
 }

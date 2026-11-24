@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -44,6 +45,7 @@ export async function wipeActiveLedgerTransactionsAction(): Promise<{
   ledgerName: string;
 } | { ok: false; error: string }> {
   const { ledgerId, ledger, role } = await requireSession();
+  setAuditVia("wipe");
   try {
     assertOwner(role);
   } catch (e) {
@@ -72,6 +74,7 @@ export async function wipeActiveLedgerTransactionsAction(): Promise<{
  */
 export async function wipeAllMyDataAction(): Promise<WipeUserSummary> {
   const { userId } = await requireSession();
+  setAuditVia("wipe");
   const summary = await wipeAllUserData(userId);
   // The active-ledger cookie may still point at the personal ledger we just
   // deleted. resolveActiveLedger() validates the cookie before trusting it,

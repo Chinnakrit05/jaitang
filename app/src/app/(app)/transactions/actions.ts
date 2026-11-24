@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -149,6 +150,7 @@ function readSplitWith(formData: FormData, payerId: string): string[] | null {
 
 export async function createTransactionAction(formData: FormData) {
   const { userId, ledgerId } = await requireSession();
+  setAuditVia("form");
 
   const parsed = TxSchema.safeParse({
     kind: formData.get("kind"),
@@ -275,6 +277,7 @@ export async function updateTransactionAction(id: string, formData: FormData) {
   // requireSession() is React-cached so calling it twice in this function
   // (once for userId, once for ledgerId) is free — we just consolidate.
   const { userId, ledgerId, ledger } = await requireSession();
+  setAuditVia("form");
 
   const parsed = TxSchema.safeParse({
     kind: formData.get("kind"),
@@ -350,6 +353,7 @@ export async function updateTransactionAction(id: string, formData: FormData) {
 
 export async function deleteTransactionAction(id: string) {
   await requireSession();
+  setAuditVia("form");
   await deleteTransaction(id);
   refreshAll();
 }

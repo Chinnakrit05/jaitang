@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requireSession, assertWritable } from "@/lib/session";
@@ -26,6 +27,7 @@ export async function updateTransactionAmountAction(
   amount: number
 ) {
   const { role } = await requireSession();
+  setAuditVia("reports");
   assertWritable(role);
   const parsed = AmountSchema.safeParse(amount);
   if (!parsed.success) {
@@ -48,6 +50,7 @@ export async function updateRecurringAmountAction(
   amount: number
 ) {
   const { role } = await requireSession();
+  setAuditVia("reports");
   assertWritable(role);
   const parsed = AmountSchema.safeParse(amount);
   if (!parsed.success) {
@@ -66,6 +69,7 @@ export async function updateRecurringAmountAction(
  */
 export async function updateTransactionNoteAction(id: string, note: string) {
   const { role } = await requireSession();
+  setAuditVia("reports");
   assertWritable(role);
   const parsed = NoteSchema.safeParse(note);
   if (!parsed.success) {
@@ -103,6 +107,7 @@ export async function createReportTransactionAction(input: {
   note?: string;
 }) {
   const { userId, ledgerId, role } = await requireSession();
+  setAuditVia("reports");
   assertWritable(role);
   const parsed = CreateReportTxSchema.safeParse(input);
   if (!parsed.success) {
@@ -134,6 +139,7 @@ export async function createReportTransactionAction(input: {
 /** Same as above for a recurring rule. */
 export async function updateRecurringNoteAction(id: string, note: string) {
   const { role } = await requireSession();
+  setAuditVia("reports");
   assertWritable(role);
   const parsed = NoteSchema.safeParse(note);
   if (!parsed.success) {

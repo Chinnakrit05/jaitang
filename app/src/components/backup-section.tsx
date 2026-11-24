@@ -10,7 +10,14 @@ import {
 } from "@/app/(app)/settings/backup-actions";
 import type { RestoreSummary } from "@/lib/backup";
 
-export function BackupSection() {
+export type AutoBackupDay = {
+  /** YYYY-MM-DD — the file's name, and the download path. */
+  date: string;
+  /** The same day, written for the reader's locale. */
+  label: string;
+};
+
+export function BackupSection({ autoBackups }: { autoBackups: AutoBackupDay[] }) {
   const t = useTranslations();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -47,6 +54,46 @@ export function BackupSection() {
           {t("backup.downloadButton")}
         </a>
         <p className="text-xs text-(--muted) mt-2">{t("backup.downloadHint")}</p>
+      </div>
+
+      {/* Nightly — written by /api/cron/backup, newest first */}
+      <div className="pt-4 border-t border-(--border) space-y-2">
+        <div className="text-sm font-medium">{t("backup.autoTitle")}</div>
+        <p className="text-xs text-(--muted)">{t("backup.autoHint")}</p>
+        {autoBackups.length === 0 ? (
+          <p className="text-xs text-(--muted)">{t("backup.autoNone")}</p>
+        ) : (
+          <>
+            <a
+              href={`/api/backup/${autoBackups[0].date}`}
+              download
+              className="inline-flex items-center gap-2 rounded-[16px] soft-raised hover:bg-(--background) px-4 py-2.5 text-sm font-medium"
+            >
+              <JtIcon name="download" size={18} />
+              {t("backup.autoLatest", { date: autoBackups[0].label })}
+            </a>
+            {autoBackups.length > 1 && (
+              <details>
+                <summary className="cursor-pointer select-none text-xs text-(--muted)">
+                  {t("backup.autoOlder", { count: autoBackups.length - 1 })}
+                </summary>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {autoBackups.slice(1).map((b) => (
+                    <li key={b.date}>
+                      <a
+                        href={`/api/backup/${b.date}`}
+                        download
+                        className="inline-block rounded-full soft-well-sm px-3 py-1 text-xs tabular-nums hover:text-(--accent)"
+                      >
+                        {b.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </>
+        )}
       </div>
 
       {/* Upload / Restore */}

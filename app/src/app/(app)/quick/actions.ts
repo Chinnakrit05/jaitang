@@ -1,5 +1,6 @@
 "use server";
 
+import { setAuditVia } from "@/lib/audit-context";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSession, assertWritable } from "@/lib/session";
@@ -33,6 +34,7 @@ export type QuickAddResponse =
 
 export async function quickAddAction(formData: FormData): Promise<QuickAddResponse> {
   const { ledgerId, userId, role } = await requireSession();
+  setAuditVia("quick");
   assertWritable(role);
 
   const parsed = Schema.safeParse({ text: formData.get("text") });
